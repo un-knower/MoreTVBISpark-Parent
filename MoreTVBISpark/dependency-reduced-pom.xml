@@ -138,10 +138,6 @@
               <groupId>org.apache.commons</groupId>
             </exclusion>
             <exclusion>
-              <artifactId>jsr305</artifactId>
-              <groupId>com.google.code.findbugs</groupId>
-            </exclusion>
-            <exclusion>
               <artifactId>slf4j-api</artifactId>
               <groupId>org.slf4j</groupId>
             </exclusion>
@@ -381,10 +377,6 @@
         <exclusion>
           <artifactId>commons-math3</artifactId>
           <groupId>org.apache.commons</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jsr305</artifactId>
-          <groupId>com.google.code.findbugs</groupId>
         </exclusion>
         <exclusion>
           <artifactId>slf4j-api</artifactId>

@@ -3,12 +3,10 @@ package com.moretv.bi.user
 import java.sql.SQLException
 
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
-import com.moretv.bi.util.{SparkSetting, _}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil, ProductModelUtils}
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
-import scala.collection.JavaConversions._
+
 
 /**
   * Created by Will on 2016/7/10.
@@ -20,6 +18,7 @@ object PromotionChannelNonOTTNewDist extends BaseClass{
     ModuleClass.executor(PromotionChannelNonOTTNewDist,args)
   }
   override def execute(args: Array[String]) {
+
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         val inputDate = DateFormatUtils.enDateAdd(p.startDate,-1)
