@@ -9,7 +9,7 @@
   <artifactId>MoreTVBISpark</artifactId>
   <inceptionYear>2016</inceptionYear>
   <build>
-    <sourceDirectory>src/main/java</sourceDirectory>
+    <sourceDirectory>src/main/scala</sourceDirectory>
     <plugins>
       <plugin>
         <groupId>org.scala-tools</groupId>
@@ -48,14 +48,6 @@
                   <goal>shade</goal>
                 </goals>
                 <configuration>
-                  <transformers>
-                    <transformer>
-                      <resource>META-INF/spring.handlers</resource>
-                    </transformer>
-                    <transformer>
-                      <resource>META-INF/spring.schemas</resource>
-                    </transformer>
-                  </transformers>
                   <filters>
                     <filter>
                       <artifact>*.*</artifact>
@@ -136,10 +128,6 @@
             <exclusion>
               <artifactId>commons-math3</artifactId>
               <groupId>org.apache.commons</groupId>
-            </exclusion>
-            <exclusion>
-              <artifactId>jsr305</artifactId>
-              <groupId>com.google.code.findbugs</groupId>
             </exclusion>
             <exclusion>
               <artifactId>slf4j-api</artifactId>
@@ -383,10 +371,6 @@
           <groupId>org.apache.commons</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>jsr305</artifactId>
-          <groupId>com.google.code.findbugs</groupId>
-        </exclusion>
-        <exclusion>
           <artifactId>slf4j-api</artifactId>
           <groupId>org.slf4j</groupId>
         </exclusion>
@@ -540,8 +524,5 @@
       </plugin>
     </plugins>
   </reporting>
-  <properties>
-    <scala.version>2.10.6</scala.version>
-  </properties>
 </project>
 
