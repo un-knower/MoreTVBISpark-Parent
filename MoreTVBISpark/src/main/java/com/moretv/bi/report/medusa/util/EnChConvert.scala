@@ -222,6 +222,7 @@ object EnChConvert {
               case "1_jilu_tags_qita" => result="其他分类"
               case "jilu_maoshu"=>result="猫叔推荐"
               case "jilu_douban"=>result="豆瓣高分"
+              case "jilu_xingzhen"=> result="刑侦档案"
               case _ => result=info
             }
           }
