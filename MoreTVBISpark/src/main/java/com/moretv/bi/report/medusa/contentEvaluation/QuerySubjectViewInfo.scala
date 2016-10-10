@@ -57,13 +57,6 @@ object QuerySubjectViewInfo extends BaseClass {
           }
           */
 
-          executeComp(  date)
-          executeComp(  date)
-          executeComp(  date)
-          System.exit(0)
-          for (i <- 1 to 2) {
-            executeComp(  date)
-          }
           /*
           for (i <- 1 to 2) {
             executeComp("part", date)
@@ -72,7 +65,6 @@ object QuerySubjectViewInfo extends BaseClass {
 
           System.exit(-1)
 
-          //          val playviewInput = s"$medusaDir/$date/detail/part-r-00000-47879f11-9c92-4b7c-94b9-091f508a5048.gz.parquet"
           //
           //          sqlContext.read.parquet(playviewInput).select("userId","launcherAreaFromPath","launcherAccessLocationFromPath",
           //            "pageDetailInfoFromPath","pathIdentificationFromPath","path","pathPropertyFromPath","flag","event").
@@ -171,12 +163,10 @@ object QuerySubjectViewInfo extends BaseClass {
     }
   }
 
-  def executeComp( date: String) = {
+  def executeComp( date: String,fileName:String) = {
     val medusaDir = "/log/medusaAndMoretvMerger/"
-    //if (fileName.contains("part")) {
-      //val playviewInput = s"$medusaDir/$date/detail/$fileName"
-      val playviewInput = s"$medusaDir$date/detail/part-r-00000-47879f11-9c92-4b7c-94b9-091f508a5048.gz.parquet"
-      println(s"process file 12: ${playviewInput}")
+    if (fileName.contains("part")) {
+      val playviewInput = s"$medusaDir/$date/detail/$fileName"
       sqlContext.read.parquet(playviewInput).select("userId", "launcherAreaFromPath", "launcherAccessLocationFromPath",
         "pageDetailInfoFromPath", "pathIdentificationFromPath", "path", "pathPropertyFromPath", "flag", "event").
         repartition(24).filter("userId is not null").
@@ -202,7 +192,7 @@ object QuerySubjectViewInfo extends BaseClass {
 
       val mergerInfoRdd = formattedMedusaRdd.union(formattedMoretvRdd).cache()
       mergerInfoRdd.map(e => (s"${e._1._1}")).collect()
-    //}
+    }
   }
 
 }

@@ -64,7 +64,17 @@ object Log2ParquetPost extends BaseClass{
                   regexEventType findFirstMatchIn id match {
                     case Some(m) => {
                       val eventType = m.group(1)
-                      if(eventType == "tabview") ("search-tabview",js.toString) else (eventType,js.toString)
+                      if(eventType == "tabview") {
+                        ("search-tabview",js.toString)
+                      }else if(id.endsWith("clickResult")){
+                        if(id == "medusa-mv_station-clickResult"){
+                          (id,js.toString)
+                        }else if(id == "medusa-search-clickResult"){
+                          ("clickSearchResult",js.toString)
+                        }else {
+                          if(js.has("clickWidget")) ("searchEntrance",js.toString) else (id,js.toString)
+                        }
+                      }else (eventType,js.toString)
                     }
                     case None => null
                   }
