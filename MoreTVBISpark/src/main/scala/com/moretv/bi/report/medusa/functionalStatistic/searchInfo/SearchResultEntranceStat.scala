@@ -7,26 +7,27 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 
 /**
-  * Created by witnes on 9/19/16.
+  * Created by witnes on 9/18/16.
   */
 
 /**
   * 领域: 搜索
-  * 对象: 搜索结果类型 - 各入口
+  * 对象: 搜索结果入口
   * 数据源: clickSearchResult
-  * 维度: 天, 搜索入口, 搜索结果类型
-  * 特征提取: entrance, contentType, userId
-  * 统计: pv, uv
-  * 输出: tbl[ search_entrance_contenttype_stat ]
-  *         (day ,entrance, contenttype, pv, uv)
+  * 维度: 天, 入口
+  * 特征提取: entrance, userId
+  * 过滤条件:
+  * 统计: 入口 , pv, uv
+  * 输出: tbl[ search_result_entrance_stat ]
+  *         (day, entrance, pv, uv)
   */
-object SearchEntranceContentTypeStat extends BaseClass{
+object SearchResultEntranceStat extends BaseClass{
 
   private val dataSource = "clickSearchResult"
 
-  private val tableName =  "search_entrance_contenttype_stat"
+  private val tableName = "search_result_entrance_stat"
 
-  private val fields = "day, entrance, contenttype, pv, uv"
+  private val fields = "day, entrance, pv, uv"
 
   private val insertSql = s"insert into $tableName($fields) values(?,?,?,?,?)"
 
@@ -34,7 +35,7 @@ object SearchEntranceContentTypeStat extends BaseClass{
 
   def main(args: Array[String]) {
 
-    ModuleClass.executor(SearchEntranceContentTypeStat, args)
+    ModuleClass.executor(SearchResultEntranceStat,args)
 
   }
 
@@ -42,9 +43,9 @@ object SearchEntranceContentTypeStat extends BaseClass{
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-
         //init & util
         val util = new DBOperationUtils("medusa")
+        //date
         val startDate = p.startDate
         val cal = Calendar.getInstance
         cal.setTime(DateFormatUtils.readFormat.parse(startDate))
@@ -57,43 +58,41 @@ object SearchEntranceContentTypeStat extends BaseClass{
 
           //path
           val loadPath = s"/log/medusa/parquet/$loadDate/$dataSource"
+          println(loadPath)
 
           //df
           val df = sqlContext.read.parquet(loadPath)
-                              .select("contentType", "userId", "entrance")
-                              .filter("contentType is not null")
-                              .filter("entrance is not null")
-
-          //rdd ((entrance, contentType), userId)
-          val rdd = df.map(e=>((e.getString(2),e.getString(0)),e.getString(1)))
-                        .cache
+            .select("userId","entrance")
+            .filter("entrance is not null")
+          //rdd
+          val rdd = df.map(e=>(e.getString(1),e.getString(0)))
+            .cache
 
           //aggregate
           val pvMap = rdd.countByKey
           val uvMap = rdd.distinct.countByKey
 
           //deal with table
-          if(p.deleteOld){
-            util.delete(deleteSql, sqlDate)
-          }
+          util.delete(deleteSql, sqlDate)
 
-          pvMap.foreach(w=>{
+          uvMap.foreach(w=>{
+
             val key = w._1
-            val pv = w._2
-            val uv = uvMap.get(key) match {
+            val uv = w._2
+            val pv = pvMap.get(key) match {
               case Some(p) => p
               case _ => 0
             }
-            util.insert(insertSql,
-              sqlDate,w._1._1,w._1._2,new JLong(pv), new JLong(uv))
+            util.insert(insertSql, sqlDate, key, new JLong(pv), new JLong(uv))
+
           })
 
         })
-
       }
       case None => {
-        throw  new Exception("SearchEntranceContentTypeStat fails")
+        throw new Exception("SearchEntranceStat fails")
       }
+
     }
   }
 }

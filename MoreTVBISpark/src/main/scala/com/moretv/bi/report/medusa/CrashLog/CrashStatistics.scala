@@ -1,4 +1,4 @@
-package src.com.moretv.bi.report.medusa.CrashLog
+package com.moretv.bi.report.medusa.CrashLog
 
 /**
  * Created by Administrator on 2016/3/28.
@@ -12,7 +12,7 @@ import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, S
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import org.json.JSONObject
-import src.com.moretv.bi.medusa.util.ParquetDataStyle.ALL_CRASH_INFO
+import com.moretv.bi.medusa.util.ParquetDataStyle.ALL_CRASH_INFO
 
 object CrashStatistics extends BaseClass{
 

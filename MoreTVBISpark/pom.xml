@@ -245,6 +245,35 @@
                 </resources>
             </build>
         </profile>
+        <profile>
+            <id>deploy</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-core_2.10</artifactId>
+                    <version>1.6.0</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-sql_2.10</artifactId>
+                    <version>1.6.0</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <finalName>MoreTVBISpark-${project.version}</finalName>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>true</filtering>
+                        <excludes>
+                            <exclude>**/*.*</exclude>
+                        </excludes>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
     </profiles>
 
 </project>

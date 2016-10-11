@@ -70,12 +70,14 @@ object SearchVideoContentTypeStat extends  BaseClass{
           //df 
           val df =sqlContext.read.parquet(path)
                     .select("resultSid", "resultName", "contentType", "userId", "apkVersion")
+                      .filter("resultSid is not null")
+                      .filter("resultName is not null")
                       .filter("contentType is not null")
-                      .filter(s"apkVersion in $avaiableVersion")
+                      .filter(s"apkVersion in ( $avaiableVersion )")
 
 
           //rdd((resultSid,resultName,contentType),userId)
-          val rdd = df.map(e=>((e.getString(1),e.getString(2),e.getString(3)),e.getString(0)))
+          val rdd = df.map(e=>((e.getString(0),e.getString(1),e.getString(2)),e.getString(3)))
                       .cache
 
           //aggregate

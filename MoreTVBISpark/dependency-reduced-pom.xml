@@ -9,7 +9,7 @@
   <artifactId>MoreTVBISpark</artifactId>
   <inceptionYear>2016</inceptionYear>
   <build>
-    <sourceDirectory>src/main/java</sourceDirectory>
+    <sourceDirectory>src/main/scala</sourceDirectory>
     <plugins>
       <plugin>
         <groupId>org.scala-tools</groupId>
@@ -34,9 +34,9 @@
   </build>
   <profiles>
     <profile>
-      <id>single-jar</id>
+      <id>deploy</id>
       <build>
-        <finalName>MoreTVBISpark-assembly-${project.version}</finalName>
+        <finalName>MoreTVBISpark-${project.version}</finalName>
         <plugins>
           <plugin>
             <artifactId>maven-shade-plugin</artifactId>
@@ -48,14 +48,6 @@
                   <goal>shade</goal>
                 </goals>
                 <configuration>
-                  <transformers>
-                    <transformer>
-                      <resource>META-INF/spring.handlers</resource>
-                    </transformer>
-                    <transformer>
-                      <resource>META-INF/spring.schemas</resource>
-                    </transformer>
-                  </transformers>
                   <filters>
                     <filter>
                       <artifact>*.*</artifact>
@@ -278,35 +270,6 @@
               <groupId>org.spark-project.spark</groupId>
             </exclusion>
           </exclusions>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
-      <id>deploy</id>
-      <build>
-        <resources>
-          <resource>
-            <filtering>true</filtering>
-            <directory>src/main/resources</directory>
-            <excludes>
-              <exclude>**/*.*</exclude>
-            </excludes>
-          </resource>
-        </resources>
-        <finalName>MoreTVBISpark-${project.version}</finalName>
-      </build>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.spark</groupId>
-          <artifactId>spark-core_2.10</artifactId>
-          <version>1.6.0</version>
-          <scope>provided</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.spark</groupId>
-          <artifactId>spark-sql_2.10</artifactId>
-          <version>1.6.0</version>
-          <scope>provided</scope>
         </dependency>
       </dependencies>
     </profile>
@@ -561,8 +524,5 @@
       </plugin>
     </plugins>
   </reporting>
-  <properties>
-    <scala.version>2.10.6</scala.version>
-  </properties>
 </project>
 

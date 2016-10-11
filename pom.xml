@@ -13,5 +13,10 @@
     </modules>
     <packaging>pom</packaging>
 
+    <properties>
+        <scala.version>2.10.6</scala.version>
+        <project.build.name>MoreTVBISpark-${project.version}</project.build.name>
+    </properties>
+
 
 </project>

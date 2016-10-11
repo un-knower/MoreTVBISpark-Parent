@@ -12,11 +12,11 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 /**
   * 数据源: 选择搜索结果日志 (clickResult)
   * 提取特征: entrance, params['contentType']
-  * 输出路径: tbl[ medusa.search_entrance_contenttype_result_freq ]
+  * 输出路径: tbl[ medusa.search_entrance_contenttype_stat]
   */
 object SearchEntranceContentTypeResultFreq extends BaseClass{
 
-  private val tableName =  "search_entrance_contenttype_result_freq"
+  private val tableName =  "search_entrance_contenttype_stat"
 
 
   def main(args: Array[String]) {
@@ -63,7 +63,7 @@ object SearchEntranceContentTypeResultFreq extends BaseClass{
 
           pvMap.foreach(w=>{
             util.insert(s"insert into $tableName(day,search_entrance,contenttype,result_count)values(?,?,?,?)",
-              loadDate,w._1._1,w._1._2,new JLong(w._2) )
+              sqlDate,w._1._1,w._1._2,new JLong(w._2) )
           })
         })
 

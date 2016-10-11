@@ -1,4 +1,4 @@
-package src.com.moretv.bi.report.medusa.CrashLog
+package com.moretv.bi.report.medusa.CrashLog
 
 /**
  * Created by xiajun on 2016/3/28.
@@ -14,7 +14,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.storage.StorageLevel
 import org.json.JSONObject
-import src.com.moretv.bi.medusa.util.ParquetDataStyle.ALL_CRASH_INFO_INCLUDE_MD5
+import com.moretv.bi.medusa.util.ParquetDataStyle.ALL_CRASH_INFO_INCLUDE_MD5
 
 
 object CrashOriginalInfo extends BaseClass{

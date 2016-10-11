@@ -1,4 +1,4 @@
-package src.com.moretv.bi.temp.user
+package com.moretv.bi.temp.user
 
 import com.moretv.bi.util.FileUtils._
 import com.moretv.bi.util.SparkSetting

@@ -58,13 +58,14 @@ object SearchEntranceStat extends BaseClass{
 
           //path
           val loadPath = s"/log/medusa/parquet/$loadDate/$dataSource"
+          println(loadPath)
 
           //df
-          val df = sqlContext.read.parquet(loadDate)
+          val df = sqlContext.read.parquet(loadPath)
                       .select("userId","entrance")
                       .filter("entrance is not null")
           //rdd
-          val rdd = df.map(e=>(e.getString(3),e.getString(2)))
+          val rdd = df.map(e=>(e.getString(1),e.getString(0)))
                       .cache
 
           //aggregate

@@ -1,4 +1,4 @@
-package src.com.moretv.bi.medusa.util
+package com.moretv.bi.medusa.util
 
 /**
  * Created by Administrator on 2016/3/28.
