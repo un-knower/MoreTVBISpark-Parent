@@ -13,9 +13,12 @@
     <artifactId>MoreTVBISpark</artifactId>
 
     <inceptionYear>2016</inceptionYear>
+
+    <!-- 定义相关变量 -->
     <properties>
         <scala.version>2.10.6</scala.version>
     </properties>
+
     <repositories>
         <repository>
             <id>scala-tools.org</id>
@@ -23,6 +26,7 @@
             <url>http://scala-tools.org/repo-releases</url>
         </repository>
     </repositories>
+
     <dependencies>
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -117,7 +121,7 @@
     </dependencies>
 
     <build>
-        <sourceDirectory>src/main/java</sourceDirectory>
+        <sourceDirectory>src/main/scala</sourceDirectory>
         <!--<testSourceDirectory>src/test/scala</testSourceDirectory>-->
         <plugins>
             <plugin>
@@ -156,6 +160,63 @@
 
     <profiles>
         <profile>
+            <id>single-jar</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-core_2.10</artifactId>
+                    <version>1.6.0</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-sql_2.10</artifactId>
+                    <version>1.6.0</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <finalName>MoreTVBISpark-assembly-${project.version}</finalName>
+                <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+
+                    <executions>
+                        <execution>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>shade</goal>
+                            </goals>
+                            <configuration>
+                                <transformers>
+                                    <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer" >
+                                        <resource>META-INF/spring.handlers</resource>
+                                    </transformer>
+                                    <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer" >
+                                        <resource>META-INF/spring.schemas</resource>
+                                    </transformer>
+                                </transformers>
+                                <filters>
+                                    <filter>
+                                        <artifact>*.*</artifact>
+                                        <excludes>
+                                            <exclude>META-INF/*.SF</exclude>
+                                            <exclude>META-INF/*.DSA</exclude>
+                                            <exclude>META-INF/*.RSA</exclude>
+                                            <exclude>*.properties</exclude>
+                                            <exclude>*.xml</exclude>
+                                        </excludes>
+                                    </filter>
+                                </filters>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>deploy</id>
             <dependencies>
                 <dependency>
@@ -173,43 +234,15 @@
             </dependencies>
             <build>
                 <finalName>MoreTVBISpark-${project.version}</finalName>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-shade-plugin</artifactId>
-
-                        <executions>
-                            <execution>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>shade</goal>
-                                </goals>
-                                <configuration>
-                                    <transformers>
-                                        <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer" >
-                                            <resource>META-INF/spring.handlers</resource>
-                                        </transformer>
-                                        <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer" >
-                                            <resource>META-INF/spring.schemas</resource>
-                                        </transformer>
-                                    </transformers>
-                                    <filters>
-                                        <filter>
-                                            <artifact>*.*</artifact>
-                                            <excludes>
-                                                <exclude>META-INF/*.SF</exclude>
-                                                <exclude>META-INF/*.DSA</exclude>
-                                                <exclude>META-INF/*.RSA</exclude>
-                                                <exclude>*.properties</exclude>
-                                                <exclude>*.xml</exclude>
-                                            </excludes>
-                                        </filter>
-                                    </filters>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>true</filtering>
+                        <excludes>
+                            <exclude>**/*.*</exclude>
+                        </excludes>
+                    </resource>
+                </resources>
             </build>
         </profile>
     </profiles>
