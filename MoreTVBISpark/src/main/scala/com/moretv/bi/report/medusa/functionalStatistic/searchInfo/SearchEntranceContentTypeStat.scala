@@ -85,7 +85,7 @@ object SearchEntranceContentTypeStat extends BaseClass{
               case _ => 0
             }
             util.insert(insertSql,
-              loadDate,w._1._1,w._1._2,new JLong(pv), new JLong(uv))
+              sqlDate,w._1._1,w._1._2,new JLong(pv), new JLong(uv))
           })
 
         })

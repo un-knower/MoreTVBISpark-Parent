@@ -75,4 +75,10 @@ object IPLocationDataUtil {
       } else "未知"
     } else "未知"
   }
+
+  def getProvinceCity(ip:String) ={
+    if (ip != null) {
+//      val value = ipLocationMap.getOrDefault()
+    }
+  }
 }

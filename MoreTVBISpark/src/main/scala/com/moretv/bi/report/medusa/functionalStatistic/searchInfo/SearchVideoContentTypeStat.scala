@@ -70,6 +70,8 @@ object SearchVideoContentTypeStat extends  BaseClass{
           //df 
           val df =sqlContext.read.parquet(path)
                     .select("resultSid", "resultName", "contentType", "userId", "apkVersion")
+                      .filter("resultSid is not null")
+                      .filter("resultName is not null")
                       .filter("contentType is not null")
                       .filter(s"apkVersion in ( $avaiableVersion )")
 
