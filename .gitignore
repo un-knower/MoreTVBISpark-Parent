@@ -1,0 +1,9 @@
+#Intellij IDEA files
+*.iml
+/.idea
+
+#scala files
+*.class
+/MoreTVBISpark/target
+/distribution/target
+/MoreTVBISpark/lib

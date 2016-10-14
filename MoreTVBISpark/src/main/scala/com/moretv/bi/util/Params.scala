@@ -26,4 +26,5 @@ case class Params (startDate:String ="yyyyMMdd", //起始日期,格式为yyyyMMd
                    apkVersion:String = "",
                    durationMax:Int  = 0, //播放时长区间最大值
                    alarmFlag:Boolean = true,  //限定版本号
-                   contentType:String = "")//节目类型
+                   contentType:String = ""
+                    )//节目类型
