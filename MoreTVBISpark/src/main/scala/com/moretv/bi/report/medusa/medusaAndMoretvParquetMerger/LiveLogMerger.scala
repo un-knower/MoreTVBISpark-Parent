@@ -76,7 +76,7 @@ object LiveLogMerger extends BaseClass{
              if(p.deleteOld) {
                HdfsUtil.deleteHDFSFile(outputPath)
              }
-               sqlContext.read.json(rdd).write.parquet(outputPath)
+             sqlContext.read.json(rdd).write.parquet(outputPath)
              medusaDf.unpersist()
              moretvDf.unpersist()
            }else if(!medusaFlag && moretvFlag){
