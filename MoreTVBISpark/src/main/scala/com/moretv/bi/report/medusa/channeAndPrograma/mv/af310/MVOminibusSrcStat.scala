@@ -144,7 +144,7 @@ object MVOminibusSrcStat extends BaseClass {
 
           case "mv*mvRecommendHomePage" => "音乐首页推荐"
 
-          case "mv*function*site_mvsubject" => "音乐入口"
+          case "mv*function*site_mvsubject" => "精选集入口"
 
           case "mv*mvCategoryHomePage*site" => "音乐下的某分类"
 

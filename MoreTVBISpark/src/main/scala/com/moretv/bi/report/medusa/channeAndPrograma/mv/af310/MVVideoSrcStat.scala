@@ -36,13 +36,15 @@ object MVVideoSrcStat extends BaseClass {
 
   private val deleteSql = s"delete from $tableName where day =?"
 
+
+
   private val filterTabRegex = (
 
     "(mv\\*mvRecommendHomePage|mv\\*mvTopHomePage|mv\\*mvRecommendHomePage|mv\\*mvCategoryHomePage|" +
 
       "search|mv\\*mineHomePage*site_collect|mv\\*function\\*site_hotsinger|mv\\*function\\*site_dance|" +
 
-      "mv\\*function\\*site_mvsubject|mv\\*function\\*site_concert)(\\*p8lm6k3ewx4g-mv_station|" +
+      "mv\\*function\\*site_mvsubject|mv\\*function\\*site_concert)(\\-mv_station|" +
 
       "\\*site_mvstyle-mv_category|\\*site_mvarea-mv_category|\\*site_mvyear-mv_category)*"
 
@@ -86,6 +88,7 @@ object MVVideoSrcStat extends BaseClass {
               .filter("videoName is not null")
               .filter("duration is not null and duration between '0' and '10800'")
               .cache
+
 
           //rdd(entrance, videoSid, videoName, userId, duration, event)
 

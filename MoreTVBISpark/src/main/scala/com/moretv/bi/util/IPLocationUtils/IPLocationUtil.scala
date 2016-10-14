@@ -7,9 +7,9 @@ import com.moretv.bi.util.HdfsUtil
 import scala.io.Source
 
 /**
- * Created by xia jun on 2016/7/22.
- * For IP map
- */
+  * Created by xia jun on 2016/7/22.
+  * For IP map
+  */
 object IPLocationDataUtil {
   val ipLocationMap = new util.HashMap[String, Array[String]]()
   if (ipLocationMap.isEmpty) {
@@ -30,7 +30,7 @@ object IPLocationDataUtil {
 
   def getFirst3IP(ip: String) = {
     val ipInfo = ip.split("\\.")
-    if(ipInfo.length >= 3){
+    if (ipInfo.length >= 3) {
       ipInfo(0).concat("*").concat(ipInfo(1)).concat("*").concat(ipInfo(2))
     } else ip
   }
@@ -76,9 +76,14 @@ object IPLocationDataUtil {
     } else "未知"
   }
 
-  def getProvinceCity(ip:String) ={
+  def getProvinceCity(ip: String): String = {
     if (ip != null) {
-//      val value = ipLocationMap.getOrDefault()
-    }
+      val value = ipLocationMap.getOrDefault(getFirst3IP(ip), null)
+      if (value != null) {
+        value(1) + "-" + value(2)
+      }
+      else "未知-未知"
+    } else "未知-未知"
+
   }
 }

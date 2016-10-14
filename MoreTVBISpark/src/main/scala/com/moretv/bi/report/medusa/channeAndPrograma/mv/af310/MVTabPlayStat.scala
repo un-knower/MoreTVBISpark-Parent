@@ -38,6 +38,7 @@ object MVTabPlayStat extends BaseClass {
   private val deleteSql = s"delete from $tableName where day = ?"
 
 
+
   private val filterTabRegex = (
 
     "(mv\\*mvRecommendHomePage|mv\\*mvTopHomePage|mv\\*mvCategoryHomePage|mv-search|" +

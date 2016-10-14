@@ -7,7 +7,6 @@ Day=`date -d 'today' +%Y%m%d`
 
 Args="--startDate $Day --numOfDays 1 --alarmFlag false --deleteOld true"
 
-Args1="--startDate 20160920 --numOfDays 30 --alarmFlag false --deleteOld true"
 
 ###### Search Info from searchEntrance , clickSearchResult, search-tabview
 
@@ -47,19 +46,10 @@ PlayContentTypeStat=com.moretv.bi.report.medusa.contentEvaluation.PlayContentTyp
 
 StartPageStatistics=com.moretv.bi.report.medusa.pageStatistics.StartPageStatistics
 
-#EventUserAreaStat=com.moretv.bi.user.location.EventUserAreaStat
 
-#./submit.sh $EventUserAreaStat $Args
 
-#MovieCollectStat=com.moretv.bi.temp.content.MovieCollectStat
-
-BigBang=com.moretv.bi.temp.BigBang
-
-#./submit.sh $BigBang $Args
 ./submit.sh $DetailContentTypeStat $Args
 ./submit.sh $PlayContentTypeStat $Args
-
-./submit.sh $MovieCollectStat $Args
 
 ./submit.sh $MVPositionClickStat $Args
 
@@ -75,11 +65,8 @@ BigBang=com.moretv.bi.temp.BigBang
 ./submit.sh $KidViewClass $Args
 ./submit.sh $KidPlayClass $Args
 
-./submit.sh $SearchEntranceStat $Args
-./submit.sh $SearchContentTypeStat $Args
-./submit.sh $SearchEntranceContentTypeStat $Args
-./submit.sh $SearchVideoContentTypeStat $Args
-./submit.sh $$StartPageStatistics $Args
-#
-
-
+#./submit.sh $SearchEntranceStat $Args
+#./submit.sh $SearchContentTypeStat $Args
+#./submit.sh $SearchEntranceContentTypeStat $Args
+#./submit.sh $SearchVideoContentTypeStat $Args
+#./submit.sh $$StartPageStatistics $Argsz
