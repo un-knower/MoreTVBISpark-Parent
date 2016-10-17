@@ -19,13 +19,15 @@ import scala.collection.mutable.ListBuffer
   * 数据源: play
   * 维度: 天, 入口(多级), 视频
   * 提取特征: pathMain , userId , duration
-  * 过滤条件: 收藏,推荐,推荐-电台, 榜单, 分类, 搜索,歌手, 舞蹈,精选集, 演唱会
+  * 过滤条件: 收藏,推荐,电台, 榜单, 分类, 搜索,歌手, 舞蹈,精选集, 演唱会
   * 统计: pv ,uv, mean_duration
   * 输出: tbl[mv_tab_play_stat](day, tabname, entrance, pv, uv, mean_duration)
   *
   */
 
 object MVTabPlayStat extends BaseClass {
+
+  import com.moretv.bi.report.medusa.channeAndPrograma.mv.{TabPathConst => t}
 
   private val dataSource = "play"
 
@@ -37,19 +39,18 @@ object MVTabPlayStat extends BaseClass {
 
   private val deleteSql = s"delete from $tableName where day = ?"
 
+  // 我的，电台，推荐，榜单， 分类, 入口-搜索，入口-歌手，入口-舞蹈，入口-精选集，入口-演唱会
+  private val firstPath = t.Mv_First_Path.mkString("|")
 
+  // 分类-风格，分类-地区，分类-年代，榜单-新歌榜，榜单-美国公告榜，榜单-热歌榜，榜单-更多榜单
+  private val secondPath = t.Mv_Second_Path.mkString("|")
+
+  // 二级分类 和一级分类下的tab页面 和 视频集
+  private val thirdPath = t.Mv_Third_Path.mkString("|")
 
   private val filterTabRegex = (
 
-    "(mv\\*mvRecommendHomePage|mv\\*mvTopHomePage|mv\\*mvCategoryHomePage|mv-search|" +
-
-      "mv\\*mineHomePage\\*site_collect|mv\\*function\\*site_hotsinger|mv\\*function\\*site_dance-mv_category\\*|" +
-
-      "mv\\*function\\*site_mvsubject|mv\\*function\\*site_concert-mv_category\\*)" +
-
-      "(.+-mv_station|\\*site_mvstyle-mv_category\\*|\\*site_mvarea-mv_category\\*|\\*site_mvyear-mv_category\\*)?" +
-
-      "([a-zA-Z0-9&\\u4e00-\\u9fa5]{1,})?"
+    s"($firstPath)($secondPath)?($thirdPath)?"
 
     ).r
 
@@ -94,6 +95,7 @@ object MVTabPlayStat extends BaseClass {
             .cache
 
           //rdd(home_tab, entrance, event, userId, duration)
+          df.show(50, false)
 
           val rdd =
             df.flatMap(
@@ -106,6 +108,8 @@ object MVTabPlayStat extends BaseClass {
               .filter(_._2 != null)
               .cache
 
+          println(filterTabRegex)
+          rdd.take(20).foreach(println)
 
           //pvuvRdd(home_tab, entrance, userId) with (event = startplay)
 
@@ -139,7 +143,7 @@ object MVTabPlayStat extends BaseClass {
           val durationMap = durationRdd.reduceByKey(_ + _).collectAsMap()
 
 
-          //deal with table
+          // deal with table
 
           if (p.deleteOld) {
             util.delete(deleteSql, sqlDate)
@@ -192,13 +196,10 @@ object MVTabPlayStat extends BaseClass {
     * @param path pathMain 用于确定视频入口
     * @return entrance 视频入口
     */
-  def path2Tabs(path: String, event: String, userId: String, duration: Long):List[(String, String, String, String, Long)] = {
+  def path2Tabs(path: String, event: String, userId: String, duration: Long): List[(String, String, String, String, Long)] = {
     val buf = ListBuffer.empty[(String, String, String, String, Long)]
 
-
-    val station = ".+-mv_station".r
-
-    val tabName = "[a-zA-Z0-9&\\u4e00-\\u9fa5]{1,}".r  //for 分类, 演唱会, 舞蹈
+    import com.moretv.bi.report.medusa.channeAndPrograma.mv.{TabPathConst => t}
 
     filterTabRegex findFirstMatchIn path match {
 
@@ -206,147 +207,115 @@ object MVTabPlayStat extends BaseClass {
 
         p.group(1) match {
 
-          case "mv*mvRecommendHomePage" => {
+          case t.Mv_Collect => buf.+=(("我的", "收藏", event, userId, duration))
 
-            buf.+=(("推荐", "推荐", event, userId, duration))
+          case t.Mv_Recommender => buf.+=(("推荐", "推荐", event, userId, duration))
+
+          case t.Mv_Station => buf.+=(("电台", "电台", event, userId, duration))
+
+          case t.Mv_TopList => {
 
             p.group(2) match {
 
-              case station => buf.+=(("电台", "电台", event, userId, duration))
+              case t.Mv_Latest => {
+                buf.+=(("榜单", "榜单", event, userId, duration))
+                buf.+=(("榜单", "新歌声", event, userId, duration))
+              }
 
-              case _ => null
+              case t.Mv_Billboard => {
+                buf.+=(("榜单", "榜单", event, userId, duration))
+                buf.+=(("榜单", "美国公告榜", event, userId, duration))
+              }
 
+              case t.Mv_Hot => {
+                buf.+=(("榜单", "榜单", event, userId, duration))
+                buf.+=(("榜单", "热歌榜", event, userId, duration))
+              }
+
+              case t.Mv_More => {
+                p.group(3) match {
+                  case t.Mv_poster => {
+                    buf.+=(("榜单", "榜单", event, userId, duration))
+                    buf.+=(("榜单", "更多榜单", event, userId, duration))
+                  }
+                  case _ => null
+                }
+              }
             }
           }
-
-          case "mv*mvTopHomePage" => {
-
-            buf.+=(("榜单", "榜单", event, userId, duration))
-
-          }
-
-          case "mv*mvCategoryHomePage" => {
-
+          case t.Mv_Category => {
             p.group(2) match {
 
-              case "*site_mvstyle-mv_category*" => {
-
+              case t.Mv_Style => {
                 p.group(3) match {
-
-                  case tabName => {
-
+                  case t.Mv_Sub_Category => {
                     buf.+=(("分类", "分类", event, userId, duration))
-
                     buf.+=(("分类", "风格", event, userId, duration))
-
                     buf.+=(("分类", p.group(3), event, userId, duration))
-
                   }
-                  case _ => null
                 }
-
               }
 
-              case "*site_mvarea-mv_category*" => {
-
+              case t.Mv_Year => {
                 p.group(3) match {
-
-                  case tabName => {
-
+                  case t.Mv_Sub_Category => {
                     buf.+=(("分类", "分类", event, userId, duration))
-
-                    buf.+=(("分类", "地区", event, userId, duration))
-
-                    buf.+=(("分类", p.group(3), event, userId, duration))
-
-                  }
-                  case _ => null
-                }
-
-              }
-
-              case "*site_mvyear-mv_category*" => {
-
-                p.group(3) match {
-
-                  case tabName => {
-
-                    buf.+=(("分类", "分类", event, userId, duration))
-
                     buf.+=(("分类", "年代", event, userId, duration))
-
                     buf.+=(("分类", p.group(3), event, userId, duration))
-
                   }
-                  case _ => null
                 }
-
               }
 
-              case _ => null
+              case t.Mv_Area => {
+                p.group(3) match {
+                  case t.Mv_Sub_Category => {
+                    buf.+=(("分类", "分类", event, userId, duration))
+                    buf.+=(("分类", "地区", event, userId, duration))
+                    buf.+=(("分类", p.group(3), event, userId, duration))
+                  }
+                }
+              }
+
             }
-
           }
-
-          case "mv-search" => {
-
+          case t.Mv_Search => {
             buf.+=(("入口", "音乐搜索", event, userId, duration))
-
           }
-
-          case "mv*mineHomePage*site_collect" => {
-
-            buf.+=(("我的", "音乐收藏", event, userId, duration))
-          }
-
-          case "mv*function*site_hotsinger" => {
-
+          case t.Mv_Singer => {
             buf.+=(("入口", "歌手", event, userId, duration))
-
           }
-
-          case "mv*function*site_dance-mv_category*" => {
-
+          case t.Mv_Dance => {
             p.group(3) match {
-
-              case tabName => {
-
+              case t.Mv_Sub_Category => {
                 buf.+=(("入口", "舞蹈", event, userId, duration))
-
-                buf.+=(("舞蹈",p.group(3), event, userId, duration))
-
+                buf.+=(("舞蹈", p.group(3), event, userId, duration))
               }
-              case _ => null
             }
           }
-
-          case "mv*function*site_mvsubject" => {
-
-            buf.+=(("入口", "精选集", event, userId, duration))
+          case t.Mv_Subject => {
+            p.group(3) match {
+              case t.Mv_poster => {
+                buf.+=(("入口", "精选集", event, userId, duration))
+              }
+            }
 
           }
-
-          case "mv*function*site_concert-mv_category*" => {
-
+          case t.Mv_Concert => {
             p.group(3) match {
-
-              case tabName => {
+              case t.Mv_Sub_Category => {
 
                 buf.+=(("入口", "演唱会", event, userId, duration))
-
                 buf.+=(("演唱会", p.group(3), event, userId, duration))
 
               }
-              case _ => null
             }
-
           }
-
+          case t.Search => {
+            buf.+=(("其他", "搜索", event, userId, duration))
+          }
           case _ => null
         }
-
       }
-
       case None => null
     }
 
