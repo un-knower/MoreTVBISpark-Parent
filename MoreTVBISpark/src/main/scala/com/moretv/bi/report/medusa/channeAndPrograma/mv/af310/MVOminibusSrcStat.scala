@@ -3,8 +3,11 @@ package com.moretv.bi.report.medusa.channeAndPrograma.mv.af310
 import java.lang.{Double => JDouble, Long => JLong}
 import java.util.Calendar
 
+import com.moretv.bi.report.medusa.channeAndPrograma.mv.MVRecommendPlay._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
+import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, LiveCodeToNameUtils, ParamsParseUtil}
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.DataFrame
 
 /**
   * Created by witnes on 9/21/16.
@@ -51,6 +54,8 @@ object MVOminibusSrcStat extends BaseClass {
 
         // init & util
         val util = new DBOperationUtils("medusa")
+        sqlContext.udf.register("getSidFromPath", getSidFromPath _)
+
         val startDate = p.startDate
         val cal = Calendar.getInstance
         cal.setTime(DateFormatUtils.readFormat.parse(startDate))
@@ -64,9 +69,11 @@ object MVOminibusSrcStat extends BaseClass {
           //path
           val loadPath = s"/log/medusa/parquet/$loadDate/$dataSource"
           println(loadPath)
+
+
           //check schema
           if (sqlContext.read.parquet(loadPath).schema.simpleString contains ("omnibusSid")) {
-
+            // 3.1.0 以上统计
             //df
             val df = sqlContext.read.parquet(loadPath)
               .select("pathMain", "omnibusSid", "omnibusName", "userId", "event", "duration", "contentType")
@@ -74,11 +81,11 @@ object MVOminibusSrcStat extends BaseClass {
               .filter("omnibusSid is not null")
               .filter("omnibusName is not null")
               .filter("duration between '0' and '10800'")
-              .cache
 
             //rdd(pathMain, ominibusSid, ominibusName, event, userId, duration)
-            val rdd = df.map(e => (e.getString(0), e.getString(1), e.getString(2), e.getString(4),
-              e.getString(3), e.getLong(5))).cache
+            val rdd = df.map(e => (e.getString(0), e.getString(1), e.getString(2), e.getString(3),
+              e.getString(4), e.getLong(5)))
+              .cache
 
             val pvUvRdd = rdd.filter(_._4 == "startplay")
               .map(e => (
@@ -119,12 +126,64 @@ object MVOminibusSrcStat extends BaseClass {
                 new JLong(w._2), new JLong(pv), new JDouble(meanDuration))
             })
 
+          } else {
+            // 3.1.0 以下统计
+            sqlContext.read.parquet(loadPath)
+              .filter("contentType = 'mv'")
+              .registerTempTable("log_old")
+
+            val df = sqlContext.sql("select pathMain,getSidFromPath(pathMain) as ominibusSid,event,userId,duration" +
+              "from log_old where pathMain is not null and getSidFromPath(pathMain) is not null")
+
+            //rdd(pathMain, ominibusSid, event, userId, duration)
+            val rdd = df.map(e => (e.getString(0), e.getString(1), e.getString(2), e.getString(3),
+              e.getString(4)))
+
+            val pvUvRdd = rdd.filter(_._3 == "startplay")
+              .map(e => (
+                (filterEntrance(e._1), e._2, e._3), e._4)
+              )
+              .filter(_._1._1 != null)
+
+            val durationRdd = rdd.filter(e => (e._3 == "userexit" || e._3 == "selfend"))
+              .map(e => (
+                ((filterEntrance(e._1), e._2, LiveCodeToNameUtils.getMVSubjectName(e._2)), e._5))
+              )
+              .filter(_._1._1 != null)
+
+            //aggregate
+            val uvMap = pvUvRdd.distinct.countByKey
+
+            val pvMap = pvUvRdd.countByKey
+
+            val durationMap = durationRdd.reduceByKey(_ + _).collectAsMap
+
+            //deal with table
+            if (p.deleteOld) {
+              util.delete(deleteSql, sqlDate)
+            }
+
+            uvMap.foreach(w => {
+              val key = w._1
+              val uv = w._2
+              val pv = pvMap.get(key) match {
+                case Some(p) => p
+                case None => 0
+              }
+              val meanDuration = durationMap.get(key) match {
+                case Some(p) => p.toFloat / w._2
+                case None => 0
+              }
+
+              util.insert(insertSql, sqlDate, w._1._1, w._1._2, w._1._3,
+                new JLong(uv), new JLong(pv), new JDouble(meanDuration))
+            })
           }
 
         })
       }
       case None => {
-        throw new Exception("MVOminibusPvUv fails for not enough params")
+        throw new Exception("MVOminibusSrcStat fails for not enough params")
       }
     }
   }
@@ -157,11 +216,11 @@ object MVOminibusSrcStat extends BaseClass {
           case _ => null
 
         }
-
       }
 
       case None => null
     }
   }
+
 
 }

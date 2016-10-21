@@ -2,6 +2,9 @@ package com.moretv.bi.report.medusa.contentEvaluation
 
 import java.util.Calendar
 import java.lang.{Long => JLong}
+
+import com.moretv.bi.report.medusa.channeAndPrograma.mv.MVRecommendPlay._
+import com.moretv.bi.report.medusa.channeAndPrograma.mv.af310.MVOminibusSrcStat._
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
@@ -35,6 +38,8 @@ object DetailContentTypeStat extends BaseClass {
         // init
         val util = new DBOperationUtils("medusa")
 
+        sqlContext.udf.register("en2Cn", en2Cn _)
+
         val startDate = p.startDate
 
         val cal = Calendar.getInstance
@@ -60,8 +65,8 @@ object DetailContentTypeStat extends BaseClass {
 
           val dfPlay =
             sqlContext.sql(
-              "select contentType, count(userId) as pv, count(distinct userId) as uv from log_data" +
-                " group by contentType "
+              "select en2Cn(contentType), count(userId) as pv, count(distinct userId) as uv from log_data" +
+                " group by  en2Cn(contentType) "
             )
 
           if (p.deleteOld) {
@@ -84,4 +89,19 @@ object DetailContentTypeStat extends BaseClass {
       }
     }
   }
+
+  def en2Cn(field: String) = {
+    field match {
+      case "mv" => "音乐"
+      case "kids" => "少儿"
+      case "comic" => "动漫"
+      case "zongyi" => "综艺"
+      case "sports" => "体育"
+      case "jilu" => "纪实"
+      case "hot" => "咨询短片"
+      case "movie" => "电影"
+      case _ => "其它"
+    }
+  }
+
 }

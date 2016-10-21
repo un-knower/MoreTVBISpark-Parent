@@ -27,6 +27,7 @@ object TabPathConst {
 
   val Mv_Concert = "mv\\*function\\*site_concert".r // 入口 - 演唱会
 
+
   val Search = "search\\*".r // 搜索
 
   val Mv_First_Path = Array(
@@ -44,7 +45,7 @@ object TabPathConst {
   )
   //二级目录
 
-  val Mv_Style = "\\*site_mvarea".r //分类 - 地区
+  val Mv_Style = "\\*site_mvstyle".r //分类 - 风格
 
   val Mv_Area = "\\*site_mvarea".r //分类 - 地区
 
@@ -74,9 +75,12 @@ object TabPathConst {
 
   val Mv_poster = "-mv_poster".r // 内部poster 是视频集, for 热门歌手 | 精选集
 
+  val Mv_collection = "-mv_collection".r
+
   val Mv_Third_Path = Array(
     Mv_Sub_Category,
-    Mv_poster
+    Mv_poster,
+    Mv_collection
   )
 
 }

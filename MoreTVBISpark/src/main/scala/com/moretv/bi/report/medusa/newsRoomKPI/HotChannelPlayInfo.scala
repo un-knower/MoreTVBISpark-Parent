@@ -75,35 +75,28 @@ object HotChannelPlayInfo extends BaseClass {
             .registerTempTable("log_data_1")
 
 
-          val df = sqlContext.sql("select splitSource(pathMain,path,flag) ,userId as path from log_data_1 ")
+          val df = sqlContext.sql(
+            "select splitSource(pathMain,path,flag) , count(userId) as pv , count(distinct userId) as uv " +
 
-          val rdd = df.map(e => (e.getString(0), e.getString(1)))
-
-          val playRdd = rdd.map(e => (e._1, e._2))
-
-          playRdd.take(10).foreach(println)
-
-          val pvMap = playRdd.countByKey
-
-          val uvMap = playRdd.distinct.countByKey
+              "from log_data_1 group by splitSource(pathMain,path,flag)"
+          )
 
           if (p.deleteOld) {
             util.delete(deleteSql, sqlDate)
           }
-          pvMap.foreach(w => {
 
-            val key = w._1
+          df.show(30)
 
-            val uv = uvMap.get(key) match {
-              case Some(p) => new JLong(p)
-              case None => new JLong(0)
-            }
+          df.collect.foreach(w => {
 
-            val entrance = w._1
+            println(w)
+            val source = w.getString(0)
 
-            val pv = new JLong(w._2)
+            val uv = new JLong(w.getLong(1))
 
-            util.insert(insertSql, sqlDate, entrance, pv, uv)
+            val pv = new JLong(w.getLong(2))
+
+            util.insert(insertSql, sqlDate, source, pv, uv)
           })
 
 

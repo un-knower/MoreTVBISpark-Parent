@@ -46,6 +46,7 @@ object MVVideoStat extends BaseClass {
 
         // init& util
         val util = new DBOperationUtils("medusa")
+
         val startDate = p.startDate
         val cal = Calendar.getInstance
         cal.setTime(DateFormatUtils.readFormat.parse(startDate))
@@ -125,4 +126,14 @@ object MVVideoStat extends BaseClass {
       }
     }
   }
+
+  def getSidFromPath(path: String) = {
+    val splitPath = path.split("\\*")
+    val lastInfo = splitPath(splitPath.length - 1)
+    if (lastInfo.length == 12) {
+      lastInfo
+    } else null
+  }
+
+
 }

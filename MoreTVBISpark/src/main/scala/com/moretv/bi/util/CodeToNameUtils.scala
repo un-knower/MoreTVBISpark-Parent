@@ -32,7 +32,7 @@ object CodeToNameUtils {
 
    val sid2ApplicationNameMapSql:String = "SELECT sid,title FROM tvservice.mtv_application WHERE sid IS NOT NULL"
    val sid2SubjectNameMapSql:String = "SELECT code,name FROM tvservice.mtv_subject WHERE code IS NOT NULL"
-   val subjectName2CodeMapSql:String = "SELECT name,code FROM tvservice.mtv_subject WHERE name IS NOT NULL"
+   val subjectName2CodeMapSql:String = "SELECT name,code FROM tvservice.mtv_subject WHERE name IS NOT NULL AND code IS NOT NULL"
    val thirdPathSql:String = "SELECT code,name FROM bi.mtv_list"
    val subCodeToParentNameSql:String = "SELECT code,parent_code FROM bi.mtv_list where hierarchy = 3"
    val channelNameSql:String = "SELECT sid,station FROM tvservice.mtv_channel where sid is not null"
@@ -51,7 +51,7 @@ object CodeToNameUtils {
       val conn: Connection = DriverManager.getConnection(url, user, password)
       val stat: Statement = conn.createStatement
       val rs: ResultSet = stat.executeQuery(sql)
-      while (rs.next) {
+      while (rs.next){
         map +=(rs.getString(1) -> rs.getString(2))
       }
       rs.close

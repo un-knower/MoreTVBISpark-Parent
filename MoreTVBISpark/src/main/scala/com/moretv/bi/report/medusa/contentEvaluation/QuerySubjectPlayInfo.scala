@@ -95,8 +95,11 @@ object QuerySubjectPlayInfo extends BaseClass{
   }
 
   def getMedusaFormattedInfo(area:String,accessLocation:String,pageDetailInfo:String,subjectName:String)={
+
     val subjectInfo = MedusaSubjectNameCodeUtil.getSubjectCode(subjectName)
+
     val subjectCode=if(subjectInfo==" ") {CodeToNameUtils.getSubjectCodeByName(subjectName)} else {subjectInfo}
+
     area match {
       case "recommendation"=>(subjectCode,"3.X首页推荐")
       case "my_tv"=>{

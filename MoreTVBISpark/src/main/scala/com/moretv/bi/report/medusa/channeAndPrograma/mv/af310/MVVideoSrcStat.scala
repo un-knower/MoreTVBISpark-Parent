@@ -3,11 +3,11 @@ package com.moretv.bi.report.medusa.channeAndPrograma.mv.af310
 import java.lang.{Float => JFloat, Long => JLong}
 import java.util.Calendar
 
+import com.moretv.bi.report.medusa.channeAndPrograma.mv.PlayPathMatch
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 
 import scala.collection.mutable.ListBuffer
-
 
 /**
   * Created by witnes on 9/20/16.
@@ -35,20 +35,6 @@ object MVVideoSrcStat extends BaseClass {
   private val insertSql = s"insert into $tableName($fields)values(?,?,?,?,?,?,?)"
 
   private val deleteSql = s"delete from $tableName where day =?"
-
-
-
-  private val filterTabRegex = (
-
-    "(mv\\*mvRecommendHomePage|mv\\*mvTopHomePage|mv\\*mvRecommendHomePage|mv\\*mvCategoryHomePage|" +
-
-      "search|mv\\*mineHomePage*site_collect|mv\\*function\\*site_hotsinger|mv\\*function\\*site_dance|" +
-
-      "mv\\*function\\*site_mvsubject|mv\\*function\\*site_concert)(\\-mv_station|" +
-
-      "\\*site_mvstyle-mv_category|\\*site_mvarea-mv_category|\\*site_mvyear-mv_category)*"
-
-    ).r
 
 
   def main(args: Array[String]) {
@@ -82,7 +68,8 @@ object MVVideoSrcStat extends BaseClass {
           //df
           val df =
             sqlContext.read.parquet(loadPath)
-              .select("pathMain", "videoSid", "videoName", "userId", "event", "duration")
+              .select("pathMain", "videoSid", "videoName", "event", "userId", "duration", "contentType")
+              .filter("contentType ='mv'")
               .filter("pathMain is not null")
               .filter("videoSid is not null")
               .filter("videoName is not null")
@@ -90,13 +77,13 @@ object MVVideoSrcStat extends BaseClass {
               .cache
 
 
-          //rdd(entrance, videoSid, videoName, userId, duration, event)
+          //rdd(entrance, videoSid, videoName, event, userId, duration)
 
           val rdd =
             df.flatMap(
               e =>
-                path2Tabs(
-                  e.getString(0), e.getString(1), e.getString(2), e.getString(3), e.getLong(5), e.getString(4)
+                PlayPathMatch.mvPathMatch(
+                  e.getString(0), e.getString(1), e.getString(2), e.getString(3), e.getString(4), e.getLong(5)
                 )
             )
               .filter(_._1 != null)
@@ -104,15 +91,15 @@ object MVVideoSrcStat extends BaseClass {
 
           //pvuvRdd((entrance, videoSid, videoName), userId)
 
-          val pvuvRdd = rdd.filter(_._6 == "startplay")
-            .map(e => ((e._1, e._2, e._3), e._4))
+          val pvuvRdd = rdd.filter(_._4 == "startplay")
+            .map(e => ((e._1, e._2, e._3), e._5))
 
           //durationRdd((entrance,videoSid, videoName), duration)
 
           val durationRdd = rdd.filter(e => {
-            e._6 == "userexit" || e._6 == "selfend"
+            e._4 == "userexit" || e._4 == "selfend"
           })
-            .map(e => ((e._1, e._2, e._3), e._5))
+            .map(e => ((e._1, e._2, e._3), e._6))
 
           //aggregate
 
@@ -158,118 +145,12 @@ object MVVideoSrcStat extends BaseClass {
     }
   }
 
-  /**
-    *
-    * @param path pathMain 用于确定视频入口
-    * @return entrance 视频入口
-    */
-  def path2Tabs(
-                 path: String, videoSid: String, videoName: String, userId: String, duration: Long, event: String
-               ): List[(String, String, String, String, Long, String)] = {
-
-    val buf = ListBuffer.empty[(String, String, String, String, Long, String)]
-
-    val station = ".+-mv_station".r
-
-    filterTabRegex findFirstMatchIn path match {
-
-      case Some(p) => {
-
-        p.group(1) match {
-
-          case "mv*mvRecommendHomePage" => {
-
-            buf.+=(("推荐", videoSid, videoName, userId, duration, event))
-
-            p.group(2) match {
-
-              case station => buf.+=(("电台", videoSid, videoName, userId, duration, event))
-
-              case _ => null
-
-            }
-          }
-
-          case "mv*mvTopHomePage" => {
-
-            buf.+=(("榜单", videoSid, videoName, userId, duration, event))
-
-          }
-
-          case "mv*mvCategoryHomePage" => {
-
-            p.group(2) match {
-
-              case "*site_mvstyle-mv_category" => {
-
-                buf.+=(("分类", videoSid, videoName, userId, duration, event))
-                buf.+=(("风格", videoSid, videoName, userId, duration, event))
-
-              }
-
-              case "*site_mvarea-mv_category" => {
-
-                buf.+=(("分类", videoSid, videoName, userId, duration, event))
-                buf.+=(("地区", videoSid, videoName, userId, duration, event))
-
-              }
-
-              case "*site_mvyear-mv_category" => {
-                buf.+=(("分类", videoSid, videoName, userId, duration, event))
-                buf.+=(("年代", videoSid, videoName, userId, duration, event))
-              }
-
-              case _ => null
-            }
-
-          }
-
-          case "search" => {
-
-            buf.+=(("搜索", videoSid, videoName, userId, duration, event))
-
-          }
-
-          case "mv*mineHomePage*site_collect" => {
-
-            buf.+=(("音乐收藏", videoSid, videoName, userId, duration, event))
-
-          }
-
-          case "mv*function*site_hotsinger" => {
-
-            buf.+=(("歌手", videoSid, videoName, userId, duration, event))
-
-          }
-
-          case "mv*function*site_dance" => {
-
-            buf.+=(("舞蹈", videoSid, videoName, userId, duration, event))
-
-          }
-
-          case "mv*function*site_mvsubject" => {
-
-            buf.+=(("精选集", videoSid, videoName, userId, duration, event))
-
-          }
-
-          case "mv*function*site_concert" => {
-
-            buf.+=(("演唱会", videoSid, videoName, userId, duration, event))
-
-          }
-
-          case _ => null
-        }
-
-      }
-
-      case None => null
-    }
-
-    buf.toList
-
+  def getSidFromPath(path: String) = {
+    val splitPath = path.split("\\*")
+    val lastInfo = splitPath(splitPath.length - 1)
+    if (lastInfo.length == 12) {
+      lastInfo
+    } else null
   }
 
 }
