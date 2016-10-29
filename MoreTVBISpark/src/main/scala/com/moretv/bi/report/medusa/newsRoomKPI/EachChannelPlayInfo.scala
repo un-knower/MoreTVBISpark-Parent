@@ -10,6 +10,8 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.storage.StorageLevel
 
+import scala.collection.mutable.Map
+
 /**
   * Created by xiajun on 2016/5/16.
   * 统计维度：如果播放节目是属于subject，则按照专题code来归类，否则，按照contentType归类
@@ -64,10 +66,10 @@ object EachChannelPlayInfo extends BaseClass {
           val mergerRdd = (playNumRdd join playUserRdd).collect
 
           if (p.deleteOld) {
-            val deleteSql = "delete from medusa_newsroom_kpi_each_channel_play_info where day=?"
+            val deleteSql = "delete from tmp_medusa_newsroom_kpi_each_channel_play_info where day=?"
             util.delete(deleteSql, insertDate)
           }
-          val sqlInsert = "insert into medusa_newsroom_kpi_each_channel_play_info(day,channel,play_num,play_user) " +
+          val sqlInsert = "insert into tmp_medusa_newsroom_kpi_each_channel_play_info(day,channel,play_num,play_user) " +
             "values (?,?,?,?)"
 
           mergerRdd.foreach(e => {

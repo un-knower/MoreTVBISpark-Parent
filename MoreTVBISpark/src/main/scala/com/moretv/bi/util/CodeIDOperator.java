@@ -90,11 +90,17 @@ public class CodeIDOperator {
 //		 System.out.println("the sid is  :" + sid + ": result is :" +outInt);
 //		 System.out.println("the id is  :" + id + ": result is :" +outSid);
 //
-		 String sid2 = idToCode(33);
+		 String sid2 = idToCode(35);
 		 System.out.println();
 		 System.out.println();
 		 System.out.println("code2sid:" + sid2);
 		 System.out.println("sid2tocode:"+codeToId(sid2));
+
+		 String sid3 = idToCode(36);
+		 System.out.println();
+		 System.out.println();
+		 System.out.println("code2sid:" + sid3);
+		 System.out.println("sid2tocode:"+codeToId(sid3));
 //		 System.out.println(codeToId("xy34km8rd3e5"));
 	}
 }

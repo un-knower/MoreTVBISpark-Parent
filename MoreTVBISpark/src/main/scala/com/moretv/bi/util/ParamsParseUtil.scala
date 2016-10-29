@@ -46,6 +46,7 @@ object ParamsParseUtil {
 
         opt[String]("startDate").action((x, c) => c.copy(startDate = x))
 
+        opt[String]("endDate").action((x, c) => c.copy(endDate = x))
         //opt[String]("sqlSpark").action((x,c)=>c.copy(sqlSpark=x))
         //opt[String]("sqlDelete").action((x,c)=>c.copy(sqlDelete=x))
         //opt[String]("sqlInsert").action((x,c)=>c.copy(sqlInsert=x))

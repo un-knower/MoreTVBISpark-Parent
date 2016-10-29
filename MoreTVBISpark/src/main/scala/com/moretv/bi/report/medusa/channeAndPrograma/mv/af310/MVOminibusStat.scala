@@ -1,10 +1,13 @@
 package com.moretv.bi.report.medusa.channeAndPrograma.mv.af310
 
 import java.lang.{Double => JDouble, Long => JLong}
+import java.util
 import java.util.Calendar
 
+import com.moretv.bi.report.medusa.channeAndPrograma.mv.MVRecommendPlay._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
+import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, LiveCodeToNameUtils, ParamsParseUtil}
+import org.apache.spark.sql.{DataFrame, SQLContext}
 
 /**
   * Created by witnes on 9/21/16.
@@ -57,42 +60,54 @@ object MVOminibusStat extends BaseClass {
           val loadPath = s"/log/medusa/parquet/$loadDate/$dataSource"
 
           println(loadPath)
-          //check schema
-          if (sqlContext.read.parquet(loadPath).schema.simpleString contains ("omnibusSid")) {
 
-            //df
-            val df = sqlContext.read.parquet(loadPath)
-              .select("omnibusSid", "omnibusName", "userId", "event", "duration", "contentType")
-              .filter("contentType = 'mv'")
-              .filter("omnibusSid is not null")
-              .filter("omnibusName is not null")
-              .filter("duration between '0' and '10800'")
-              .cache
+          val df = makeDataFrame(loadPath)
 
-            //rdd(omnibusSid,omnibusName,event,duration)
-            val rdd = df.map(e => (e.getString(0), e.getString(1), e.getString(3), e.getString(2), e.getLong(4)))
-              .cache
+          //rdd(omnibusSid,userId,duration,event)
+          val rdd = df.map(e => (e.getString(0), e.getString(1), e.getLong(2), e.getString(3)))
+            .filter(_._1 != null)
+            .cache
 
-            val pvUvRdd = rdd.filter(_._3 == "startplay")
-              .map(e => ((e._1, e._2), e._4))
+          val pvUvRdd = rdd.filter(_._4 == "startplay")
+            .map(e => (e._1, e._2))
 
-            val durationRdd = rdd.filter(e => {
-              e._3 == "userexit" || e._3 == "selfend"
-            }).map(e => ((e._1, e._2), e._5))
+          val durationRdd = rdd.filter(e => {
+            e._4 == "userexit" || e._4 == "selfend"
+          }).map(e => (e._1, e._3))
 
-            //aggregate
-            val uvMap = pvUvRdd.distinct.countByKey
-            val pvMap = pvUvRdd.countByKey
+          //aggregate
+          val uvMap = pvUvRdd.distinct.countByKey
+          val pvMap = pvUvRdd.countByKey
+          val durationMap = durationRdd.reduceByKey(_ + _).collectAsMap
 
-            val durationMap = durationRdd.reduceByKey(_ + _).collectAsMap()
+          val nameRefs = scala.collection.mutable.HashMap.empty[String, String]
 
-            //deal with table
-            if (p.deleteOld) {
-              util.delete(deleteSql, sqlDate)
-            }
+          sqlContext.read.parquet(loadPath).registerTempTable("log_ref")
+          sqlContext.sql(
+            """
+              |select omnibusSid, omnibusName from log_ref
+              |  where omnibusSid is not null and omnibusName is not null
+            """.stripMargin)
+            .distinct
+            .collect
+            .foreach(w => {
+              nameRefs += (w.getString(0) -> w.getString(1))
+            })
+          //deal with table
+          if (p.deleteOld) {
+            util.delete(deleteSql, sqlDate)
+          }
 
-            uvMap.foreach(w => {
-              val key = w._1
+          uvMap.foreach(w => {
+            val key = w._1
+
+            if (nameRefs.contains(key)) {
+              val ominibusSid = w._1
+
+              var ominibusName = nameRefs.getOrElse(ominibusSid, LiveCodeToNameUtils.getMVSubjectName(ominibusSid))
+
+              val uv = new JLong(w._2)
+
               val pv = pvMap.get(key) match {
                 case Some(p) => p
                 case None => 0
@@ -102,11 +117,10 @@ object MVOminibusStat extends BaseClass {
                 case None => 0
               }
 
-              util.insert(insertSql, sqlDate, w._1._1, w._1._2,
-                new JLong(w._2), new JLong(pv), new JDouble(meanDuration))
-            })
+              util.insert(insertSql, sqlDate, ominibusSid, ominibusName, uv, new JLong(pv), new JDouble(meanDuration))
+            }
 
-          }
+          })
 
         })
       }
@@ -116,5 +130,39 @@ object MVOminibusStat extends BaseClass {
     }
   }
 
+  /**
+    *
+    * @param loadPath
+    * @return dataFrame(omnibusid,userId,duration,event)
+    */
+  def makeDataFrame(loadPath: String): DataFrame = {
 
+    sqlContext.udf.register("getSidFromPath", getSidFromPath _)
+
+    sqlContext.read.parquet(loadPath)
+      .filter("pathMain is not null")
+      .filter("duration between 0 and 10800")
+      .registerTempTable("log_data")
+
+    val df = sqlContext.sql(
+      """
+        |select case when omnibusSid is null then getSidFromPath(pathMain) else omnibusSid end as omnibusSid,videoSid,
+        |  userId, duration, event from log_data
+      """.stripMargin)
+      .filter("omnibusSid != videoSid")
+      .select("omnibusSid", "userId", "duration", "event")
+
+    df
+
+  }
+
+  def getSidFromPath(path: String) = {
+    if (path != null && path.contains("*")) {
+      val splitPath = path.split("\\*")
+      val lastInfo = splitPath(splitPath.length - 1)
+      if (lastInfo.length == 12) {
+        lastInfo
+      } else null
+    } else null
+  }
 }

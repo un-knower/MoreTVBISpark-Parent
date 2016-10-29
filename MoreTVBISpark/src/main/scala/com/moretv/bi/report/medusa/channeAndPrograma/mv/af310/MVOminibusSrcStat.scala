@@ -70,117 +70,84 @@ object MVOminibusSrcStat extends BaseClass {
           val loadPath = s"/log/medusa/parquet/$loadDate/$dataSource"
           println(loadPath)
 
+          val df = makeDataFrame(loadPath)
 
-          //check schema
-          if (sqlContext.read.parquet(loadPath).schema.simpleString contains ("omnibusSid")) {
-            // 3.1.0 以上统计
-            //df
-            val df = sqlContext.read.parquet(loadPath)
-              .select("pathMain", "omnibusSid", "omnibusName", "userId", "event", "duration", "contentType")
-              .filter("contentType = 'mv'")
-              .filter("omnibusSid is not null")
-              .filter("omnibusName is not null")
-              .filter("duration between '0' and '10800'")
 
-            //rdd(pathMain, ominibusSid, ominibusName, event, userId, duration)
-            val rdd = df.map(e => (e.getString(0), e.getString(1), e.getString(2), e.getString(3),
-              e.getString(4), e.getLong(5)))
-              .cache
+          //rdd(pathMain, ominibusSid, userId, duration, event)
+          val rdd = df.map(e => (e.getString(0), e.getString(1), e.getString(2), e.getLong(3), e.getString(4)))
+            .filter(_._2 != null)
+            .cache
 
-            val pvUvRdd = rdd.filter(_._4 == "startplay")
-              .map(e => (
-                (filterEntrance(e._1), e._2, e._3), e._5)
-              )
-              .filter(_._1._1 != null)
+          val pvUvRdd = rdd.filter(_._5 == "startplay")
+            .map(e => (
+              (filterEntrance(e._1), e._2), e._3)
+            )
+            .filter(_._1._1 != null)
 
-            val durationRdd = rdd.filter(e => (e._4 == "userexit" || e._4 == "selfend"))
-              .map(e => (
-                ((filterEntrance(e._1), e._2, e._3), e._6))
-              )
-              .filter(_._1._1 != null)
+          val durationRdd = rdd.filter(e => (e._5 == "userexit" || e._5 == "selfend"))
+            .map(e => (
+              ((filterEntrance(e._1), e._2), e._4))
+            )
+            .filter(_._1._1 != null)
 
-            //aggregate
-            val uvMap = pvUvRdd.distinct.countByKey
+          //aggregate
+          val uvMap = pvUvRdd.distinct.countByKey
 
-            val pvMap = pvUvRdd.countByKey
+          val pvMap = pvUvRdd.countByKey
 
-            val durationMap = durationRdd.reduceByKey(_ + _).collectAsMap
+          val durationMap = durationRdd.reduceByKey(_ + _).collectAsMap
 
-            //deal with table
-            if (p.deleteOld) {
-              util.delete(deleteSql, sqlDate)
-            }
+          val nameRefs = scala.collection.mutable.HashMap.empty[String, String]
 
-            uvMap.foreach(w => {
-              val key = w._1
-              val pv = pvMap.get(key) match {
-                case Some(p) => p
-                case None => 0
-              }
-              val meanDuration = durationMap.get(key) match {
-                case Some(p) => p.toFloat / w._2
-                case None => 0
-              }
 
-              util.insert(insertSql, sqlDate, w._1._1, w._1._2, w._1._3,
-                new JLong(w._2), new JLong(pv), new JDouble(meanDuration))
+          sqlContext.read.parquet(loadPath).registerTempTable("log_ref")
+          sqlContext.sql(
+            """
+              |select omnibusSid, omnibusName from log_ref
+              |  where omnibusSid is not null and omnibusName is not null
+            """.stripMargin)
+            .distinct
+            .collect
+            .foreach(w => {
+              nameRefs += (w.getString(0) -> w.getString(1))
             })
 
-          } else {
-            // 3.1.0 以下统计
-            sqlContext.read.parquet(loadPath)
-              .filter("contentType = 'mv'")
-              .registerTempTable("log_old")
-
-            val df = sqlContext.sql("select pathMain,getSidFromPath(pathMain) as ominibusSid,event,userId,duration" +
-              "from log_old where pathMain is not null and getSidFromPath(pathMain) is not null")
-
-            //rdd(pathMain, ominibusSid, event, userId, duration)
-            val rdd = df.map(e => (e.getString(0), e.getString(1), e.getString(2), e.getString(3),
-              e.getString(4)))
-
-            val pvUvRdd = rdd.filter(_._3 == "startplay")
-              .map(e => (
-                (filterEntrance(e._1), e._2, e._3), e._4)
-              )
-              .filter(_._1._1 != null)
-
-            val durationRdd = rdd.filter(e => (e._3 == "userexit" || e._3 == "selfend"))
-              .map(e => (
-                ((filterEntrance(e._1), e._2, LiveCodeToNameUtils.getMVSubjectName(e._2)), e._5))
-              )
-              .filter(_._1._1 != null)
-
-            //aggregate
-            val uvMap = pvUvRdd.distinct.countByKey
-
-            val pvMap = pvUvRdd.countByKey
-
-            val durationMap = durationRdd.reduceByKey(_ + _).collectAsMap
-
-            //deal with table
-            if (p.deleteOld) {
-              util.delete(deleteSql, sqlDate)
-            }
-
-            uvMap.foreach(w => {
-              val key = w._1
-              val uv = w._2
-              val pv = pvMap.get(key) match {
-                case Some(p) => p
-                case None => 0
-              }
-              val meanDuration = durationMap.get(key) match {
-                case Some(p) => p.toFloat / w._2
-                case None => 0
-              }
-
-              util.insert(insertSql, sqlDate, w._1._1, w._1._2, w._1._3,
-                new JLong(uv), new JLong(pv), new JDouble(meanDuration))
-            })
+          //deal with table
+          if (p.deleteOld) {
+            util.delete(deleteSql, sqlDate)
           }
 
-        })
+          uvMap.foreach(w => {
+            val key = w._1
+
+            val source = w._1._1
+
+            if (nameRefs.contains(w._1._2)) {
+
+              val omnibusSid = w._1._2
+              var omnibusName = nameRefs.getOrElse(omnibusSid, LiveCodeToNameUtils.getMVSubjectName(omnibusSid))
+
+              val uv = new JLong(w._2)
+              val pv = pvMap.get(key) match {
+                case Some(p) => p
+                case None => 0
+              }
+              val meanDuration = durationMap.get(key) match {
+                case Some(p) => p.toFloat / w._2
+                case None => 0
+              }
+
+              util.insert(insertSql, sqlDate, source, omnibusSid, omnibusName,
+                uv, new JLong(pv), new JDouble(meanDuration))
+
+            }
+
+          })
+
+
+        }
+
+        )
       }
       case None => {
         throw new Exception("MVOminibusSrcStat fails for not enough params")
@@ -220,6 +187,42 @@ object MVOminibusSrcStat extends BaseClass {
 
       case None => null
     }
+  }
+
+  /**
+    *
+    * @param loadPath
+    * @return dataFrame(pathMain,omnibusSid,userId,duration,event)
+    */
+  def makeDataFrame(loadPath: String): DataFrame = {
+
+    sqlContext.udf.register("getSidFromPath", getSidFromPath _)
+
+    sqlContext.read.parquet(loadPath)
+      .filter("pathMain is not null")
+      .filter("duration between 0 and 10800")
+      .registerTempTable("log_data")
+
+    val df = sqlContext.sql(
+      """
+        |select pathMain, case when omnibusSid is null then getSidFromPath(pathMain) else omnibusSid end as omnibusSid,
+        |  userId, duration, event,videoSid from log_data
+      """.stripMargin)
+      .filter("omnibusSid != videoSid")
+      .select("pathMain", "omnibusSid", "userId", "duration", "event")
+    df
+
+    df
+  }
+
+  def getSidFromPath(path: String) = {
+    if (path != null && path.contains("*")) {
+      val splitPath = path.split("\\*")
+      val lastInfo = splitPath(splitPath.length - 1)
+      if (lastInfo.length == 12) {
+        lastInfo
+      } else null
+    } else null
   }
 
 

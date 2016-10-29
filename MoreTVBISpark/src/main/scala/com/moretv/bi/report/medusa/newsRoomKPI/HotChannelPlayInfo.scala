@@ -2,10 +2,14 @@ package com.moretv.bi.report.medusa.newsRoomKPI
 
 import java.lang.{Long => JLong}
 import java.util.Calendar
+import java.text.SimpleDateFormat
 
+import scala.collection.mutable.{ListBuffer, Map}
 import com.moretv.bi.report.medusa.util.MedusaSubjectNameCodeUtil
 import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{DataFrame, SQLContext}
 
 /**
   * Created by xiajun on 2016/5/16.
@@ -14,25 +18,25 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
   */
 object HotChannelPlayInfo extends BaseClass {
 
-  private val tableName = "hot_source_play_stat"
+  private val tableName = "contenttype_play_src_tat"
 
-  private val fields = "day,entrance,pv,uv"
+  private val fields = "day,contentType,entrance,pv,uv"
 
-  private val insertSql = s"insert into $tableName($fields) values(?,?,?,?)"
+  private val insertSql = s"insert into $tableName($fields) values(?,?,?,?,?)"
 
-  private val deleteSql = s"delete from $tableName($fields) where day = ?"
+  private val deleteSql = s"delete from $tableName where day = ? "
 
   private val regex ="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|mv)([0-9]+)""".r
 
-  private val sourceRe = ("(home\\*classification\\*hot|" +
-    "search|home\\*my_tv*history|home\\*my_tv*collect|home\\*recommendation|home\\*my_tv\\*hot|)").r
+  private val sourceRe = ("(home\\*classification\\*hot|search|home\\*my_tv\\*history|" +
+    "home\\*my_tv\\*collect|home\\*recommendation|home\\*my_tv\\*hot)").r
 
-  private val sourceRe1 = ("(classification|history|hotrecommend)").r
+  private val sourceRe1 = ("(classification|history|hotrecommend|search)").r
 
   def main(args: Array[String]) {
-    config.set("spark.executor.memory", "5g").
+    config.set("spark.executor.memory", "8g").
       set("spark.executor.cores", "5").
-      set("spark.cores.max", "80")
+      set("spark.cores.max", "100")
     ModuleClass.executor(HotChannelPlayInfo, args)
   }
 
@@ -40,10 +44,10 @@ object HotChannelPlayInfo extends BaseClass {
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-        val util = new DBOperationUtils("medusa")
 
-        sqlContext.udf.register("splitSource", splitSource _)
-        sqlContext.udf.register("getChannelType", getChannelType _)
+        val sqlContext = new SQLContext(sc)
+
+        val util = new DBOperationUtils("medusa")
 
         val startDate = p.startDate
         val cal = Calendar.getInstance
@@ -51,54 +55,89 @@ object HotChannelPlayInfo extends BaseClass {
 
         (0 until p.numOfDays).foreach(w => {
 
+          import sqlContext.implicits._
+
           val loadDate = DateFormatUtils.readFormat.format(cal.getTime)
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
           val playviewInput = s"/log/medusaAndMoretvMerger/$loadDate/playview"
 
+          val codeMap: Map[String, String] = CodeToNameUtils.getSubjectCodeMap
+
+          //val nameCodeDf = sc.parallelize(codeMap.toList).toDF("name", "code")
+
+
           sqlContext.read.parquet(playviewInput)
 
-            .filter("pathMain is not null or path is not null")
+            .filter(
+              "path is not null or pathMain is not null"
+            )
 
             .filter("event in ('startplay','playview')")
 
+            .select("userId", "pathMain", "path", "contentType", "pathIdentificationFromPath", "flag")
+
             .registerTempTable("log_data")
 
+          // channel , source, userId
 
-          sqlContext.sql("select userId,pathMain, path, flag, " +
-
-            "getChannelType(contentType,pathIdentificationFromPath,flag) as contenttype " +
-
-            "from log_data where getChannelType(contentType,pathIdentificationFromPath,flag) = '资讯短片' ")
-
-            .registerTempTable("log_data_1")
-
-
-          val df = sqlContext.sql(
-            "select splitSource(pathMain,path,flag) , count(userId) as pv , count(distinct userId) as uv " +
-
-              "from log_data_1 group by splitSource(pathMain,path,flag)"
+          val rdd = sqlContext.sql(
+            """
+              |select userId,pathMain,path,contentType,pathIdentificationFromPath,flag
+              |  from log_data
+            """.stripMargin
           )
+            .map(e => {
+              var channel = e.getString(3)
+              if (e.getString(4) != null) {
+                channel = regex findFirstMatchIn e.getString(4) match {
+                  case Some(p) => p.group(1)
+                  case None => {
+                    regex findFirstMatchIn codeMap.getOrElse(e.getString(4), e.getString(3)) match {
+                      case Some(pp) => pp.group(1)
+                      case None => e.getString(3)
+                    }
+                  }
+                }
+              }
+
+              (channel, splitSource(e.getString(1), e.getString(2), e.getString(5)), e.getString(0))
+
+            })
+            .filter(
+              e => (e._1 == "movie" || e._1 == "kids" || e._1 == "tv" || e._1 == "sports" || e._1 == "kids"
+                || e._1 == "reservation" || e._1 == "mv" || e._1 == "jilu" || e._1 == "comic" || e._1 == "zongyi"
+                || e._1 == "hot" || e._1 == "xiqu"
+                ))
+
+            .filter(_._2 != null)
+
+
+          val rdd3 = rdd.map(e => ((e._1, e._2), e._3))
+
+          val uvMap = rdd3.distinct.countByKey
+
+          val pvMap = rdd3.countByKey
 
           if (p.deleteOld) {
             util.delete(deleteSql, sqlDate)
           }
 
-          df.show(30)
+          uvMap.foreach(w => {
 
-          df.collect.foreach(w => {
-
-            println(w)
-            val source = w.getString(0)
-
-            val uv = new JLong(w.getLong(1))
-
-            val pv = new JLong(w.getLong(2))
-
-            util.insert(insertSql, sqlDate, source, pv, uv)
+            val key = w._1
+            val channel = fromEngToChinese(w._1._1)
+            //val channel = w._1._1
+            val source = w._1._2
+            val uv = new JLong(w._2)
+            val pv = new JLong(pvMap.get(key) match {
+              case Some(p) => p
+              case None => 0
+            })
+            //println(channel, uv, pv)
+            util.insert(insertSql, sqlDate, channel, source, pv, uv)
           })
-
 
         })
 
@@ -108,44 +147,9 @@ object HotChannelPlayInfo extends BaseClass {
 
       }
     }
+
   }
 
-
-  def getChannelType(contentType: String, subjectInfo: String, flag: String): String = {
-
-    if (subjectInfo != null) {
-
-      flag match {
-        case "medusa" => {
-
-          val subject = MedusaSubjectNameCodeUtil.getSubjectCode(subjectInfo)
-
-          val subjectCode = if (subject == " ") {
-            CodeToNameUtils.getSubjectCodeByName(subjectInfo)
-          } else {
-            subject
-          }
-
-          regex findFirstMatchIn subjectCode match {
-            case Some(m) => fromEngToChinese(m.group(1))
-            case None => fromEngToChinese(contentType)
-          }
-
-        }
-        case "moretv" => {
-
-          regex findFirstMatchIn subjectInfo match {
-            case Some(m) => fromEngToChinese(m.group(1))
-            case None => fromEngToChinese(contentType)
-          }
-
-        }
-        case _ => fromEngToChinese(" ")
-      }
-    } else {
-      fromEngToChinese(contentType)
-    }
-  }
 
   def fromEngToChinese(str: String): String = {
     str match {
@@ -171,14 +175,15 @@ object HotChannelPlayInfo extends BaseClass {
           case Some(p) => {
             p.group(1) match {
               case "home*classification*hot" => "分类入口"
-              case "home*my_tv*history" | "" => "历史"
-              case "home*my_tv*collect" | "" => "收藏"
-              case "home*my_tv*hot" | "" => "自定义入口"
-              case "home*recommendation" | "" => "首页推荐"
-              case _ => null
+              case "home*my_tv*history" => "历史"
+              case "home*my_tv*collect" => "收藏"
+              case "home*my_tv*hot" => "自定义入口"
+              case "home*recommendation" => "首页推荐"
+              case "search" => "搜索"
+              case _ => "其它3"
             }
           }
-          case None => null
+          case None => "其它3"
         }
       }
       case "moretv" => {
@@ -186,12 +191,13 @@ object HotChannelPlayInfo extends BaseClass {
           case Some(p) => {
             p.group(1) match {
               case "classification" => "分类入口"
-              case "history" | "" => "历史"
-              case "hotrecommend" | "" => "首页推荐"
-              case _ => null
+              case "history" => "历史"
+              case "hotrecommend" => "首页推荐"
+              case "search" => "搜索"
+              case _ => "其它2"
             }
           }
-          case None => null
+          case None => "其它2"
         }
       }
     }

@@ -1,7 +1,13 @@
 package com.moretv.bi.temp.user
 
-import com.moretv.bi.util.ParamsParseUtil
+import java.util.Calendar
+import java.lang.{Long => JLong}
+
+import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
+import org.apache.commons.httpclient.util.DateUtil
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.DataFrame
 
 /**
   * Created by witnes on 10/20/16.
@@ -14,9 +20,9 @@ object PromotionActiveUser extends BaseClass {
 
   private val insertSql = s"insert into $tableName($fields) values(?,?,?,?)"
 
-  private val deleteSql = s" "
+  private val deleteSql = s"delete from $tableName where day = '?'"
 
-  def main(args: Array[String]) {
+  def main(args: Array[String])  {
 
     ModuleClass.executor(PromotionActiveUser, args)
 
@@ -26,32 +32,68 @@ object PromotionActiveUser extends BaseClass {
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-        val loadUserPath = "/log/dbsnapshot/parquet/20161019/moretv_mtv_account"
 
-        val loadPath = "/log/medusaAndMoretvMerger/2016{03*,04*,05*,06*,07*,08*,09*,10*}/*"
+        val util = new DBOperationUtils("medusa")
 
         val promotion = "'boshilian','dangbei','shafa','huanstore','xunma'"
 
-        sqlContext.read.parquet(loadUserPath).filter("openTime > '2016-02-29'")
+        val loadUserPath = s"/log/dbsnapshot/parquet/${p.endDate}/moretv_mtv_account"
+
+        val cal = Calendar.getInstance
+
+        cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))
+
+        var loadDate = DateFormatUtils.readFormat.format(cal.getTime)
+
+        cal.add(Calendar.DAY_OF_YEAR, -1)
+
+        var sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
+
+
+        sqlContext.read.parquet(loadUserPath).filter(s"openTime > $sqlDate")
           .select("user_id")
           .repartition(200)
           .registerTempTable("log_user")
 
-        sqlContext.read.parquet(loadPath)
-          .filter(s"promotionChannel in ($promotion)")
-          .filter("date between '2016-02-29' and '2016-10-18'")
-          .select("date", "promotionChannel", "userId")
-          .registerTempTable("log_data")
+        var rdd: RDD[(String, String, Long, Long)] = sc.emptyRDD
 
+        while (loadDate <= p.endDate) {
 
-        val df = sqlContext.sql(
-          "select data.date, data.promotionChannel , count(data.userId) as pv, count(distinct data.userId) as uv " +
-            "from log_data as data inner join log_user as user on data.userId = user.user_id " +
-            "group by data.date, data.promotionChannel ")
+          val start = System.currentTimeMillis()
 
-        df.show(40, false)
+          val loadPath = s"/log/medusaAndMoretvMerger/$loadDate/*/*"
+          sqlContext.read.parquet(loadPath)
+            .filter(s"promotionChannel in ($promotion)")
+            .select("date", "promotionChannel", "userId")
+            .registerTempTable("log_data")
 
-        val rdd = df.map(e => (e.getString(0), e.getString(1), e.getLong(2), e.getLong(3)))
+          val df = sqlContext.sql(
+            s"""
+               |select data.date, data.promotionChannel , count(data.userId) as pv, count(distinct data.userId) as uv
+               | from log_data as data inner join log_user as user on data.userId = user.user_id
+               | where data.date = '$sqlDate'
+               | group by data.date, data.promotionChannel
+            """.stripMargin)
+
+          val tempRdd = df.map(e => ((e.getString(0), e.getString(1), e.getLong(2), e.getLong(3))))
+          rdd = rdd.union(tempRdd)
+
+          if (p.deleteOld) {
+            util.delete(deleteSql, sqlDate)
+          }
+          df.collect.foreach(w => {
+            util.insert(insertSql, w.getString(0), w.getString(1), new JLong(w.getLong(2)), new JLong(w.getLong(3)))
+          })
+
+          cal.add(Calendar.DAY_OF_YEAR, 1)
+          sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
+          cal.add(Calendar.DAY_OF_YEAR, 1)
+          loadDate = DateFormatUtils.readFormat.format(cal.getTime)
+          cal.add(Calendar.DAY_OF_YEAR, -1)
+        }
+
+        val rddStr = rdd.map(x => (x._1 + x._2 + x._3 + x._4 + ""))
+        rdd.saveAsObjectFile(p.outputFile)
 
         if (p.outputFile != "") {
           val conf = sc.hadoopConfiguration
@@ -59,14 +101,15 @@ object PromotionActiveUser extends BaseClass {
           val fs = org.apache.hadoop.fs.FileSystem.get(conf)
 
           if (fs.exists(new org.apache.hadoop.fs.Path(p.outputFile))) {
-            rdd.saveAsTextFile(p.outputFile)
+            println("file already exists")
           }
 
-          else println("file already exists")
+          else rddStr.saveAsObjectFile(p.outputFile)
+
 
         }
 
-        //   val rdd = df.map(e => (e.getString(0), e.getString(1), e.getLong(2), e.getLong(3)))
+
       }
       case None => {
 
