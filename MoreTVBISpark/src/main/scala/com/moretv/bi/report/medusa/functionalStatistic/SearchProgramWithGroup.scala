@@ -3,7 +3,7 @@ package com.moretv.bi.report.medusa.functionalStatistic
 import java.util.Calendar
 import java.lang.{Long => JLong}
 
-import com.moretv.bi.constant.ApkVersion
+//import com.moretv.bi.constant.ApkVersion
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
@@ -55,11 +55,11 @@ object SearchProgramWithGroup extends  BaseClass{
             //df 
             sqlContext.read.parquet(path).registerTempTable("log")
 
-            val avaiableVersion = ApkVersion.availableMedusaApkVersionStr
+          //  val avaiableVersion = ApkVersion.availableMedusaApkVersionStr
             val df = sqlContext.sql(
               "select userId, params['resultSid'] as resultSid," +
               "params['resultName'] as resultName," +
-              s" contentType,apkVersion from log where  apkVersion in ($avaiableVersion)")
+              s" contentType,apkVersion from log ")
                   .filter("contentTYpe is not null")
 
             //rdd((resultSid,resultName,contentType),userId)

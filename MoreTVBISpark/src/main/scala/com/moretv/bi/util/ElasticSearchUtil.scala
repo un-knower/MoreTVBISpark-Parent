@@ -117,7 +117,5 @@ object ElasticSearchUtil {
         println(hit.getSourceAsString)
       }
     }
-
-
   }
 }

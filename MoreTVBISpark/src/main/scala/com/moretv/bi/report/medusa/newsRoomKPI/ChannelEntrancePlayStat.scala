@@ -1,6 +1,6 @@
 package com.moretv.bi.report.medusa.newsRoomKPI
 
-import java.lang.{Long => JLong}
+import java.lang.{Long => JLong, Float => JFloat}
 import java.util.Calendar
 import java.text.SimpleDateFormat
 
@@ -12,32 +12,34 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SQLContext}
 
 /**
-  * Created by xiajun on 2016/5/16.
+  * Created by witnes on 2016/5/16.
   * 统计维度：如果播放节目是属于subject，则按照专题code来归类，否则，按照contentType归类
   *
   */
-object HotChannelPlayInfo extends BaseClass {
+object ChannelEntrancePlayStat extends BaseClass {
 
-  private val tableName = "contenttype_play_src_tat"
+  private val tableName = "contenttype_play_src_stat"
 
-  private val fields = "day,contentType,entrance,pv,uv"
+  private val fields = "day,contentType,entrance,pv,uv,duration"
 
-  private val insertSql = s"insert into $tableName($fields) values(?,?,?,?,?)"
+  private val insertSql = s"insert into $tableName($fields) values(?,?,?,?,?,?)"
 
   private val deleteSql = s"delete from $tableName where day = ? "
 
   private val regex ="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|mv)([0-9]+)""".r
 
-  private val sourceRe = ("(home\\*classification\\*hot|search|home\\*my_tv\\*history|" +
-    "home\\*my_tv\\*collect|home\\*recommendation|home\\*my_tv\\*hot)").r
+  private val sourceRe = ("(home\\*classification|search|home\\*my_tv\\*history|" +
+    "home\\*my_tv\\*collect|home\\*recommendation|home\\*my_tv\\*[a-zA-Z0-9&\\u4e00-\\u9fa5]{1,})").r
 
   private val sourceRe1 = ("(classification|history|hotrecommend|search)").r
 
+  private val codeMap: Map[String, String] = CodeToNameUtils.getSubjectCodeMap
+
+
   def main(args: Array[String]) {
-    config.set("spark.executor.memory", "8g").
-      set("spark.executor.cores", "5").
-      set("spark.cores.max", "100")
-    ModuleClass.executor(HotChannelPlayInfo, args)
+
+    ModuleClass.executor(ChannelEntrancePlayStat, args)
+
   }
 
   override def execute(args: Array[String]) {
@@ -55,7 +57,6 @@ object HotChannelPlayInfo extends BaseClass {
 
         (0 until p.numOfDays).foreach(w => {
 
-          import sqlContext.implicits._
 
           val loadDate = DateFormatUtils.readFormat.format(cal.getTime)
           cal.add(Calendar.DAY_OF_MONTH, -1)
@@ -63,62 +64,45 @@ object HotChannelPlayInfo extends BaseClass {
 
           val playviewInput = s"/log/medusaAndMoretvMerger/$loadDate/playview"
 
-          val codeMap: Map[String, String] = CodeToNameUtils.getSubjectCodeMap
-
-          //val nameCodeDf = sc.parallelize(codeMap.toList).toDF("name", "code")
-
 
           sqlContext.read.parquet(playviewInput)
 
-            .filter(
-              "path is not null or pathMain is not null"
+            .filter("path is not null or pathMain is not null")
+            .select(
+              "event", "userId", "pathMain", "path", "contentType", "pathIdentificationFromPath", "flag", "duration"
             )
-
-            .filter("event in ('startplay','playview')")
-
-            .select("userId", "pathMain", "path", "contentType", "pathIdentificationFromPath", "flag")
-
             .registerTempTable("log_data")
 
-          // channel , source, userId
 
-          val rdd = sqlContext.sql(
+          val dfUser: DataFrame = sqlContext.sql(
             """
-              |select userId,pathMain,path,contentType,pathIdentificationFromPath,flag
+              |select userId,pathMain,path,contentType,pathIdentificationFromPath,flag,duration
               |  from log_data
+              |  where event in ('startplay','playview')
             """.stripMargin
           )
-            .map(e => {
-              var channel = e.getString(3)
-              if (e.getString(4) != null) {
-                channel = regex findFirstMatchIn e.getString(4) match {
-                  case Some(p) => p.group(1)
-                  case None => {
-                    regex findFirstMatchIn codeMap.getOrElse(e.getString(4), e.getString(3)) match {
-                      case Some(pp) => pp.group(1)
-                      case None => e.getString(3)
-                    }
-                  }
-                }
-              }
 
-              (channel, splitSource(e.getString(1), e.getString(2), e.getString(5)), e.getString(0))
+          val dfDuration: DataFrame = sqlContext.sql(
+            """
+              |select userId,pathMain,path,contentType,pathIdentificationFromPath,flag,duration
+              | from log_data
+              | where event not in ('startplay')
+              |   and duration between 1 and 10800
+            """.stripMargin
+          )
 
-            })
-            .filter(
-              e => (e._1 == "movie" || e._1 == "kids" || e._1 == "tv" || e._1 == "sports" || e._1 == "kids"
-                || e._1 == "reservation" || e._1 == "mv" || e._1 == "jilu" || e._1 == "comic" || e._1 == "zongyi"
-                || e._1 == "hot" || e._1 == "xiqu"
-                ))
+          val userRdd = contentFilter(dfUser)
+            .map(e => ((e._1, e._2), e._4))
 
-            .filter(_._2 != null)
+          val durationRdd = contentFilter(dfDuration)
+            .map(e => ((e._1, e._2), e._3))
 
+          val uvMap = userRdd.distinct.countByKey
 
-          val rdd3 = rdd.map(e => ((e._1, e._2), e._3))
+          val pvMap = userRdd.countByKey
 
-          val uvMap = rdd3.distinct.countByKey
+          val durationMap = durationRdd.reduceByKey(_ + _).collectAsMap
 
-          val pvMap = rdd3.countByKey
 
           if (p.deleteOld) {
             util.delete(deleteSql, sqlDate)
@@ -135,8 +119,12 @@ object HotChannelPlayInfo extends BaseClass {
               case Some(p) => p
               case None => 0
             })
+            val duration = new JFloat(durationMap.get(key) match {
+              case Some(p) => p.toFloat / uv
+              case None => 0
+            })
             //println(channel, uv, pv)
-            util.insert(insertSql, sqlDate, channel, source, pv, uv)
+            util.insert(insertSql, sqlDate, channel, source, pv, uv, duration)
           })
 
         })
@@ -148,6 +136,36 @@ object HotChannelPlayInfo extends BaseClass {
       }
     }
 
+  }
+
+
+  def contentFilter(df: DataFrame): RDD[(String, String, Long, String)] = {
+
+    val rdd = df.map(e => {
+      var channel = e.getString(3)
+      if (e.getString(4) != null) {
+        channel = regex findFirstMatchIn e.getString(4) match {
+          case Some(p) => p.group(1)
+          case None => {
+            regex findFirstMatchIn codeMap.getOrElse(e.getString(4), e.getString(3)) match {
+              case Some(pp) => pp.group(1)
+              case None => e.getString(3)
+            }
+          }
+        }
+      }
+
+      (channel, splitSource(e.getString(1), e.getString(2), e.getString(5)), e.getLong(6), e.getString(0))
+
+    })
+      .filter(
+        e => (e._1 == "movie" || e._1 == "kids" || e._1 == "tv" || e._1 == "sports" || e._1 == "kids"
+          || e._1 == "reservation" || e._1 == "mv" || e._1 == "jilu" || e._1 == "comic" || e._1 == "zongyi"
+          || e._1 == "hot" || e._1 == "xiqu"
+          ))
+
+      .filter(_._2 != null)
+    rdd
   }
 
 
@@ -168,19 +186,25 @@ object HotChannelPlayInfo extends BaseClass {
   }
 
   def splitSource(pathMain: String, path: String, flag: String): String = {
-
+    val specialPattern = "home\\*my_tv\\*[a-zA-Z0-9&\\u4e00-\\u9fa5]{1,}".r
     flag match {
       case "medusa" => {
         sourceRe findFirstMatchIn pathMain match {
           case Some(p) => {
             p.group(1) match {
-              case "home*classification*hot" => "分类入口"
+              case "home*classification" => "分类入口"
               case "home*my_tv*history" => "历史"
               case "home*my_tv*collect" => "收藏"
-              case "home*my_tv*hot" => "自定义入口"
               case "home*recommendation" => "首页推荐"
               case "search" => "搜索"
-              case _ => "其它3"
+              case _ => {
+                if (specialPattern.pattern.matcher(p.group(1)).matches) {
+                  "自定义入口"
+                }
+                else {
+                  "其它3"
+                }
+              }
             }
           }
           case None => "其它3"

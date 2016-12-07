@@ -73,6 +73,12 @@ object PlayPathMatch {
             buf.+=(("榜单", "热歌榜", event, userId, duration))
 
           }
+          else if (p.group(2) != null && t.Mv_Rise.pattern.matcher(p.group(2)).matches) {
+
+            buf.+=(("榜单", "榜单", event, userId, duration))
+            buf.+=(("榜单", "飙升榜", event, userId, duration))
+
+          }
           else if (p.group(2) != null && t.Mv_More.pattern.matcher(p.group(2)).matches) {
 
             if (p.group(3) != null && t.Mv_poster.pattern.matcher(p.group(3)).matches) {

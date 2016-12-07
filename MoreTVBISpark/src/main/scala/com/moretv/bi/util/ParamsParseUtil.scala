@@ -36,10 +36,6 @@ object ParamsParseUtil {
 
         opt[Boolean]("deleteOld").action((x, c) => c.copy(deleteOld = x))
 
-        opt[String]("apkVersion").action((x, c) => c.copy(apkVersion = x))
-
-        opt[String]("columns").action((x, c) => c.copy(columns = x))
-
         opt[String]("logTypes").action((x, c) => c.copy(logTypes = x))
 
         opt[String]("logType").action((x, c) => c.copy(logType = x))
@@ -47,25 +43,15 @@ object ParamsParseUtil {
         opt[String]("startDate").action((x, c) => c.copy(startDate = x))
 
         opt[String]("endDate").action((x, c) => c.copy(endDate = x))
-        //opt[String]("sqlSpark").action((x,c)=>c.copy(sqlSpark=x))
-        //opt[String]("sqlDelete").action((x,c)=>c.copy(sqlDelete=x))
-        //opt[String]("sqlInsert").action((x,c)=>c.copy(sqlInsert=x))
-        opt[String]("database").action((x, c) => c.copy(database = x))
-
-        opt[String]("contentType").action((x, c) => c.copy(contentType = x))
 
         opt[String]("whichMonth").action((x, c) => c.copy(whichMonth = x))
 
         opt[Boolean]("alarmFlag").action((x, c) => c.copy(alarmFlag = x))
 
-        opt[Int]("durationMax").action((x, c) => c.copy(durationMax = x))
-
         opt[Int]("numOfDays").action((x, c) => c.copy(numOfDays = x)).
           validate(e => {
             if (e > 0) success else failure("numOfDays must be bigger than 0")
           })
-
-        opt[Int]("whichDay").action((x, c) => c.copy(whichDay = x))
 
         opt[String]("startTime").action((x, c) => c.copy(startTime = x)).
           validate(e => try {
@@ -74,6 +60,7 @@ object ParamsParseUtil {
           } catch {
             case e: Exception => failure("wrong time format, should be 'HH:mm:ss'")
           })
+
         opt[String]("endTime").action((x, c) => c.copy(endTime = x)).
           validate(e => try {
             timeFormat.parse(e)
@@ -82,11 +69,9 @@ object ParamsParseUtil {
             case e: Exception => failure("wrong time format, should be 'HH:mm:ss'")
           })
 
-        opt[String]("sid").action((x, c) => c.copy(sid = x))
-
-        opt[Int]("offset").action((x, c) => c.copy(offset = x))
-
         opt[String]("outputFile").action((x, c) => c.copy(outputFile = x))
+
+        opt[String]("srcPath").action((x, c) => c.copy(srcPath = x))
       }
       parser.parse(args, default)
     } else Some(default)

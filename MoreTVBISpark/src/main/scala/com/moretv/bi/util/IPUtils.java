@@ -9,6 +9,7 @@ import moretv.openapi.entity.IPLocation;
 import moretv.openapi.service.IIpService;
 import moretv.openapi.service.impl.IpServiceImpl2;
 
+
 public class IPUtils {
     private static IIpService instance = null;
 

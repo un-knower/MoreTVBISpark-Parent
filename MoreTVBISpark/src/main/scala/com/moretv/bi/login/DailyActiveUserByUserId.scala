@@ -13,11 +13,18 @@ import org.apache.spark.storage.StorageLevel
 /**
   * Created by Will on 2016/2/16.
   */
-object DailyActiveUserByUserId extends BaseClass{
+
+/**
+  * 数据源 ： loginlog
+  * 维度： 日期
+  * 度量： 新增用户数， 活跃用户数， 累计用户数，登录次数， 登录人数
+  */
+object DailyActiveUserByUserId extends BaseClass {
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(DailyActiveUserByUserId,args)
+    ModuleClass.executor(DailyActiveUserByUserId, args)
   }
+
   override def execute(args: Array[String]) {
 
     ParamsParseUtil.parse(args) match {
@@ -27,21 +34,27 @@ object DailyActiveUserByUserId extends BaseClass{
         val inputDate = p.startDate
         val inputPath = s"/log/moretvloginlog/parquet/$inputDate/loginlog"
 
-        val userIdActiveRdd = sqlContext.read.load(inputPath).select("userId").persist(StorageLevel.MEMORY_AND_DISK)
-        val loginNum = userIdActiveRdd.count()
-        val userNum = userIdActiveRdd.distinct().count()
+        val userIdActiveRdd =
+          sqlContext.read.load(inputPath)
+            .select("userId")
+            .persist(StorageLevel.MEMORY_AND_DISK)
+
+        val loginNum = userIdActiveRdd.count()                          //启动次数
+        val userNum = userIdActiveRdd.distinct().count()                //启动人数
 
         val db = DataIO.getMySqlOps("moretv_bi_mysql")
         val day = DateFormatUtils.toDateCN(inputDate, -1)
-        if(p.deleteOld){
+        if (p.deleteOld) {
           val sqlDelete = "delete from login_detail where day = ?"
-          db.delete(sqlDelete,day)
+          db.delete(sqlDelete, day)
         }
 
         val util = DataIO.getMySqlOps("moretv_tvservice_mysql")
-        val (min,max) = util.select2Tuple2[Long,Long](s"SELECT MIN(id),MAX(id) FROM tvservice.mtv_account " +
+
+        val (min, max) = util.select2Tuple2[Long, Long](s"SELECT MIN(id),MAX(id) FROM tvservice.mtv_account " +
           s"WHERE openTime BETWEEN '$day 00:00:00' AND '$day 23:59:59'").head
-        val userIdNewRDD = new JdbcRDD(sc, ()=>{
+
+        val userIdNewRDD = new JdbcRDD(sc, () => {
           Class.forName("com.mysql.jdbc.Driver")
           DriverManager.getConnection("jdbc:mysql://10.10.2.15:3306/tvservice?useUnicode=true&characterEncoding=utf-nect=true",
             "bi", "mlw321@moretv")
@@ -50,19 +63,24 @@ object DailyActiveUserByUserId extends BaseClass{
           min,
           max,
           30,
-          r=>r.getString(1)).distinct().toDF("userId").persist(StorageLevel.MEMORY_AND_DISK)
+          r => r.getString(1))
+          .distinct().toDF("userId")
+          .persist(StorageLevel.MEMORY_AND_DISK)
+
         util.destory()
 
-        val newUserNum = userIdNewRDD.count()
-        val activeNum = userIdActiveRdd.distinct().except(userIdNewRDD).count()
+        val newUserNum = userIdNewRDD.count()                                     //新增人数
+        val activeNum = userIdActiveRdd.distinct().except(userIdNewRDD).count()   //活跃人数
 
-        val year = day.substring(0,4).toInt
-        val month = day.substring(5,7).toInt
+        val year = day.substring(0, 4).toInt
+        val month = day.substring(5, 7).toInt
         val dayBefore = DateFormatUtils.toDateCN(inputDate, -2)
-        val totalUserNumBefore = db.select[Long]("select totaluser_num from login_detail where day = ?",dayBefore)(row => row.getLong(0)).head
+        val totalUserNumBefore =
+          db.select[Long]("select totaluser_num from login_detail where day = ?", dayBefore)(row => row.getLong(0)).head
         val totalUserNum = totalUserNumBefore + newUserNum
+
         val sqlInsert = "insert into login_detail(year,month,day,totaluser_num,login_num,user_num,new_num,active_num) values(?,?,?,?,?,?,?,?)"
-        db.insert(sqlInsert,year,month,day,totalUserNum,loginNum,userNum,newUserNum,activeNum)
+        db.insert(sqlInsert, year, month, day, totalUserNum, loginNum, userNum, newUserNum, activeNum)
         db.destory()
         userIdActiveRdd.unpersist()
       }

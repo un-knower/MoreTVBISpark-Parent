@@ -55,6 +55,8 @@ object TabPathConst {
 
   val Mv_Billboard = "\\*meiguogonggaopai".r //榜单 - 美国公告榜
 
+  val Mv_Rise = "\\*biaoshen".r //榜单- 飙升榜
+
   val Mv_Hot = "\\*rege".r //榜单 - 热歌榜
 
   val Mv_More = "\\*site_mvtop".r //榜单 - 更多榜单
@@ -65,6 +67,7 @@ object TabPathConst {
     Mv_Year,
     Mv_Latest,
     Mv_Billboard,
+    Mv_Rise,
     Mv_Hot,
     Mv_More
   )

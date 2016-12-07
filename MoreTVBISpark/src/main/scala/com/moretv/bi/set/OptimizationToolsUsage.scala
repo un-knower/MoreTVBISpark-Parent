@@ -23,7 +23,8 @@ object OptimizationToolsUsage extends BaseClass with DateUtil{
 
         val path = "/mbi/parquet/pageview/"+p.startDate+"/part-*"
         val df = sqlContext.read.load(path)
-        val resultRDD = df.filter("page in ('network_check','network_source','network_speed')").select("date","page","userId").map(e =>(e.getString(0),e.getString(1),e.getString(2))).
+        val resultRDD = df.filter("page in ('network_check','network_source','network_speed')")
+          .select("date","page","userId").map(e =>(e.getString(0),e.getString(1),e.getString(2))).
             map(e=>(getKeys(e._1,e._2),e._3)).persist(StorageLevel.MEMORY_AND_DISK)
         val userNum = resultRDD.distinct().countByKey()
         val accessNum = resultRDD.countByKey()

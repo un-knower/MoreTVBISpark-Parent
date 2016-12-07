@@ -93,11 +93,13 @@ object DetailContentTypeStat extends BaseClass {
   def en2Cn(field: String) = {
     field match {
       case "mv" => "音乐"
+      case "tv" => "电视"
       case "kids" => "少儿"
       case "comic" => "动漫"
       case "zongyi" => "综艺"
       case "sports" => "体育"
       case "jilu" => "纪实"
+      case "xiqu" => "戏曲"
       case "hot" => "咨询短片"
       case "movie" => "电影"
       case _ => "其它"

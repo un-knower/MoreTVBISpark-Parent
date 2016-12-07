@@ -18,7 +18,6 @@ object StartPageStatistics extends  BaseClass{
   private val subject = "MedusaTVBISpark"
   private val appName = "report#medusa#pageStatistics"
 
-  private val availableApkVersion = "'3.1.0','3.0.9','3.0.8','3.0.7','3.0.6','3.0.5'"
   def main(args: Array[String]): Unit = {
  //   JobStatus.getConfig(appName)
     ModuleClass.executor(StartPageStatistics,args)
@@ -50,7 +49,7 @@ object StartPageStatistics extends  BaseClass{
           try{
             //df
             val startPageDf = sqlContext.read.parquet(readPath).select("apkVersion","pageType","userId")
-                  .filter("pageType is not null").filter(s"apkVersion in ($availableApkVersion)")
+                  .filter("pageType is not null")
             //rdd((apkVersion,pageType),userId)
             val startPageRdd =startPageDf.map(e=>((e.getString(0),e.getString(1)),e.getString(2)))
 

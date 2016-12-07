@@ -3,7 +3,6 @@ package com.moretv.bi.report.medusa.functionalStatistic.searchInfo
 import java.lang.{Long => JLong}
 import java.util.Calendar
 
-import com.moretv.bi.constant.ApkVersion
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 
@@ -65,7 +64,6 @@ object SearchVideoContentTypeStat extends  BaseClass{
           val path = s"/log/medusa/parquet/$loadDate/$dataSource"
           println(path)
 
-          val avaiableVersion = ApkVersion.availableMedusaApkVersionStr
 
           //df 
           val df =sqlContext.read.parquet(path)
@@ -73,7 +71,6 @@ object SearchVideoContentTypeStat extends  BaseClass{
                       .filter("resultSid is not null")
                       .filter("resultName is not null")
                       .filter("contentType is not null")
-                      .filter(s"apkVersion in ( $avaiableVersion )")
 
 
           //rdd((resultSid,resultName,contentType),userId)

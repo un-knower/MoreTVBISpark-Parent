@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<configuration>
+    <property>
+        <name>tableName</name>
+        <value>retention_day_stat</value>
+    </property>
+
+    <property>
+        <name>insertSql</name>
+        <value>insert into </value>
+    </property>
+
+    <property>
+        <name></name>
+    </property>
+
+</configuration>

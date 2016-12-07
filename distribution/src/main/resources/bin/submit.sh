@@ -41,4 +41,4 @@ $SPARK_HOME/bin/spark-submit \
 --executor-memory 5g --driver-memory 5g --conf spark.cores.max=75  \
 --jars $jarFiles \
 --files $resFiles \
---class "$MainClass" $JarHome $Args
+--class "$" $JarHome $ArgsMainClass
