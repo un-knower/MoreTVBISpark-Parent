@@ -49,7 +49,7 @@ object ProgramDurationUtil {
       var title = sid
       if (metadata != null && metadata != "nil") {
         val jsonObject = new JSONObject(metadata)
-        title = jsonObject.getJSONArray(ProgramRedisUtils.TITLE).get(0).toString()
+        title = jsonObject.getJSONArray(TITLE).get(0).toString()
         if (title != null) {
           title = title.replace("'", "")
           title = title.replace("\t", " ")
