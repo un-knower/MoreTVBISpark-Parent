@@ -37,17 +37,18 @@ object EachDonghuaAndSongOfKidsPlayInfo extends BaseClass{
 
           val playviewInput = s"$medusaDir/$date/playview/"
 
-          sqlContext.read.parquet(playviewInput).select("userId","path","pathMain","event","videoSid")
-            .registerTempTable("log_data")
+          sqlContext.read.parquet(playviewInput).select("userId","path","pathMain","event","contentType",
+            "videoSid").registerTempTable("log_data")
 
           val donghuaRdd = sqlContext.sql("select videoSid,count(userId),count(distinct userId)" +
             " from log_data where event in ('startplay','playview') and (path not like '%kids_songhome%' or " +
-            "pathMain not like '%kids_rhymes%') group by videoSid").map(e=>(e.getString(0),e.getLong(1),e
-            .getLong(2)))
+            "pathMain not like '%kids_rhymes%') and contentType='kids' group by videoSid").
+            map(e=>(e.getString(0),e.getLong(1),e.getLong(2)))
 
           val songRdd = sqlContext.sql("select videoSid,count(userId),count(distinct userId) from log_data where event in " +
-            "('startplay','playview') and (path like '%kids_songhome%' or pathMain like '%kids_rhymes%') group by " +
-            "videoSid").map(e=>(e.getString(0),e.getLong(1),e.getLong(2)))
+            "('startplay','playview') and (path like '%kids_songhome%' or pathMain like '%kids_rhymes%') " +
+            "and contentType='kids' group by videoSid").
+            map(e=>(e.getString(0),e.getLong(1),e.getLong(2)))
 
 
           val insertSql="insert into medusa_channel_kids_eachdonghua_and_song_play_info(day,type,video_sid,title," +
@@ -61,7 +62,7 @@ object EachDonghuaAndSongOfKidsPlayInfo extends BaseClass{
 
           donghuaRdd.collect().foreach(e=>{
             util.insert(insertSql,insertDate,"donghua",e._1,ProgramRedisUtil.getTitleBySid(e._1),new JLong(e._2),
-            new JLong(e._3))
+              new JLong(e._3))
           })
 
           songRdd.collect().foreach(e=>{

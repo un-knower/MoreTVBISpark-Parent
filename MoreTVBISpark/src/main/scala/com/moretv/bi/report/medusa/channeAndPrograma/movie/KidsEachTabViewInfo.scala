@@ -103,6 +103,10 @@ object KidsEachTabViewInfo extends BaseClass{
                   case "1_kids_tags_dongwu" => "动物乐园"
                   case "1_kids_tags_tonghua" => "童话故事"
                   case "1_kids_tags_yuer" => "少儿教育"
+                  case "kids_funny" => "搞笑"
+                  case "kids_mecha" => "机战"
+                  case "kids_famliy" => "亲子"
+                  case "kids_explore" => "探险"
                   case _=> null
                 }
               }
