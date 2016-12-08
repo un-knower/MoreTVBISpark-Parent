@@ -16,7 +16,6 @@ import scala.collection.JavaConversions._
 object Log2ParquetPost extends BaseClass{
 
   private val rePartitionNum = 40
-//  private val outputPartitionNum = 40
   val regex = ("\\{\"remote_addr\":\"([0-9\\.]+)\",\"time\":\"([^ ]+).+?\"requestBody\":\"([^\"]+)" +
     "\",\"status\".+?\"ip_forwarded\":\"([0-9\\.]+)").r
   val regexWord = "^\\w+$".r
@@ -26,7 +25,7 @@ object Log2ParquetPost extends BaseClass{
     config.set("spark.executor.memory", "10g").
       set("spark.cores.max", "200").
       set("spark.executor.cores", "5").
-      set("spark.storage.memoryFraction", "0.6")
+      set("spark.storage.memoryFraction", "0.5")
     ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
@@ -37,49 +36,47 @@ object Log2ParquetPost extends BaseClass{
         cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))
 
         (0 until p.numOfDays).foreach(i => {
-
           val inputDate = DateFormatUtils.readFormat.format(cal.getTime)
           val inputPath = s"/log/medusa/rawlog-post/$inputDate/*"
           val outputPath = s"/log/medusa/parquet/$inputDate/"
 
-          val logRdd = sc.textFile(inputPath).repartition(rePartitionNum)
-
+          val logRdd = sc.textFile(inputPath).filter(_.contains(""""method":"POST""""))
           val flattenRdd = logRdd.map(line => {
             val json = new JSONObject(line)
             try {
-              ProcessLog.logFlattening(json).map(js => {
-                js.keys().foreach(key => {
-                  regexWord findFirstIn key match {
-                    case Some(k) =>
-                    case None => js.remove(key)
-                  }
-                })
-                val logType = js.optString("logType")
-                val id = if (logType == "event") {
-                  js.optString("eventId")
-                } else if (logType == "start_end") {
-                  js.optString("actionId")
-                } else ""
-                if(id != ""){
-                  regexEventType findFirstMatchIn id match {
-                    case Some(m) => {
-                      val eventType = m.group(1)
-                      if(eventType == "tabview") {
-                        ("search-tabview",js.toString)
-                      }else if(id.endsWith("clickResult")){
-                        if(id == "medusa-mv_station-clickResult"){
-                          (id,js.toString)
-                        }else if(id == "medusa-search-clickResult"){
-                          ("clickSearchResult",js.toString)
-                        }else {
-                          if(js.has("clickWidget")) ("searchEntrance",js.toString) else (id,js.toString)
-                        }
-                      }else (eventType,js.toString)
+                ProcessLog.logFlattening(json).map(js => {
+                  js.keys().foreach(key => {
+                    regexWord findFirstIn key match {
+                      case Some(k) =>
+                      case None => js.remove(key)
                     }
-                    case None => null
-                  }
-                }else null
-              }).filter(_ != null)
+                  })
+                  val logType = js.optString("logType")
+                  val id = if (logType == "event") {
+                    js.optString("eventId")
+                  } else if (logType == "start_end") {
+                    js.optString("actionId")
+                  } else ""
+                  if(id != ""){
+                    regexEventType findFirstMatchIn id match {
+                      case Some(m) => {
+                        val eventType = m.group(1)
+                        if(eventType == "tabview") {
+                          ("search-tabview",js.toString)
+                        }else if(id.endsWith("clickResult")){
+                          if(id == "medusa-mv_station-clickResult"){
+                            (id,js.toString)
+                          }else if(id == "medusa-search-clickResult"){
+                            ("clickSearchResult",js.toString)
+                          }else {
+                            if(js.has("clickWidget")) ("searchEntrance",js.toString) else (id,js.toString)
+                          }
+                        }else (eventType,js.toString)
+                      }
+                      case None => null
+                    }
+                  }else null
+                }).filter(_ != null)
             } catch {
               case e:Exception => null
             }

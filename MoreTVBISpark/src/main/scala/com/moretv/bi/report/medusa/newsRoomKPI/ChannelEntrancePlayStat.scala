@@ -2,10 +2,8 @@ package com.moretv.bi.report.medusa.newsRoomKPI
 
 import java.lang.{Long => JLong, Float => JFloat}
 import java.util.Calendar
-import java.text.SimpleDateFormat
 
-import scala.collection.mutable.{ListBuffer, Map}
-import com.moretv.bi.report.medusa.util.MedusaSubjectNameCodeUtil
+import scala.collection.mutable.{Map}
 import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.rdd.RDD

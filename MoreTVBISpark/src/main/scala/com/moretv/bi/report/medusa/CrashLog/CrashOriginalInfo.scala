@@ -1,4 +1,4 @@
-package com.moretv.bi.report.medusa.CrashLog
+package src.com.moretv.bi.report.medusa.CrashLog
 
 /**
  * Created by xiajun on 2016/3/28.
@@ -8,13 +8,9 @@ import java.lang.{Long => JLong}
 
 import com.moretv.bi.medusa.util.DevMacUtils
 import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
-import com.moretv.bi.util.{ParamsParseUtil, SparkSetting, _}
+import com.moretv.bi.util.{ParamsParseUtil, _}
 import org.apache.commons.codec.digest.DigestUtils
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.storage.StorageLevel
 import org.json.JSONObject
-import com.moretv.bi.medusa.util.ParquetDataStyle.ALL_CRASH_INFO_INCLUDE_MD5
 
 
 object CrashOriginalInfo extends BaseClass{
@@ -32,7 +28,7 @@ object CrashOriginalInfo extends BaseClass{
         val util = new DBOperationUtils("medusa")
         val inputDate = p.startDate
         val day = DateFormatUtils.toDateCN(inputDate)
-        val logRdd = sc.textFile(s"/log/crash/metadata/${inputDate}_extraction.log").map(log=>{
+        val logRdd = sc.textFile(s"/log/medusa_crash/rawlog/${inputDate}/").map(log=>{
           val json = new JSONObject(log)
           (json.optString("fileName"),json.optString("MAC"),json.optString("APP_VERSION_NAME"),json.optString("APP_VERSION_CODE"),
             json.optString("ANDROID_VERSION"),json.optString("STACK_TRACE"),json.optString("DATE_CODE"),json.optString("PRODUCT_CODE"))

@@ -133,6 +133,8 @@ object EnChConvert {
               case "1_zongyi_tag_qita" => result="其他分类"
               case "haoshengying_zongyi" => result="2016新歌声"
               case "wangzhanzizhi_zongyi" => result="最强笑点"
+              case "yulebagua_zongyi" => result = "娱乐八卦"
+              case "xiangsheng_zongyi" => result = "相声小品"
               case _ => result=info
             }
           }

@@ -68,6 +68,9 @@ object DayRetentionRate extends BaseClass{
             val retention = logUserID.intersection(sqlRDD).count()
             val newUser = sqlRDD.count().toInt
             val retentionRate = retention.toDouble/newUser.toDouble
+            if(p.deleteOld){
+              deleteSQL(date2,stmt)
+            }
             if(j==0){
               insertSQL(date2,newUser,retentionRate,stmt)
             }else{
@@ -95,5 +98,10 @@ object DayRetentionRate extends BaseClass{
   def updateSQL(num:String, retention:Double, date:String, stmt: Statement)={
     val sql = s"UPDATE bi.`user_retetion_day` SET $num = $retention WHERE DAY = '$date'"
     stmt.executeUpdate(sql)
+  }
+
+  def deleteSQL(date:String,stmt:Statement) = {
+    val sql = s"DELETE FROM bi.`user_retetion_day` WHERE DAT = ${date}"
+    stmt.execute(sql)
   }
 }

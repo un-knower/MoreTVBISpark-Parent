@@ -1,12 +1,8 @@
 package com.moretv.bi.overview
 
-import java.text.SimpleDateFormat
-import java.util.Calendar
 
 import com.moretv.bi.util._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.storage.StorageLevel
 
 /**

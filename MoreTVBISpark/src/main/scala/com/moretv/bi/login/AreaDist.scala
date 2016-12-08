@@ -3,12 +3,9 @@ package com.moretv.bi.login
 import java.sql.DriverManager
 
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.constant.Database
 import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.JdbcRDD
-import org.apache.spark.sql.SQLContext
 
 import scala.collection.JavaConversions._
 

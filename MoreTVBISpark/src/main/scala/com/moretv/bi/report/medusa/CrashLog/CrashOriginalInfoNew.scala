@@ -31,13 +31,12 @@ object CrashOriginalInfoNew extends BaseClass{
         val util = new DBOperationUtils("medusa")
         val inputDate = p.startDate
         val day = DateFormatUtils.toDateCN(inputDate)
-        val logRdd = sc.textFile(s"/log/crash/metadata/${inputDate}_extraction.log").map(log=>{
+        val logRdd = sc.textFile(s"/log/medusa_crash/rawlog/${inputDate}/").map(log=>{
           val json = new JSONObject(log)
           (json.optString("fileName"),json.optString("MAC"),json.optString("APP_VERSION_NAME"),json.optString("APP_VERSION_CODE"),
             json.optString("ANDROID_VERSION"),json.optString("STACK_TRACE"),json.optString("DATE_CODE"),
             json.optString("PRODUCT_CODE"),json.optString("CUSTOM_JSON_DATA"))
         })
-        println(System.currentTimeMillis())
         val filterRdd = logRdd.repartition(28).map(log => (log._1,log._2.replace(":",""),log._3,log._4,log._5,log._6,log._7,log._8,log._9))
           .filter(data => !DevMacUtils.macFilter(data._2))
 
@@ -53,51 +52,42 @@ object CrashOriginalInfoNew extends BaseClass{
          *
          */
 
-        val rdd = sqlContext.sql("select stackTraceMD5,mac,productCode,count(fileName_md5) " +
-          "from crashInfo_MD5 where dateCode='20160921' group by stackTraceMD5,mac,productCode").
-          map(e=>(e.getString(0),e.getString(1),e.getString(2),e.getLong(3)))
 
-        val insertSql = "insert into tmp_crash_info(day,mac,stackTraceMD5,productCode,num) values(?,?,?,?,?)"
+        val rdd = sqlContext.sql("select appVersionName, androidVersion,dateCode,productCode,stackTraceMD5,stackTrace," +
+          "customJsonData,mac from crashInfo_MD5").map(e=>(e.getString(0),e.getString(1),e.getString(2),
+          e.getString(3), e.getString(4),e.getString(5),e.getString(6),e.getString(7)))
+//         Getting the number of each version/crash_key/stack_trace
+        val crashNumRdd = sqlContext.sql("select appVersionName, androidVersion,dateCode,productCode,stackTraceMD5," +
+          "stackTrace,customJsonData,count(fileName_md5) from crashInfo_MD5 group by appVersionName, " +
+          "androidVersion,dateCode,productCode,stackTraceMD5,stackTrace,customJsonData").
+          map(e=>(e.getString(0),e.getString(1),e.getString(2),e.getString(3),e.getString(4),e.getString(5),
+          e.getString(6),e.getLong(7)))
 
-        rdd.collect().foreach(r=>{
-          util.insert(insertSql,day,r._2,r._1,r._3,new JLong(r._4))
+        if(p.deleteOld) {
+          val oldSql = s"delete from medusa_crash_original_info_new where day = '$day'"
+          util.delete(oldSql)
+        }
+
+        val merger = rdd.distinct().map(e=>((e._1,e._2,e._3,e._4,e._5,e._6,e._7),1.toLong)) join(crashNumRdd.map(e=>((e._1,e._2,e
+          ._3,e._4,e._5,e._6,e._7),(e._8))))
+
+        val metaData = merger.map(e=>(e._1._1, e._1._2, e._1._3, e._1._4, e._1._5,e._1._6,e._1._7,
+          e._2._2)).distinct()
+        // Insert data into database
+        val insert_sql = "INSERT INTO medusa_crash_original_info_new(day,app_version_name,android_version," +
+          "date_code,product_code,stack_trace_md5,stack_trace,custom_json_data,crash_num) VALUES(?,?,?,?,?,?,?,?,?)"
+        metaData.foreachPartition(rdd=>{
+          val utilInsert = new DBOperationUtils("medusa")
+          rdd.foreach(e=>{
+            try{
+              utilInsert.insert(insert_sql,day,e._1,e._2,e._3,e._4,e._5,e._6,e._7,new JLong(e._8))
+            }catch{
+              case e:Exception=> e.printStackTrace()
+            }
+          })
         })
 
-//        val rdd = sqlContext.sql("select appVersionName, androidVersion,dateCode,productCode,stackTraceMD5,stackTrace," +
-//          "customJsonData,mac from crashInfo_MD5").map(e=>(e.getString(0),e.getString(1),e.getString(2),
-//          e.getString(3), e.getString(4),e.getString(5),e.getString(6),e.getString(7)))
-        // Getting the number of each version/crash_key/stack_trace
-//        val crashNumRdd = sqlContext.sql("select appVersionName, androidVersion,dateCode,productCode,stackTraceMD5," +
-//          "stackTrace,customJsonData,count(fileName_md5) from crashInfo_MD5 group by appVersionName, " +
-//          "androidVersion,dateCode,productCode,stackTraceMD5,stackTrace,customJsonData").
-//          map(e=>(e.getString(0),e.getString(1),e.getString(2),e.getString(3),e.getString(4),e.getString(5),
-//          e.getString(6),e.getLong(7)))
-
-
-
-//        val merger = rdd.distinct().map(e=>((e._1,e._2,e._3,e._4,e._5,e._6,e._7),1.toLong)) join(crashNumRdd.map(e=>((e._1,e._2,e
-//          ._3,e._4,e._5,e._6,e._7),(e._8))))
-//
-//        val metaData = merger.map(e=>(e._1._1, e._1._2, e._1._3, e._1._4, e._1._5,e._1._6,e._1._7,
-//          e._2._2)).distinct().collect()
-//        // Insert data into database
-//        val insert_sql = "INSERT INTO medusa_crash_original_info_new(day,app_version_name,android_version," +
-//          "date_code,product_code,stack_trace_md5,stack_trace,custom_json_data,crash_num) VALUES(?,?,?,?,?,?,?,?,?)"
-//        if(p.deleteOld) {
-//          val date = DateFormatUtils.toDateCN(p.startDate, -1)
-//          val oldSql = s"delete from medusa_crash_original_info_new where day = '$date'"
-//          util.delete(oldSql)
-//        }
-//        metaData.foreach(e=>{
-//          try{
-//            util.insert(insert_sql,day,e._1,e._2,e._3,e._4,e._5,e._6,e._7,new JLong(e._8))
-//          }catch{
-//            case e:Exception=> e.printStackTrace()
-//          }
-//
-//        })
-//
-//        rdd.unpersist()
+        rdd.unpersist()
       }
       case None => {throw new RuntimeException("At least need one param: --startDate")}
     }

@@ -1,4 +1,4 @@
-package com.moretv.bi.report.medusa.CrashLog
+package src.com.moretv.bi.report.medusa.CrashLog
 
 /**
  * Created by Administrator on 2016/3/28.
@@ -7,12 +7,10 @@ package com.moretv.bi.report.medusa.CrashLog
 import java.lang.{Long => JLong}
 
 import com.moretv.bi.medusa.util.DevMacUtils
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
-import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
-import org.json.JSONObject
 import com.moretv.bi.medusa.util.ParquetDataStyle.ALL_CRASH_INFO
+import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
+import org.json.JSONObject
 
 object CrashStatistics extends BaseClass{
 
@@ -28,7 +26,7 @@ object CrashStatistics extends BaseClass{
         val util = new DBOperationUtils("medusa")
         val inputDate = p.startDate
         val day = DateFormatUtils.toDateCN(inputDate)
-        val logRdd = sc.textFile(s"/log/crash/metadata/${inputDate}_extraction.log").map(log=>{
+        val logRdd = sc.textFile(s"/log/medusa_crash/rawlog/${inputDate}/").map(log=>{
           val json = new JSONObject(log)
           (json.optString("fileName"),json.optString("MAC"),json.optString("APP_VERSION_NAME"),json.optString("APP_VERSION_CODE"),
             json.optString("CRASH_KEY"),json.optString("STACK_TRACE"),json.optString("DATE_CODE"),json.optString("PRODUCT_CODE"))
@@ -59,8 +57,13 @@ object CrashStatistics extends BaseClass{
           "?,?)"
         val sql_user ="INSERT INTO medusa_crash_product_date_code_user(day,product_code,date_code,total_user) VALUES(?," +
           "?,?,?)"
-        util.insert(sql_num,day,"All","All",new JLong(total_num))
-        util.insert(sql_user,day,"All","All",new JLong(total_user))
+        try{
+          util.insert(sql_num,day,"All","All",new JLong(total_num))
+          util.insert(sql_user,day,"All","All",new JLong(total_user))
+        }catch{
+          case e:Exception=>
+        }
+
 
         val product_num_array = sqlContext.sql(date_product_sql).groupBy("Product_code").count().collect()
         val date_num_array = sqlContext.sql(date_product_sql).groupBy("Date_code").count().collect()
@@ -73,35 +76,47 @@ object CrashStatistics extends BaseClass{
           .collect()
 
         product_num_array.foreach(row=>{
-          println("-----------The total number based on product code-----------")
-          println(row.getString(0)+" : "+row.getLong(1))
-          util.insert(sql_num,day,row.getString(0),"All",new JLong(row.getLong(1)))
+          try{
+            util.insert(sql_num,day,row.getString(0),"All",new JLong(row.getLong(1)))
+          }catch {
+            case e:Exception=>
+          }
         })
         date_num_array.foreach(row=>{
-          println("-----------The total number based on date code-----------")
-          println(row.getString(0)+" : "+row.getLong(1))
-          util.insert(sql_num,day,"All",row.getString(0),new JLong(row.getLong(1)))
+          try{
+            util.insert(sql_num,day,"All",row.getString(0),new JLong(row.getLong(1)))
+          }catch {
+            case e:Exception=>
+          }
         })
         product_date_num_array.foreach(row=>{
-          println("-----------The total number based on product&date code-----------")
-          println(row.getString(0)+" : "+row.getString(1)+" : "+row.getLong(2))
-          util.insert(sql_num,day,row.getString(0),row.getString(1),new JLong(row.getLong(2)))
+          try{
+            util.insert(sql_num,day,row.getString(0),row.getString(1),new JLong(row.getLong(2)))
+          }catch{
+            case e:Exception=>
+          }
         })
 
         product_user_num_array.foreach(row=>{
-          println("-----------The total user number based on product code-----------")
-          println(row.getString(0)+" : "+row.getLong(1))
-          util.insert(sql_user,day,row.getString(0),"All",new JLong(row.getLong(1)))
+          try{
+            util.insert(sql_user,day,row.getString(0),"All",new JLong(row.getLong(1)))
+          }catch {
+            case e:Exception=>
+          }
         })
         date_user_num_array.foreach(row=>{
-          println("-----------The total user number based on date code-----------")
-          println(row.getString(0)+" : "+row.getLong(1))
-          util.insert(sql_user,day,"All",row.getString(0),new JLong(row.getLong(1)))
+          try{
+            util.insert(sql_user,day,"All",row.getString(0),new JLong(row.getLong(1)))
+          }catch {
+            case e:Exception =>
+          }
         })
         product_date_user_num_array.foreach(row=>{
-          println("-----------The total user number based on product&date code-----------")
-          println(row.getString(0)+" : "+row.getString(1)+" : "+row.getLong(2))
-          util.insert(sql_user,day,row.getString(0),row.getString(1),new JLong(row.getLong(2)))
+          try{
+            util.insert(sql_user,day,row.getString(0),row.getString(1),new JLong(row.getLong(2)))
+          }catch {
+            case e:Exception=>
+          }
         })
 
       }

@@ -17,7 +17,8 @@ import org.apache.spark.storage.StorageLevel
 object QuerySubjectViewInfo extends BaseClass {
   private val historyCollect = Array("history", "collect", "account")
   private val re = "thirdparty".r
-
+  private val regex="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu)([0-9]+)""".r
+  private val subjectInfoMap = CodeToNameUtils.getAllSubjectCode()
   def main(args: Array[String]) {
     config.set("spark.executor.memory", "5g").
       set("spark.executor.cores", "5").
@@ -31,95 +32,55 @@ object QuerySubjectViewInfo extends BaseClass {
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-
         val util = new DBOperationUtils("medusa")
         val startDate = p.startDate
-        val tmp = sqlContext
-        //        import tmp.implicits._
+        val logType = "detail"
         val medusaDir = "/log/medusaAndMoretvMerger/"
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
         (0 until p.numOfDays).foreach(i => {
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
-          //          val insertDate = DateFormatUtils.toDateCN(date,-1)
+          val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH, -1)
-          val files = FilesInHDFS.getFileFromHDFS(s"/log/medusaAndMoretvMerger/${date}/detail").map(f=>f.getPath.getName)
-          /*
-          (0 until files.size-38).foreach(i=>{
-            executeComp(files(i), date)
+          val inputDir = s"${medusaDir}${date}/${logType}"
+          sqlContext.read.parquet(inputDir).registerTempTable("log_data")
+
+          val rdd = sqlContext.sql("select userId,launcherAreaFromPath," +
+            "launcherAccessLocationFromPath,pageDetailInfoFromPath," +
+            "pathIdentificationFromPath,path,pathPropertyFromPath,flag " +
+            "from log_data where event='view' and userId is not null and " +
+            "((flag='medusa' and pathPropertyFromPath='subject') or flag='moretv')").
+            map(e=>(e.getString(0),e.getString(1),e.getString(2),e.getString(3),
+            e.getString(4),e.getString(5),e.getString(6),e.getString(7))).
+            repartition(28).cache()
+          val mergerInfoRdd = rdd.map(x => {
+            val flag = x._8
+            if(flag == "medusa"){
+              List((getMedusaFormattedInfo2(x._2,x._3,x._4,x._5),x._1))
+            }
+            else if(flag == "moretv"){
+              SubjectUtils.getSubjectCodeAndPathWithId(x._6,x._1).
+                map(e=>((e._1._1,changeSourceNameToChinese(e._1._2)),e._2))
+            }else null
+          }).repartition(80).filter(_ != null).flatMap(x=>x).cache()
+          val viewNumMap=mergerInfoRdd.map(e=>(e._1,1)).countByKey()
+          val viewUserMap=mergerInfoRdd.distinct().map(e=>(e._1,1)).countByKey()
+          val insertSql="insert into medusa_content_evaluate_each_subject_view_query_info(day,subjectCode,title,source," +
+            "view_num,view_user) values (?,?,?,?,?,?)"
+          if(p.deleteOld){
+            val deleteSql="delete from medusa_content_evaluate_each_subject_view_query_info where day=?"
+            util.delete(deleteSql,insertDate)
+          }
+
+          viewNumMap.foreach(e=>{
+            val (subjectCode,source) = e._1
+            val viewNum = e._2
+            val viewUser = viewUserMap(e._1)
+            util.insert(insertSql,insertDate,subjectCode,CodeToNameUtils.getSubjectNameBySid(subjectCode),source,new JLong(viewNum),
+            new JLong(viewUser))
           })
-          */
 
-          /*
-          for (fileName <- files) {
-            //executeComp(fileName, date)
-            executeComp("part", date)
-          }
-          */
-
-          /*
-          for (i <- 1 to 2) {
-            executeComp("part", date)
-          }
-          */
-
-          System.exit(-1)
-
-          //
-          //          sqlContext.read.parquet(playviewInput).select("userId","launcherAreaFromPath","launcherAccessLocationFromPath",
-          //            "pageDetailInfoFromPath","pathIdentificationFromPath","path","pathPropertyFromPath","flag","event").
-          //            repartition(24).filter("userId is not null").
-          //            filter("(flag='medusa' and pathPropertyFromPath='subject') or flag='moretv'").registerTempTable("log_data")
-          //
-          //          val rdd = sqlContext.sql("select userId,launcherAreaFromPath,launcherAccessLocationFromPath," +
-          //            "pageDetailInfoFromPath,pathIdentificationFromPath,path,pathPropertyFromPath,flag from log_data where " +
-          //            "event='view'").map(e=>(e.getString(0),e.getString(1),e.getString(2),e.getString(3),e.getString(4),
-          //            e.getString(5),e.getString(6),e.getString(7))).repartition(28).cache()
-          //          val mergerInfoRdd = rdd.repartition(50).map(x => {
-          //            val flag = x._8
-          //            if(flag == "medusa" && x._7 == "subject"){
-          //              List((getMedusaFormattedInfo(x._2,x._3,x._4,x._5),x._1))
-          //            }
-          //            else if(flag == "moretv"){
-          //              SubjectUtils.getSubjectCodeAndPathWithId(x._6,x._1).
-          //                map(e=>((e._1._1,changeSourceNameToChinese(e._1._2)),e._2))
-          //            }else null
-          //          }).repartition(16).filter(_ != null).flatMap(x=>x).cache()
-
-          //          val medusaInfoRdd=rdd.filter(_._8=="medusa").map(e=>(e._1,e._2,e._3,e._4,e._5))
-          //          val formattedMedusaRdd=medusaInfoRdd.map(e=>(getMedusaFormattedInfo(e._2,e._3,e._4,e._5),e._1))
-          //
-          //          val moretvInfoRdd=rdd.filter(_._8=="moretv").map(e=>(e._1,e._6))
-          //          val formattedMoretvRdd=moretvInfoRdd.flatMap(e=>(SubjectUtils.getSubjectCodeAndPathWithId(e._2,e._1)))
-          //            .map(e=>((e._1._1,changeSourceNameToChinese(e._1._2)),e._2))
-          //          val mergerInfoRdd=formattedMedusaRdd.union(formattedMoretvRdd).cache()
-          //          mergerInfoRdd.map(e=>(s"${e._1._1}")).collect()
-          //            System.exit(-1)
-          //          val playNumMap=mergerInfoRdd.map(e=>(e._1,1))
-          //            .reduceByKey(_+_).repartition(16).
-          //                          collectAsMap()
-          //          val playUserMap=mergerInfoRdd.distinct().map(e=>(e._1,1)).reduceByKey(_+_).repartition(16).
-          //                          collectAsMap()
-          //          val playNumMap=mergerInfoRdd.map(e=>(e._1,1)).repartition(16).
-          //            collectAsMap()
-          //          val playUserMap=mergerInfoRdd.distinct().map(e=>(e._1,1)).repartition(16).
-          //            collectAsMap()
-          //          val insertSql="insert into medusa_content_evaluate_each_subject_view_query_info(day,subjectCode,title,source," +
-          //            "view_num,view_user) values (?,?,?,?,?,?)"
-          //          if(p.deleteOld){
-          //            val deleteSql="delete from medusa_content_evaluate_each_subject_view_query_info where day=?"
-          //            util.delete(deleteSql,insertDate)
-          //          }
-
-          //          playNumMap.foreach(e=>{
-          //            val (subjectCode,source) = e._1
-          //            val viewNum = e._2
-          //            val viewUser = playUserMap(e._1)
-          //            util.insert(insertSql,insertDate,subjectCode,CodeToNameUtils.getSubjectNameBySid(subjectCode),source,new JLong(viewNum),
-          //            new JLong(viewUser))
-          //          })
-
-          //          mergerInfoRdd.unpersist()
+          mergerInfoRdd.unpersist()
 
 
         })
@@ -131,11 +92,31 @@ object QuerySubjectViewInfo extends BaseClass {
     }
   }
 
-  def getMedusaFormattedInfo(area: String, accessLocation: String, pageDetailInfo: String, subjectName: String) = {
-    val subjectInfo = MedusaSubjectNameCodeUtil.getSubjectCode(subjectName)
-    val subjectCode = if (subjectInfo == " ") {
-      CodeToNameUtils.getSubjectCodeByName(subjectName)
-    } else subjectInfo
+//  def getMedusaFormattedInfo(area: String, accessLocation: String, pageDetailInfo: String, subjectName: String) = {
+//    val subjectInfo = MedusaSubjectNameCodeUtil.getSubjectCode(subjectName)
+//    val subjectCode = if (subjectInfo == " ") {
+//      CodeToNameUtils.getSubjectCodeByName(subjectName)
+//    } else subjectInfo
+//    area match {
+//      case "recommendation" => (subjectCode, "3.X首页推荐")
+//      case "my_tv" => {
+//        if (historyCollect.contains(accessLocation)) {
+//          (subjectCode, "3.X历史收藏")
+//        } else {
+//          (subjectCode, pageDetailInfo)
+//        }
+//      }
+//      case "classification" => (subjectCode, pageDetailInfo)
+//      case _ => (subjectCode, "其他路径")
+//    }
+//  }
+
+  def getMedusaFormattedInfo2(area: String, accessLocation: String,
+                              pageDetailInfo: String, subjectName: String) = {
+    val subjectCode = regex findFirstMatchIn subjectName match {
+      case Some(p) => p.group(1)+p.group(2)
+      case None => subjectInfoMap.getOrElse(subjectName,"null")
+    }
     area match {
       case "recommendation" => (subjectCode, "3.X首页推荐")
       case "my_tv" => {
@@ -163,36 +144,6 @@ object QuerySubjectViewInfo extends BaseClass {
     }
   }
 
-  def executeComp( date: String,fileName:String) = {
-    val medusaDir = "/log/medusaAndMoretvMerger/"
-    if (fileName.contains("part")) {
-      val playviewInput = s"$medusaDir/$date/detail/$fileName"
-      sqlContext.read.parquet(playviewInput).select("userId", "launcherAreaFromPath", "launcherAccessLocationFromPath",
-        "pageDetailInfoFromPath", "pathIdentificationFromPath", "path", "pathPropertyFromPath", "flag", "event").
-        repartition(24).filter("userId is not null").
-        filter("(flag='medusa' and pathPropertyFromPath='subject') or flag='moretv'").registerTempTable("log_data")
-
-      val rdd = sqlContext.sql("select userId,launcherAreaFromPath,launcherAccessLocationFromPath," +
-        "pageDetailInfoFromPath,pathIdentificationFromPath,path,pathPropertyFromPath,flag from log_data where " +
-        "event='view'").map(e => (e.getString(0), e.getString(1), e.getString(2), e.getString(3), e.getString(4),
-        e.getString(5), e.getString(6), e.getString(7))).repartition(28).cache()
-
-      val medusaInfoRdd = rdd.filter(_._8 == "medusa").map(e => (e._1, e._2, e._3, e._4, e._5))
-
-
-
-      val formattedMedusaRdd = medusaInfoRdd.map(e => (getMedusaFormattedInfo(e._2, e._3, e._4, e._5), e._1))
-    formattedMedusaRdd.count()
-    System.exit(-1)
-
-      val moretvInfoRdd = rdd.filter(_._8 == "moretv").map(e => (e._1, e._6))
-      val formattedMoretvRdd = moretvInfoRdd.flatMap(e => (SubjectUtils.getSubjectCodeAndPathWithId(e._2, e._1)))
-        .map(e => ((e._1._1, changeSourceNameToChinese(e._1._2)), e._2))
-
-
-      val mergerInfoRdd = formattedMedusaRdd.union(formattedMoretvRdd).cache()
-      mergerInfoRdd.map(e => (s"${e._1._1}")).collect()
-    }
-  }
-
 }
+
+

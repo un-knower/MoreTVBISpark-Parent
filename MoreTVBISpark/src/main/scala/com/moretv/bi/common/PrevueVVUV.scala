@@ -1,11 +1,7 @@
 package com.moretv.bi.common
 
-import java.text.SimpleDateFormat
-import java.util.Locale
 import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
 
 object PrevueVVUV extends BaseClass{
 

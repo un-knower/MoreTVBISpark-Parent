@@ -52,28 +52,6 @@ object DBSnapShot extends BaseClass{
         val outputPath = s"/log/dbsnapshot/parquet/$day/moretv_mtv_account"
         if(p.deleteOld) HdfsUtil.deleteHDFSFile(outputPath)
         moretvDF.write.parquet(outputPath)
-
-        val db2 = DataIO.getMySqlOps("helios_terminal_upgrade_mysql")
-        val (min2,max2) = db2.queryMaxMinID("mtv_terminal","id")
-        db2.destory()
-        val heliosSqlRdd = new JdbcRDD(sc, ()=>{
-          Class.forName("com.mysql.jdbc.Driver")
-          DriverManager.getConnection("jdbc:mysql://10.10.2.18:3306/terminal_upgrade?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
-          "whaleybi", "play4bi@whaley")
-        },
-        "SELECT id,service_id,mac,android_version,open_time,login_time,activate_status,promotion_channel, " +
-        "rom_version,status,serial_number,wifi_mac,current_ip " +
-        s"FROM `mtv_terminal` WHERE ID >= ? AND ID <= ? and open_time <= '$dayCN 23:59:59'",
-            min2,
-            max2,
-        100,
-            r=>(r.getInt(1),r.getString(2),r.getString(3),r.getString(4),r.getString(5),r.getString(6)
-          ,r.getInt(7),r.getString(8),r.getString(9),r.getInt(10),r.getString(11),r.getString(12),r.getString(13)))
-        val heliosDF = heliosSqlRdd.toDF("id","service_id","mac","android_version","open_time","login_time",
-        "activate_status","promotion_channel","rom_version","status","serial_number","wifi_mac","current_ip")
-        val outputPath2 = s"/log/dbsnapshot/parquet/$day/helios_mtv_terminal"
-        if(p.deleteOld) HdfsUtil.deleteHDFSFile(outputPath2)
-        heliosDF.write.parquet(outputPath2)
       }
     }
   }

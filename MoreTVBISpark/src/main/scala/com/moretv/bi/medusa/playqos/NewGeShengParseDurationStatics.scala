@@ -3,7 +3,7 @@ package com.moretv.bi.medusa.playqos
 import java.util.Calendar
 import java.lang.{Long => JLong}
 
-import com.moretv.bi.medusa.playqos.PlayInfoByAreaAndISPStatics._
+import com.moretv.bi.medusa.playqos.PlayQosInfoByAreaAndISPStatics._
 import com.moretv.bi.util.IPLocationUtils.{IPOperatorsUtil, IPLocationDataUtil}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}

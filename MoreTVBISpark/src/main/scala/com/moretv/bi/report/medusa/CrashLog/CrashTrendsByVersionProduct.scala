@@ -7,12 +7,10 @@ package com.moretv.bi.report.medusa.CrashLog
 import java.lang.{Long => JLong}
 
 import com.moretv.bi.medusa.util.DevMacUtils
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
-import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
-import org.json.JSONObject
 import com.moretv.bi.medusa.util.ParquetDataStyle.ALL_CRASH_INFO
+import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
+import org.json.JSONObject
 
 object CrashTrendsByVersionProduct extends BaseClass{
   def main(args: Array[String]) {

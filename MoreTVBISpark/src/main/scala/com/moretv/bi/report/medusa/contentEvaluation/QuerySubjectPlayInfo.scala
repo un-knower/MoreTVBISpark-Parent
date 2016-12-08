@@ -6,8 +6,6 @@ import java.util.Calendar
 import com.moretv.bi.report.medusa.util.MedusaSubjectNameCodeUtil
 import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
-
-
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.storage.StorageLevel
@@ -18,6 +16,7 @@ import org.apache.spark.storage.StorageLevel
  */
 object QuerySubjectPlayInfo extends BaseClass{
   private val historyCollect=Array("history","collect","account")
+  private val mvRe = "(mineHomePage|mvRecommendHomePage|mvTopHomePage|horizontal)".r
   private val re="thirdparty.+".r
 
 
@@ -43,15 +42,16 @@ object QuerySubjectPlayInfo extends BaseClass{
           val playviewInput = s"$medusaDir/$date/playview/"
 
           sqlContext.read.parquet(playviewInput).select("userId","launcherAreaFromPath","launcherAccessLocationFromPath",
-            "pageDetailInfoFromPath","pathIdentificationFromPath","path","pathPropertyFromPath","flag","event").
+            "pageDetailInfoFromPath","pathIdentificationFromPath","path","pathPropertyFromPath","flag","event","pathMain").
             repartition(16).registerTempTable("log_data")
 
           val rdd = sqlContext.sql("select userId,launcherAreaFromPath,launcherAccessLocationFromPath," +
-            "pageDetailInfoFromPath,pathIdentificationFromPath,path,pathPropertyFromPath,flag from log_data where event in ('startplay'," +
+            "pageDetailInfoFromPath,pathIdentificationFromPath,path,pathPropertyFromPath,flag,pathMain " +
+            "from log_data where event in ('startplay'," +
             "'playview')").map(e=>(e.getString(0),e.getString(1),e.getString(2),e.getString(3),e
-            .getString(4),e.getString(5),e.getString(6),e.getString(7))).persist(StorageLevel.MEMORY_AND_DISK)
-          val medusaInfoRdd=rdd.filter(_._8=="medusa").filter(_._7=="subject").map(e=>(e._1,e._2,e._3,e._4,e._5))
-          val formattedMedusaRdd=medusaInfoRdd.map(e=>(getMedusaFormattedInfo(e._2,e._3,e._4,e._5),e._1)).filter(_._1
+            .getString(4),e.getString(5),e.getString(6),e.getString(7),e.getString(8))).persist(StorageLevel.MEMORY_AND_DISK)
+          val medusaInfoRdd=rdd.filter(_._8=="medusa").filter(_._7=="subject").map(e=>(e._1,e._2,e._3,e._4,e._5,e._9))
+          val formattedMedusaRdd=medusaInfoRdd.map(e=>(getMedusaFormattedInfo(e._2,e._3,e._4,e._5,e._6),e._1)).filter(_._1
             ._1!=null).filter(_._1._2!=null)
 
           val moretvInfoRdd=rdd.filter(_._8=="moretv").map(e=>(e._1,e._6))
@@ -94,12 +94,9 @@ object QuerySubjectPlayInfo extends BaseClass{
     }
   }
 
-  def getMedusaFormattedInfo(area:String,accessLocation:String,pageDetailInfo:String,subjectName:String)={
-
+  def getMedusaFormattedInfo(area:String,accessLocation:String,pageDetailInfo:String,subjectName:String,pathMain:String)={
     val subjectInfo = MedusaSubjectNameCodeUtil.getSubjectCode(subjectName)
-
     val subjectCode=if(subjectInfo==" ") {CodeToNameUtils.getSubjectCodeByName(subjectName)} else {subjectInfo}
-
     area match {
       case "recommendation"=>(subjectCode,"3.X首页推荐")
       case "my_tv"=>{
@@ -109,7 +106,21 @@ object QuerySubjectPlayInfo extends BaseClass{
           (subjectCode,pageDetailInfo)
         }
       }
-      case "classification"=>(subjectCode,pageDetailInfo)
+      case "classification"=>if(accessLocation=="mv"){
+        val entrance = mvRe findFirstMatchIn pathMain match {
+          case Some(p) => {
+            p.group(1) match {
+              case "mineHomePage" => "音乐首页推荐"
+              case "mvRecommendHomePage" => "音乐首页推荐"
+              case "mvTopHomePage" => "音乐榜单"
+              case "horizontal" => "音乐首页推荐"
+              case _ => "其他路径"
+            }
+          }
+          case None => "其他路径"
+        }
+        (subjectCode,entrance)
+      }else (subjectCode,pageDetailInfo)
       case _ => (subjectCode,"其他路径")
     }
   }

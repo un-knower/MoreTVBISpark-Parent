@@ -5,7 +5,7 @@ package com.moretv.bi.report.medusa.util
  * 该util用于处理pathSpecial中的subject-专题名称-专题code与subject-专题名称的情况
  */
 object MedusaSubjectNameCodeUtil {
-  private val regex="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu)([0-9]+)""".r
+  private val regex="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|mv)([0-9]+)""".r
   // 获取 专题code
   def getSubjectCode(subject:String) = {
     regex findFirstMatchIn subject match {
