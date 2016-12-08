@@ -3,8 +3,6 @@ package com.moretv.bi.util
 import org.json.JSONObject
 import redis.clients.jedis.{JedisPool, JedisPoolConfig, Protocol}
 
-import scala.collection.mutable.Map
-
 /**
  * Created by 连凯 on 2016-07-04.
   * 连接redis，通过sid查询节目对应的title
@@ -53,7 +51,7 @@ object ProgramRedisUtil {
       var title = sid
       if (metadata != null && metadata != "nil") {
         val jsonObject = new JSONObject(metadata)
-        title = jsonObject.getJSONArray(ProgramRedisUtils.TITLE).get(0).toString()
+        title = jsonObject.getJSONArray(TITLE).get(0).toString()
         if (title != null) {
           title = title.replace("'", "")
           title = title.replace("\t", " ")

@@ -19,6 +19,7 @@ trait BaseClass{
     set("spark.eventLog.enabled","true").
     set("spark.eventLog.dir","hdfs://hans/spark-log/spark-events").
     set("spark.cores.max", "72").
+    set("spark.driver.maxResultSize","2g").
     setAppName(this.getClass.getSimpleName)
 
   /**
