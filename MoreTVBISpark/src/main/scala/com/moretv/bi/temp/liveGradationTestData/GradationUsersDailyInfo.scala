@@ -37,7 +37,7 @@ object GradationUsersDailyInfo extends SparkSetting {
           sqlContext.read.parquet(inputDir).select("userId").registerTempTable("log_all")
 
           /**
-           * 计算灰度升级用户的直播次数与直播人数
+           * 计算灰度升级用户的日活
            */
           val userRdd = sqlContext.sql(
             """select count(distinct a.userId)
