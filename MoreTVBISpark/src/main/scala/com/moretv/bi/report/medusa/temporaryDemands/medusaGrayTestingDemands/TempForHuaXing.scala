@@ -18,7 +18,7 @@ object TempForHuaXing extends SparkSetting {
       set("spark.cores.max", "120")
     val sc = new SparkContext(config)
     implicit val sqlContext = new SQLContext(sc)
-    val util = new DBOperationUtils("medusa")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
     val startArr = Array("2016-10-01","2016-09-01","2016-08-01","2016-07-01","2016-06-01",
       "2016-05-01", "2016-04-01", "2016-03-01", "2016-02-01", "2016-01-01",
       "2015-12-01", "2015-11-01", "2015-10-01", "2015-09-01", "2015-08-01", "2015-07-01",

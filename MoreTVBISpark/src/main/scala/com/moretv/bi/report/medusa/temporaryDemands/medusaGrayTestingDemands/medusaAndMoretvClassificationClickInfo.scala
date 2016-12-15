@@ -25,7 +25,7 @@ object medusaAndMoretvClassificationClickInfo extends SparkSetting{
         sqlContext.udf.register("launcherLocationIndexParser",LauncherAccessAreaParser.launcherLocationIndexParser _)
         sqlContext.udf.register("launcherAccessLocationParser",LauncherAccessAreaParser.launcherAccessLocationParser _)
         sqlContext.udf.register("moretvLauncherAccessLocationParser",LauncherAccessAreaParser.moretvLauncherAccessLocationParser _)
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
 
 

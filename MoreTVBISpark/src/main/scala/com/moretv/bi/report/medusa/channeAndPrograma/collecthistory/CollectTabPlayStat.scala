@@ -29,7 +29,7 @@ object CollectTabPlayStat extends BaseClass {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         // init & util
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
         val cal = Calendar.getInstance
         cal.setTime(DateFormatUtils.readFormat.parse(startDate))

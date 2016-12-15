@@ -27,7 +27,7 @@ object Watchprevue extends BaseClass{
         val userNumValue = cacheValue.distinct().countByKey()
         val accessNumValue = cacheValue.countByKey()
         val sql = "insert into watchprevue(Day,user_num,user_access) values(?,?,?)"
-        val dbUtil = new DBOperationUtils("bi")
+        val dbUtil = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

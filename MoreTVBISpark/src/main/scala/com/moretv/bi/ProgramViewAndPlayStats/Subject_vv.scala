@@ -28,7 +28,7 @@ object Subject_vv extends BaseClass with DateUtil{
         val vvNums = logRdd.countByKey()
         val uvNums = logRdd.distinct().countByKey()
         //save date
-        val util = new DBOperationUtils("eagletv")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_EAGLETV_MYSQL)
         //delete old data
         val date = DateFormatUtils.toDateCN(p.startDate, -1)
         if (p.deleteOld) {

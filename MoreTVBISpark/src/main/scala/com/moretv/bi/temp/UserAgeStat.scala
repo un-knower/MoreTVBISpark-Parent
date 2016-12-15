@@ -38,7 +38,7 @@ object UserAgeStat extends BaseClass {
 
   override def execute(args: Array[String]): Unit = {
 
-    val util = new DBOperationUtils("medusa")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
     val cal = Calendar.getInstance
 

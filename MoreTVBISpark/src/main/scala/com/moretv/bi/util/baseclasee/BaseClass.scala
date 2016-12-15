@@ -1,12 +1,14 @@
 package com.moretv.bi.util.baseclasee
 
-import org.apache.spark.{SparkContext, SparkConf}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.SdkConfig
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.{SparkConf, SparkContext}
 
 /**
  * Created by admin on 16/8/8.
  */
-trait BaseClass{
+trait BaseClass extends LogConfig{
   /**
    * define some parameters
    */
@@ -28,6 +30,7 @@ trait BaseClass{
   def init()={
     sc = new SparkContext(config)
     sqlContext = SQLContext.getOrCreate(sc)
+    DataIO.init(SdkConfig.CONFIG_PATH)
     }
 
   /**
@@ -44,4 +47,5 @@ trait BaseClass{
       sc.stop()
     }
   }
+
 }

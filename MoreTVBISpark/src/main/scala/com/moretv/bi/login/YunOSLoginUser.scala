@@ -30,7 +30,7 @@ object YunOSLoginUser extends BaseClass{
         val loginNum = logRdd.count()
         val userNum = logRdd.distinct().count()
 
-        val db = new DBOperationUtils("bi")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         val day = DateFormatUtils.toDateCN(inputDate, -1)
         if(p.deleteOld) {

@@ -19,7 +19,7 @@ object NotrecommendPVUV extends BaseClass{
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         //implicit val sQLContext = SQLContext.getOrCreate(sc)
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         val date = DateFormatUtils.toDateCN(p.startDate, -1)
         val sql = "select date, userId from log_data where event = 'notrecommend'"
         val input = s"/mbi/parquet/operation-acw/"+p.startDate+"/*"

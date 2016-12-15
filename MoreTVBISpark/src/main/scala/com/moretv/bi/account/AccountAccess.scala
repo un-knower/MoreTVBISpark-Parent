@@ -3,10 +3,10 @@ package com.moretv.bi.account
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
 import org.apache.spark.storage.StorageLevel
 
 /**
@@ -14,22 +14,19 @@ import org.apache.spark.storage.StorageLevel
   */
 object AccountAccess extends BaseClass with DateUtil {
   def main(args: Array[String]) {
-    config.setAppName("AccountAccess")
-    ModuleClass.executor(AccountAccess, args)
+    ModuleClass.executor(this, args)
   }
 
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-
-        val path = "/mbi/parquet/mtvaccount/" + p.startDate + "/part-*"
-        val df = sqlContext.read.load(path)
+        val df = DataIO.getDataFrameOps.getDF(sc, p.paramMap,MORETV,LogTypes.MTVACCOUNT)
         val resultRDD = df.select("date", "event", "userId").map(e => (e.getString(0), e.getString(1), e.getString(2))).filter(e => (e._2 == "access" || e._2 == "login")).
           map(e => (getKeys(e._1, e._2), e._3)).persist(StorageLevel.MEMORY_AND_DISK)
         val userNum = resultRDD.distinct().countByKey()
         val accessNum = resultRDD.countByKey()
 
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if (p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)
@@ -45,7 +42,7 @@ object AccountAccess extends BaseClass with DateUtil {
         resultRDD.unpersist()
       }
       case None => {
-        throw new RuntimeException("At least need param --excuteDate.")
+        throw new RuntimeException("At least need param --startDate.")
       }
     }
   }
@@ -61,4 +58,5 @@ object AccountAccess extends BaseClass with DateUtil {
 
     (year, month, date, event, eventName)
   }
+
 }

@@ -14,7 +14,7 @@ object VideoPlayInfoByDuration extends SparkSetting{
   def main(args: Array[String]) {
     val sc = new SparkContext(config)
     implicit val sqlContext = new SQLContext(sc)
-    val util = new DBOperationUtils("medusa")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
     val dateTime = "20160716"
     val insertDate = "20160715"
     val medusaDir = s"/log/medusa/parquet/$dateTime/play"

@@ -34,7 +34,7 @@ object KidsDurationAndUserNum extends BaseClass with DateUtil{
         val accessNum = resultRDD.map(e =>(e._1,e._3)).countByKey()
         val duration = resultRDD.map(e =>(e._1,e._2)).filter(_._2 < 72000).reduceByKey((x,y)=>x+y).collect().toMap
 
-        val util = new DBOperationUtils("eagletv")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_EAGLETV_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

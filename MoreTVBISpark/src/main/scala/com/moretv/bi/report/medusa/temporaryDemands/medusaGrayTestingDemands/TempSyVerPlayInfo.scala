@@ -16,7 +16,7 @@ object TempSyVerPlayInfo extends SparkSetting{
   def main(args: Array[String]) {
         val sc = new SparkContext(config)
         implicit val sqlContext = new SQLContext(sc)
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
         val medusaDir = "/log/moretvloginlog/parquet/20160{7[31,30,29,28,27,26],801}"
         val enterLogType = "loginlog"

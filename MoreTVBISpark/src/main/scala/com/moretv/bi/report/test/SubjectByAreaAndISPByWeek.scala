@@ -27,7 +27,7 @@ object SubjectByAreaAndISPByWeek {
         val sqlContext = new SQLContext(sc)
         sqlContext.udf.register("getProvince",IPLocationDataUtil.getProvince _)
         sqlContext.udf.register("getISP",IPOperatorsUtil.getISPInfo _)
-        //val util = new DBOperationUtils("medusa")
+        //val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val cal = Calendar.getInstance()
         cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))
 

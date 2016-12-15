@@ -25,7 +25,7 @@ object CrashOriginalInfo extends BaseClass{
       case Some(p) =>{
         val s = sqlContext
         import s.implicits._
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val inputDate = p.startDate
         val day = DateFormatUtils.toDateCN(inputDate)
         val logRdd = sc.textFile(s"/log/medusa_crash/rawlog/${inputDate}/").map(log=>{

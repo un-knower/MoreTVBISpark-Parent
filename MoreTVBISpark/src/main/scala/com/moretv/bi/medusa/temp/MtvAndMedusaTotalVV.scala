@@ -16,7 +16,7 @@ object MtvAndMedusaTotalVV extends SparkSetting{
       case Some(p) => {
         val sc = new SparkContext(config)
         implicit val sqlContext = new SQLContext(sc)
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val cal = Calendar.getInstance()
         cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))
 

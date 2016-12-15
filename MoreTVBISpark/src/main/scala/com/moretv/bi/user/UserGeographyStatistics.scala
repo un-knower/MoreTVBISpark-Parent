@@ -32,7 +32,7 @@ object UserGeographyStatistics extends BaseClass with QueryMaxAndMinIDUtil{
           id(1), id(0), 10,
           r=>r.getString(1)).map(e=>(matchLog(e))).filter(_!=null).countByKey()
 
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val oldSql = s"delete from user_geography_overview where day = '$yesterdayCN'"

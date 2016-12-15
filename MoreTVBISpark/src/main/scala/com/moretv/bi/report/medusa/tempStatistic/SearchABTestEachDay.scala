@@ -24,7 +24,7 @@ object SearchABTestEachDay extends SparkSetting{
     val sc = new SparkContext(config)
     val sqlContext = SQLContext.getOrCreate(sc)
     TransformUDF.registerUDF(sqlContext)
-    val util = new DBOperationUtils("medusa")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
     val configFile = new File("/script/bi/medusa/test/shell/configFile/search.xml")
     ParamsParseUtil.parse(args) match {
       case Some(p) => {

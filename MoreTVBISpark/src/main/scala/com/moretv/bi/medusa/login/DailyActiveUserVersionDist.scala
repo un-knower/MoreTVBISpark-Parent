@@ -33,7 +33,7 @@ object DailyActiveUserVersionDist extends BaseClass{
         val loginNums = logRdd.map(x => ((x._1,x._2),x._3)).countByKey()
         val userNums = logRdd.distinct().map(x => ((x._1,x._2),x._3)).countByKey()
 
-        val db = new DBOperationUtils("medusa")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val day = DateFormatUtils.toDateCN(inputDate, -1)
         if(p.deleteOld){
           val sqlDelete = "delete from version_dist_product_model_m3u where day = ?"

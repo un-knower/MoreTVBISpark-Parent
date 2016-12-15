@@ -31,7 +31,7 @@ object CrashMetaInfo2 extends SparkSetting{
         val inputDay = DateFormatUtils.toDateCN(input)
         val sc = new SparkContext(config)
 //        val sqlContext = new SQLContext(sc)
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         /**
          * Define two lambda functions
          */

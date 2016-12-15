@@ -31,7 +31,7 @@
 //        val cal = Calendar.getInstance()
 //        cal.add(Calendar.MONTH,-p.offset)
 //        val month = format.format(cal.getTime)
-//        val db = new DBOperationUtils("bi")
+//        val db = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
 //        if(p.deleteOld){
 //          val sqlDelete = "delete from login_detail_month where month = ?"
 //          db.delete(sqlDelete,month)

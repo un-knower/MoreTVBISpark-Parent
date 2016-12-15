@@ -20,7 +20,7 @@ object medusaTotalUserFromAllLogInfo extends SparkSetting{
         val sc = new SparkContext(config)
         implicit val sqlContext = new SQLContext(sc)
         import sqlContext.implicits._
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
 
         val medusaDir = "/log/medusa/parquet"

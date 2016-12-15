@@ -123,7 +123,7 @@ object activeUserCountInfo extends BaseClass {
           start + end
         }
       }
-    val util = new DBOperationUtils("medusa")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
     val deleteSql = s"delete from $table where $field=?"
     val insertSql = s"insert into $table ($field,user_num) values(?,?)"

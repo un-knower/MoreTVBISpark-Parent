@@ -19,8 +19,8 @@ object OpenApiUserTrend extends BaseClass{
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
-        val util_bi = new DBOperationUtils("bi")
-        val util_tvservice = new DBOperationUtils("tvservice")
+        val util_bi = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
+        val util_tvservice = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
         val cal = Calendar.getInstance()
         cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))
 

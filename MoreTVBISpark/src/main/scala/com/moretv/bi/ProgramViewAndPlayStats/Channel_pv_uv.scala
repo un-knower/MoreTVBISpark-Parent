@@ -29,7 +29,7 @@ object Channel_pv_uv extends BaseClass with DateUtil{
         val accessNum = playRDD.countByKey()
 
         //save date
-        val util = new DBOperationUtils("eagletv")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_EAGLETV_MYSQL)
         //delete old data
         if (p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

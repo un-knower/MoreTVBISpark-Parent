@@ -43,7 +43,7 @@ object AddTagTotalUsers extends BaseClass{
         val resultRDD = programMap.subtract(userIdRDD)
 
         //save date
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

@@ -38,7 +38,7 @@ object KidsSubchannelPVUVVUV extends BaseClass with DateUtil{
         val accessNum_detail = detailRDD.countByKey()
 
         //save date
-        val util = new DBOperationUtils("eagletv")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_EAGLETV_MYSQL)
         //delete old data
         if (p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

@@ -30,7 +30,7 @@ object UserAreaDistribution extends SparkSetting{
     sc.addJar("/home/spark/moretvbi/lib/commons-dbutils-1.6.jar")
     val numOfPartition = 50
 
-    val util = new DBOperationUtils("tvservice")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
     val maxId = getMaxId(util)
     util.destory()
     val jdbcRDD = new JdbcRDD(sc, ()=>{

@@ -33,7 +33,7 @@ object DailyActiveUser extends BaseClass{
         val loginNums = logRdd.countByKey()
         val userNums = logRdd.distinct().countByKey()
 
-        val db = new DBOperationUtils("medusa")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val day = DateFormatUtils.toDateCN(inputDate, -1)
         if(p.deleteOld){
           val sqlDelete = "delete from user_trend_product_model_m3u where day = ?"

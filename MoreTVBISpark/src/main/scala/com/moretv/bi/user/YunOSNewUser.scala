@@ -29,7 +29,7 @@ object YunOSNewUser extends BaseClass{
 
         val inputDate = p.startDate
         val day = DateFormatUtils.toDateCN(inputDate, -1)
-        val util = new DBOperationUtils("tvservice")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
         val ids = util.selectOne(s"SELECT MIN(id),MAX(id) FROM tvservice.mtv_account WHERE openTime BETWEEN '$day 00:00:00' AND '$day 23:59:59'")
         val sqlRDD = new JdbcRDD(sc, ()=>{
           Class.forName("com.mysql.jdbc.Driver")

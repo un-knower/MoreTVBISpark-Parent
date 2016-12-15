@@ -36,7 +36,7 @@ object DetailContentTypeStat extends BaseClass {
       case Some(p) => {
 
         // init
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
         sqlContext.udf.register("en2Cn", en2Cn _)
 

@@ -29,7 +29,7 @@ object ProvinceCityTotal extends BaseClass{
         val whichMonth = p.whichMonth
         val s = sqlContext
         import s.implicits._
-        val util = new DBOperationUtils("tvservice")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
         val sqlSelect = "select min(id),max(id) from mtv_account where left(openTime,7) <= ?"
         val ids = util.selectOne(sqlSelect,whichMonth)
 

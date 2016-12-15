@@ -19,7 +19,7 @@ object getDailyUpdateUserInfoFromUpdateLog extends SparkSetting{
         val sc = new SparkContext(config)
         implicit val sqlContext = new SQLContext(sc)
         import sqlContext.implicits._
-        val util = new DBOperationUtils("tvservice")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
         val startDate=p.startDate
         val macDir = s"/log/moretvupgrade/parquet/$startDate"
         val outputPath1 = s"/log/medusa/mac2UserId/$startDate/dailyUpdateUserId"

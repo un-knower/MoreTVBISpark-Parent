@@ -39,7 +39,7 @@ object KidsEachTabPlayInfo extends BaseClass {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))

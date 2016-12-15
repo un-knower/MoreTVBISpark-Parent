@@ -23,7 +23,7 @@ object moretvLauncherDifferentAreaLocationStatistic extends SparkSetting{
         val sqlContext = new SQLContext(sc)
         sqlContext.udf.register("launcherAccessAreaParser",LauncherAccessAreaParser.launcherAccessAreaParser _)
         sqlContext.udf.register("moretvLauncherAccessLocationParser",LauncherAccessAreaParser.moretvLauncherAccessLocationParser _)
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         val logType = "homeaccess"
         val fileDir = "/mbi/parquet/"
 

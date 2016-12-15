@@ -30,7 +30,7 @@ object CommonSubTotalPVUV extends BaseClass with DateUtil{
         val userNum = resultRDD.distinct().countByKey()
         val accessNum = resultRDD.countByKey()
 
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

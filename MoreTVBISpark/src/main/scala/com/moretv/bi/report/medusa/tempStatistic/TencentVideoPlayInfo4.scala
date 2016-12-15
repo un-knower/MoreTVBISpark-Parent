@@ -20,7 +20,7 @@ object TencentVideoPlayInfo4 extends SparkSetting{
       set("spark.cores.max", "150")
     val sc = new SparkContext(config)
     implicit val sqlContext = new SQLContext(sc)
-    val util = new DBOperationUtils("medusa")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
     import sqlContext.implicits._
     // play日志数据
     val dateTime = "20160{716,717,718,719,71*,72*,73*,80*,811,812,813,814,815,816}"

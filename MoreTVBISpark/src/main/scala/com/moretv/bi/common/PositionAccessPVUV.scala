@@ -29,7 +29,7 @@ object PositionAccessPVUV extends BaseClass{
         val userNumValue = cacheValue.distinct().countByKey()
         val accessNumValue = cacheValue.countByKey()
         var sql = ""
-        val dbUtil = new DBOperationUtils("bi")
+        val dbUtil = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

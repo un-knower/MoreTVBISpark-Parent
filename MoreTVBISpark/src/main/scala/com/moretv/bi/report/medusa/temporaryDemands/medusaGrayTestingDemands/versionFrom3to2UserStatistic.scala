@@ -17,7 +17,7 @@ object versionFrom3to2UserStatistic extends SparkSetting{
       case Some(p) => {
         val sc = new SparkContext(config)
         val sqlContext = new SQLContext(sc)
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val logType = "enter"
         val medusaFileDir = "/log/medusa/parquet/"
         val moretvFileDir = "/mbi/parquet/"

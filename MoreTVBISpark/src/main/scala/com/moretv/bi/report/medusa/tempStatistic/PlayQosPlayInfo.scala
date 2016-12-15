@@ -18,7 +18,7 @@ object PlayQosPlayInfo extends SparkSetting{
         val sc = new SparkContext(config)
         implicit val sqlContext = new SQLContext(sc)
         import sqlContext.implicits._
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val dateTime = "20160{716,717,718,719,71*,72*,73*,80*,811,812,813,814,815,816}"
         val insertDate = "20160715~20160815"
         val medusaDir = s"/log/medusa/parquet/$dateTime/playqos"

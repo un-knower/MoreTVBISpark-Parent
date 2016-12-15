@@ -40,7 +40,7 @@ object PlayInfoByAreaAndISPStatics extends BaseClass {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         sqlContext.udf.register("getProvince",IPLocationDataUtil.getProvince _)
         sqlContext.udf.register("getISP",IPOperatorsUtil.getISPInfo _)
         val cal = Calendar.getInstance

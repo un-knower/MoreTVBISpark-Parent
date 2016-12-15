@@ -23,7 +23,7 @@ object CrashSummaryInfo extends BaseClass{
       case Some(p) => {
         val input = p.startDate
         val inputDay = DateFormatUtils.toDateCN(input)
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         /**
          * Define two lambda functions
          */

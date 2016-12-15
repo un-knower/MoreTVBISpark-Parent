@@ -20,7 +20,7 @@ object launcherDifferentAreaLocationIndexStatistic extends SparkSetting{
         val sqlContext = new SQLContext(sc)
         sqlContext.udf.register("launcherAccessAreaParser",LauncherAccessAreaParser.launcherAccessAreaParser _)
         sqlContext.udf.register("launcherLocationIndexParser",LauncherAccessAreaParser.launcherLocationIndexParser _)
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val logType = "homeaccess"
         val fileDir = "/log/medusa/parquet/"
 

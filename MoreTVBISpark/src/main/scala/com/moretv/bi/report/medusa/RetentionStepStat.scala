@@ -91,7 +91,7 @@ object RetentionStepStat extends BaseClass {
 
     resArray.foreach(println)
 
-    val util = new DBOperationUtils("medusa")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
     val calCopy = Calendar.getInstance
     calCopy.setTime(cal.getTime)

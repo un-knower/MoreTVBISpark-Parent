@@ -3,10 +3,10 @@ package com.moretv.bi.login
 import java.lang.{Long => JLong}
 import java.util.Calendar
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
+import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 /**
  * Created by HuZhehua on 2016/4/13.
  */
@@ -23,8 +23,9 @@ object AliDogTVDogActiveAndNewUserStatistics extends BaseClass{
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
-        val util = new DBOperationUtils("bi")
-        val db = new DBOperationUtils("tvservice")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
+        val db = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
+
         val cal = Calendar.getInstance()
         cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))
         (0 until p.numOfDays).foreach(i=> {

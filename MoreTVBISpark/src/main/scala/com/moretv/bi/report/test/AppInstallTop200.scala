@@ -23,7 +23,7 @@ object AppInstallTop200 {
         val sc = new SparkContext(config)
         val sqlContext = new SQLContext(sc)
         val medusaDir = "/log/whaley/parquet/"
-        //val util = new DBOperationUtils("medusa")
+        //val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val cal = Calendar.getInstance()
         cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))
         (0 until p.numOfDays).foreach(i => {

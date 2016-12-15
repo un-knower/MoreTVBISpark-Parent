@@ -20,7 +20,7 @@ object ProductModelDist4Less232 extends BaseClass{
 
   override def execute(args: Array[String]) {
 
-    val db = new DBOperationUtils("tvservice")
+    val db = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
     val sqlIds = "SELECT MIN(id),MAX(id) FROM tvservice.`mtv_account` " +
       "WHERE openTime between '2015-01-01 00:00:00' and '2016-03-24 00:00:00'"
     val ids = db.selectOne(sqlIds)

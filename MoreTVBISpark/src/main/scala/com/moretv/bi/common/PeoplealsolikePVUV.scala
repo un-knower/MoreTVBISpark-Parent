@@ -17,7 +17,7 @@ object PeoplealsolikePVUV extends BaseClass{
  override def execute (args: Array[String]) {
    ParamsParseUtil.parse(args)match {
      case Some(p) => {
-       val util = new DBOperationUtils("bi")
+       val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
        val date = DateFormatUtils.toDateCN(p.startDate, -1)
        val sql = "select userId from log_data where path like '%peoplealsolike%'"
        val input = s"/mbi/parquet/detail/" + p.startDate + "/*"

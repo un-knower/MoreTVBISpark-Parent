@@ -15,7 +15,7 @@ object TencentVideoPlayInfo1 extends SparkSetting{
   def main(args: Array[String]) {
     val sc = new SparkContext(config)
     implicit val sqlContext = new SQLContext(sc)
-    val util = new DBOperationUtils("medusa")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
     import sqlContext.implicits._
     sqlContext.udf.register("getTitleBySid",DataFromRedisUtil.getProgramTitleBySid _)
     sqlContext.udf.register("getTencentCid2Sid", DataFromDB.getTencentCid2Sid _)

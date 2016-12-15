@@ -17,7 +17,7 @@ object medusaRetentionRate extends SparkSetting{
       case Some(p)=>{
         val sc = new SparkContext(config)
         val sqlContext = new SQLContext(sc)
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val logType = "enter"
         // 确定今天的时间
         val currentDay = new Date()

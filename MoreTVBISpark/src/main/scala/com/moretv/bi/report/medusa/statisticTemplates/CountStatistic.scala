@@ -26,7 +26,7 @@ object CountStatistic extends SparkSetting{
     /*从数据库中读取相应的app_name的配置参数*/
 //    val template = "CountStatistic"
     val sc = new SparkContext(config)
-    val util = new DBOperationUtils("medusa")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
     implicit val sqlContext = new SQLContext(sc)
 //   UDFSets.getPathMainInfo _这样的做法是将调用者被调用时传入参数
     sqlContext.udf.register("getPathMainInfo",UDFSets.getPathMainInfo _)

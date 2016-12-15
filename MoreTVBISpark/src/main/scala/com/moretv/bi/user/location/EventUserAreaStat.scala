@@ -47,7 +47,7 @@ object EventUserAreaStat extends BaseClass {
 
       case Some(p) => {
 
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
         sqlContext.udf.register("getProvinceCity", IPLocationDataUtil.getProvinceCity _)
 

@@ -57,7 +57,7 @@ object ProductModelDistSql extends BaseClass{
 
    def getMaxId = {
      val sql ="SELECT MAX(id) FROM tvservice.`mtv_account`"
-     val util = new DBOperationUtils("tvservice")
+     val util = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
      util.selectOne(sql)(0).toString.toLong
    }
 

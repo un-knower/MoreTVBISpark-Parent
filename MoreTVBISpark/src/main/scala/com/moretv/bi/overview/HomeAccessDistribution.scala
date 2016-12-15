@@ -31,7 +31,7 @@ object HomeAccessDistribution extends BaseClass with DateUtil{
         val thirdRDD = df.map(e =>(getKeys(e._1,"0",e._3,true),e._4)).filter(_!=null)
         val fourRDD = df.filter(e => e._2.toInt == 1).map(e =>(getKeys(e._1,e._2,e._3,false),e._4)).filter(_!=null)
 
-        val db = new DBOperationUtils("bi")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

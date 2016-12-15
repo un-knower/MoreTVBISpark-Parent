@@ -26,7 +26,7 @@ object PrevueVVUV extends BaseClass{
         val accessNumValue = cacheValue.countByKey()
 
         val sql = "insert into prevueVVUV(sid,title,day,user_num,user_access) values(?,?,?,?,?)"
-        val dbUtil = new DBOperationUtils("bi")
+        val dbUtil = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

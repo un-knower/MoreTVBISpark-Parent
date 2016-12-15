@@ -25,7 +25,7 @@ object RecommendClickPlay extends BaseClass{
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         //date
         val cal = Calendar.getInstance
         val startDate = p.startDate

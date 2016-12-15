@@ -35,7 +35,7 @@ object RetentionStat extends BaseClass {
   override def execute(args: Array[String]): Unit = {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val calBase = Calendar.getInstance
         val cal = Calendar.getInstance
         cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))

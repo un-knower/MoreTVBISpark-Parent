@@ -33,7 +33,7 @@ object PromotionActiveUser extends BaseClass {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
         val promotion = "'boshilian','dangbei','shafa','huanstore','xunma'"
 

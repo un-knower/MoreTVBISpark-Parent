@@ -27,7 +27,7 @@ object ApkSeriesVersionDist extends BaseClass{
         val loginNums = logRdd.countByKey()
         val userNums = logRdd.distinct().countByKey()
 
-        val db = new DBOperationUtils("bi")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         val day = DateFormatUtils.toDateCN(inputDate, -1)
         if(p.deleteOld){
           val sqlDelete = "delete from apk_version where date = ?"

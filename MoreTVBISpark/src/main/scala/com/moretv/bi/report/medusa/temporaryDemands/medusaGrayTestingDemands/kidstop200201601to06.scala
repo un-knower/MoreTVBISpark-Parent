@@ -18,7 +18,7 @@ object kidstop200201601to06 extends SparkSetting{
           set("spark.cores.max", "100")
         val sc = new SparkContext(config)
         implicit val sqlContext = new SQLContext(sc)
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         sqlContext.read.parquet("/log/medusa/parquet/20160{1*,2*,3*,4*,5*,6*}/play").select("userId","event","videoSid",
           "contentType")
           .registerTempTable("log1")

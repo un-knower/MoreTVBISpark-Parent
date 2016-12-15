@@ -37,7 +37,7 @@ object UserGenderStatistics extends BaseClass with QueryMaxAndMinIDUtil{
         val others=resultRDD.getOrElse("o",0L)
         val empty = resultRDD.getOrElse("0",0L)
 
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val oldSql = s"delete from user_gender_overview where day = '$yesterdayCN'"

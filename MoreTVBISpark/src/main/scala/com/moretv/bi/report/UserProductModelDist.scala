@@ -19,7 +19,7 @@ object UserProductModelDist extends SparkSetting{
     sc.addJar("hdfs://hans/lib/common/commons-dbutils-1.6.jar")
     val numOfPartition = 300
 
-    val util = new DBOperationUtils("tvservice")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
     val maxId = getMaxId(util)
     util.destory()
     val jdbcRDD = new JdbcRDD(sc, ()=>{

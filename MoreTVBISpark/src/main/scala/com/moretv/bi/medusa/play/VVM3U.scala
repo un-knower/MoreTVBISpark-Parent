@@ -23,7 +23,7 @@ object VVM3U extends BaseClass{
         import s.implicits._
         val inputDate = p.startDate
         val batch = 1
-        val db = new DBOperationUtils("medusa")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val day = DateFormatUtils.toDateCN(inputDate, -1)
         val inputPath = s"/mbi/parquet/playview/$inputDate"
         val logRdd = sqlContext.read.load(inputPath).

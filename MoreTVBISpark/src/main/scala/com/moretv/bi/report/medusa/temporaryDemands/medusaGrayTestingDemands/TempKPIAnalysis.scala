@@ -24,7 +24,7 @@ object TempKPIAnalysis extends SparkSetting{
           set("spark.cores.max", "100")
         val sc = new SparkContext(config)
         implicit val sqlContext = new SQLContext(sc)
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
         val medusaDir = "/log/medusaAndMoretvMerger/"
         val calendar = Calendar.getInstance()

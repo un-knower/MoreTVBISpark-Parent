@@ -29,7 +29,7 @@ object UserAlibabaVersionDistribution extends SparkSetting{
     sc.addJar("/home/moretv/mbi/lib/common/commons-dbutils-1.6.jar")
     val numOfPartition = 40
 
-    val util = new DBOperationUtils("tvservice")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
     val maxId = getMaxId(util)
     util.destory()
     val jdbcRDD = new JdbcRDD(sc, ()=>{

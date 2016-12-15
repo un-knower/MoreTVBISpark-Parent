@@ -37,7 +37,7 @@ object VideoTypeUVVVStatistics extends BaseClass with DateUtil{
         val pastDurationRDD = pastRDD.map(e =>((e._1._1,e._1._2,e._1._3,"total",e._1._5),e._2)).union(pastRDD).countByKey()
 
         //save date
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if (p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

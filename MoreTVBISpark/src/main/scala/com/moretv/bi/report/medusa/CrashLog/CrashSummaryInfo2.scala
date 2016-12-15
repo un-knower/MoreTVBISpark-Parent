@@ -19,7 +19,7 @@ object CrashSummaryInfo2 extends SparkSetting{
         val input = p.startDate
         val inputDay = DateFormatUtils.toDateCN(input)
         val sc = new SparkContext(config)
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
 
         /**

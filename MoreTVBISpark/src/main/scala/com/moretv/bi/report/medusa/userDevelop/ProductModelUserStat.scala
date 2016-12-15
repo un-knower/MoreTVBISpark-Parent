@@ -64,7 +64,7 @@ object ProductModelUserStat extends BaseClass {
           """.stripMargin)
           .repartition(400)
 
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
         df.collect.foreach(w => {
           val interval = w.getInt(0)

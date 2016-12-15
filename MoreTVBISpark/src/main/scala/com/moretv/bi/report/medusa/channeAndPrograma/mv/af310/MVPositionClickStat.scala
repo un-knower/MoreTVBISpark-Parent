@@ -41,7 +41,7 @@ object MVPositionClickStat extends BaseClass {
       case Some(p) => {
 
         // util & init
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
         val startDate = p.startDate
 

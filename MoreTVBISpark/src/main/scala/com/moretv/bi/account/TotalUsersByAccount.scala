@@ -39,7 +39,7 @@ object TotalUsersByAccount extends BaseClass with QueryMaxAndMinIDUtil{
           r=>r.getString(1)).distinct()
         val resultRDD = programMap.subtract(userIdRDD)
 
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val oldSql = s"delete from useridByUsingAccount where day = '$yesterdayCN'"

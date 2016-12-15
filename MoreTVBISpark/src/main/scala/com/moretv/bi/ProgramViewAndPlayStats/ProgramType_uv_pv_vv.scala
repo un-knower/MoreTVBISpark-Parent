@@ -49,7 +49,7 @@ object ProgramType_uv_pv_vv extends BaseClass with DateUtil{
         liveRDD.unpersist()
 
         //save date
-        val util = new DBOperationUtils("eagletv")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_EAGLETV_MYSQL)
         //delete old data
         if (p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

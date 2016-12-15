@@ -43,7 +43,7 @@ private val filterStr = "5iac8sru3fo8,5iv0l79xg64f,fhnoabs9g62c,4g9vh6t9fhgh,3f1
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
         val cal = Calendar.getInstance
         val startDate = p.startDate

@@ -50,7 +50,7 @@ object PromotionChannelDetail extends BaseClass {
 
         val userNums = logRdd.distinct().countByKey()
 
-        val dbTvService = new DBOperationUtils("tvservice")
+        val dbTvService = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
         val pcSql = "SELECT ifnull(promotion_channel,'null') as pchannel, COUNT(DISTINCT mac) as new_num " +
           s"FROM mtv_account WHERE openTime BETWEEN '$day 00:00:00' AND '$day 23:59:59' GROUP BY promotion_channel"
 
@@ -60,7 +60,7 @@ object PromotionChannelDetail extends BaseClass {
           if(promotionChannel == "") ("kong",newNum) else (promotionChannel,newNum)
         }).toMap
 
-        val db = new DBOperationUtils("eagletv")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_EAGLETV_MYSQL)
         if(p.deleteOld){
           val sqlDelete = "delete from promotion_detail where day = ?"
           db.delete(sqlDelete,day)

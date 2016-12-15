@@ -28,7 +28,7 @@ object User_shichang extends BaseClass with DateUtil{
         val userNum = resultRDD.distinct().countByKey()
         val accessNum = resultRDD.countByKey()
 
-        val util = new DBOperationUtils("eagletv")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_EAGLETV_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

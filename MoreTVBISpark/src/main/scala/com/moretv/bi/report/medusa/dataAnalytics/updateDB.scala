@@ -8,7 +8,7 @@ import com.moretv.bi.util.DBOperationUtils
  */
 object updateDB {
   def main(args: Array[String]) {
-    val util = new DBOperationUtils("medusa")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
     val updateSQL1 = "update "
   }
 

@@ -19,7 +19,7 @@ object MovieSummaryPlayDurationNum extends BaseClass{
      /*该函数用于配置MovieSummaryViewNum*/
      val date = new Date()
      val dateFormat = new SimpleDateFormat("yyyyMMdd")
-     val db = new DBOperationUtils("medusa")
+     val db = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
      /*设置参数*/
      val startDate = dateFormat.format(date)

@@ -25,7 +25,7 @@ object ProgramPlayErrorStatistics extends BaseClass with DateUtil{
         val resultRDD = df.filter("event in('playerror','userexit','playend','sourceerror')").select("date","source","videoSid","event").map(e =>(e.getString(0),e.getString(1),e.getString(2),e.getString(3))).
             map(e=>(getKeys(e._1,e._2,e._3),e._4)).groupByKey().map(e => (e._1,countNum(e._2))).collect()
 
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

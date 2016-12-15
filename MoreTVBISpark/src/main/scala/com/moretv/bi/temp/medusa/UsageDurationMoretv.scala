@@ -26,7 +26,7 @@ object UsageDurationMoretv extends SparkSetting{
           map(row => (row.getString(0).toUpperCase, row.getInt(1), row.getString(2))).
           filter(x => PMUtils.pmfilter(x._1)).cache()
         logRdd.toDF.registerTempTable("log_data")
-        val db = new DBOperationUtils("medusa")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val day = DateFormatUtils.toDateCN(inputDate, -1)
 
         //avg usage duration by productModel

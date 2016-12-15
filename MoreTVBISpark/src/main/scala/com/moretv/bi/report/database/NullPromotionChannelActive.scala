@@ -18,7 +18,7 @@ object NullPromotionChannelActive extends BaseClass{
     ModuleClass.executor(NullPromotionChannelActive,args)
   }
   override def execute(args: Array[String]) {
-    val db = new DBOperationUtils("tvservice")
+    val db = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
     val sqlIds = "SELECT MIN(id),MAX(id) FROM tvservice.`mtv_account` "
     val ids = db.selectOne(sqlIds)
     val min = ids(0).toString.toLong

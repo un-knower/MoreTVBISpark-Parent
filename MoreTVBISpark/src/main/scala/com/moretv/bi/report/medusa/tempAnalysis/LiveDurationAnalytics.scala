@@ -17,7 +17,7 @@ object LiveDurationAnalytics extends SparkSetting{
     if(args.length>0) {
       val sc = new SparkContext(config)
       implicit val sqlContext = new SQLContext(sc)
-      val util = new DBOperationUtils("medusa")
+      val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
       val time = args(0)
       val dir = s"/log/medusaAndMoretvMerger/$time/live"
       sqlContext.read.parquet(dir).select("duration","userId","event","liveType").registerTempTable("log")

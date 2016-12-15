@@ -15,7 +15,7 @@ object StatisticsModel {
 
   def pvuvStatisticModel(args:Array[String],sqlContext: SQLContext,logType:String,countBy:String,insertTable:String,
                          sqlInsert:String)={
-    val util = new DBOperationUtils("medusa")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
@@ -54,7 +54,7 @@ object StatisticsModel {
                                  countBy:String,restrictColumnContent:Array[String],
                                  insertTable:String, sqlInsert:String,countByColumnName:String,
                                  restrictByColumnName:String,eventColumnName:String,statisticByColumnName:String="")={
-    val util = new DBOperationUtils("medusa")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
@@ -121,7 +121,7 @@ object StatisticsModel {
                                countBy:String,restrictColumnContent:Array[String],
                                insertTable:String, sqlInsert:String,countByColumnName:String,
                                restrictByColumnName:String,dateTimeColumnName:String,eventColumnName:String,statisticByColumnName:String="")={
-    val util = new DBOperationUtils("medusa")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
@@ -188,7 +188,7 @@ object StatisticsModel {
 
   def sumStatisticModel(args:Array[String],sqlContext:SQLContext,logType:String,sumBy:String,insertTable:String,
                          sqlInsert:String)={
-    val util = new DBOperationUtils("medusa")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         val inputDate = p.startDate

@@ -53,7 +53,7 @@ object MVOminibusSrcStat extends BaseClass {
       case Some(p) => {
 
         // init & util
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         sqlContext.udf.register("getSidFromPath", getSidFromPath _)
 
         val startDate = p.startDate

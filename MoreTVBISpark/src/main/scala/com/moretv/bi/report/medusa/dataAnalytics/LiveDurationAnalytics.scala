@@ -29,7 +29,7 @@ object LiveDurationAnalytics extends BaseClass{
    * @param args
    */
   override def execute(args:Array[String]) ={
-    val util = new DBOperationUtils("medusa")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
     val tempSqlContext = sqlContext
     import tempSqlContext.implicits._
     val numOfPartition = 20

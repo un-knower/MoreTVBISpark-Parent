@@ -29,7 +29,7 @@ object Sample extends SparkSetting{
         val version = row.getString(1)
         if(pmFilter(pm) && version.startsWith("MoreTV_TVApp3.0_Medusa_")) row.getString(2) else null
       }).filter(_ != null).distinct()
-    val util = new DBOperationUtils("tvservice")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
     val ids = util.selectOne(s"SELECT MIN(id),MAX(id) FROM tvservice.mtv_account WHERE openTime BETWEEN '2016-03-03 00:00:00' AND '2016-04-05 23:59:59'")
     val sampleNewRdd = new JdbcRDD(sc, ()=>{
       Class.forName("com.mysql.jdbc.Driver")

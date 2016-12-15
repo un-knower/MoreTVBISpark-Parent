@@ -18,7 +18,7 @@ object SpecialCrashUser extends SparkSetting{
   val sc = new SparkContext(config)
   val sqlContext = new SQLContext(sc)
   import sqlContext.implicits._
-  val util = new DBOperationUtils("medusa")
+  val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
 
   def main(args: Array[String]) {

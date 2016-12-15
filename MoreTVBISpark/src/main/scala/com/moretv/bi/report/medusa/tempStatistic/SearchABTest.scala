@@ -24,7 +24,7 @@ object SearchABTest extends SparkSetting{
     val sc = new SparkContext(config)
     val sqlContext = SQLContext.getOrCreate(sc)
     TransformUDF.registerUDF(sqlContext)
-    val util = new DBOperationUtils("medusa")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
     val configFile = new File("/script/bi/medusa/test/shell/configFile/search.xml")
     val day = "201609{02,03,04,05,06,07,08}"
     val abTest = new ABTestOne(configFile)
