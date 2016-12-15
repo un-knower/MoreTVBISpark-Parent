@@ -9,6 +9,9 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.storage.StorageLevel
 import com.moretv.bi.util.SubjectUtils._
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
 object Subject_pv_uv extends BaseClass with DateUtil{

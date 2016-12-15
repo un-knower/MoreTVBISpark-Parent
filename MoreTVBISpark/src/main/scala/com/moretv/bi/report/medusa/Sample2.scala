@@ -2,6 +2,8 @@ package com.moretv.bi.report.medusa
 
 import java.sql.DriverManager
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
 import com.moretv.bi.util.{DBOperationUtils, SparkSetting}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.JdbcRDD

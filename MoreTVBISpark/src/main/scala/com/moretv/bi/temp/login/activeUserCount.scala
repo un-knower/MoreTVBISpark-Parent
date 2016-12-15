@@ -4,7 +4,10 @@ import java.util.Calendar
 import java.lang.{Long => JLong}
 import com.moretv.bi.report.medusa.functionalStatistic.appRecommendInstallInfo._
 import com.moretv.bi.util.{CodeToNameUtils, DBOperationUtils, DateFormatUtils, ParamsParseUtil}
-import com.moretv.bi.util.baseclasee.{BaseClass,ModuleClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
 /**
   * Created by 陈佳星 on 2016/9/7.

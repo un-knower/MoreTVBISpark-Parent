@@ -7,7 +7,10 @@ package src.com.moretv.bi.report.medusa.CrashLog
 import java.lang.{Long => JLong}
 
 import com.moretv.bi.medusa.util.DevMacUtils
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{ParamsParseUtil, _}
 import org.apache.commons.codec.digest.DigestUtils
 import org.json.JSONObject

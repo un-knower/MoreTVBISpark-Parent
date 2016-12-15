@@ -1,7 +1,10 @@
 package com.moretv.bi.overview
 
 import com.moretv.bi.util._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
@@ -82,7 +85,7 @@ object HomeAccessDistribution extends BaseClass with DateUtil{
     names.getOrElse(index,null)
   }
 
-  def saveRdd2DB(rdd:RDD[((String,Int,String,String,String),String)],db:DBOperationUtils) = {
+  def saveRdd2DB(rdd:RDD[((String,Int,String,String,String),String)],db: MySqlOps) = {
     val userNum = rdd.distinct().countByKey()
     val accessNum = rdd.countByKey()
     val sql = "INSERT INTO home_access_distribution(year,month,day,region_code,region_name,user_num,access_num) " +

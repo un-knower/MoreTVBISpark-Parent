@@ -8,17 +8,21 @@ import java.sql.DriverManager
 import java.util.Calendar
 
 import com.moretv.bi.constant.Constants._
-import com.moretv.bi.report.medusa.util.{UDFSets, DFUtil}
+import com.moretv.bi.report.medusa.util.{DFUtil, UDFSets}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, SparkSetting}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.JdbcRDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.storage.StorageLevel
+
 import scala.collection.JavaConversions._
 import com.moretv.bi.util.ImplicitClass._
-import java.lang.{Long=>JLong}
+import java.lang.{Long => JLong}
 
-import scala.util.parsing.json.{JSONType, JSON}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
+
+import scala.util.parsing.json.{JSON, JSONType}
 
 /*此函数用于统计需要使用count类型的统计需求*/
 object CountStatistic extends SparkSetting{

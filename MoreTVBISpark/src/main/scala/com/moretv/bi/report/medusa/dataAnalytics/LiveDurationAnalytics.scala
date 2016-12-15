@@ -4,7 +4,10 @@ import java.sql.DriverManager
 import java.util.Calendar
 
 import com.moretv.bi.util.{DateFormatUtils, DBOperationUtils, ParamsParseUtil}
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.rdd.JdbcRDD
 import org.apache.spark.storage.StorageLevel
 
@@ -33,12 +36,12 @@ object LiveDurationAnalytics extends BaseClass{
     val tempSqlContext = sqlContext
     import tempSqlContext.implicits._
     val numOfPartition = 20
-    val minId = (util:DBOperationUtils) => {
+    val minId = (util: MySqlOps) => {
       val sql = "select min(id) from medusa.liveDurationProbabilityByTenSecends"
       val id = util.selectOne(sql)
       id(0).toString.toLong
     }
-    val maxId = (util:DBOperationUtils) => {
+    val maxId = (util: MySqlOps) => {
       val sql = "select max(id) from medusa.liveDurationProbabilityByTenSecends"
       val id = util.selectOne(sql)
       id(0).toString.toLong

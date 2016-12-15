@@ -33,9 +33,6 @@ trait ParquetHandle {
         val df = sqlContext.read.parquet(loadPath)
         filter(df)
       }
-      case _ => {
-        throw new Exception("out of control")
-      }
     }
 
   }
@@ -50,9 +47,6 @@ trait ParquetHandle {
       }
       case false => {
         filter(df).write.parquet(savePath)
-      }
-      case _ => {
-        throw new Exception("out of control")
       }
     }
 

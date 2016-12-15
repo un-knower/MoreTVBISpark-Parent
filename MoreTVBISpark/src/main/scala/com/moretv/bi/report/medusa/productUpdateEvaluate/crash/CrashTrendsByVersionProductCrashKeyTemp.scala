@@ -6,6 +6,8 @@ package com.moretv.bi.report.medusa.productUpdateEvaluate.crash
 
 import java.lang.{Long => JLong}
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
 import com.moretv.bi.medusa.util.DevMacUtils
 import com.moretv.bi.medusa.util.ParquetDataStyle.ALL_CRASH_INFO
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}

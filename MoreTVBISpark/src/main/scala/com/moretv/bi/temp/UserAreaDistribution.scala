@@ -3,6 +3,9 @@ package com.moretv.bi.temp
 import java.io.PrintWriter
 import java.sql.DriverManager
 
+import cn.whaley.sdk.dataOps.MySqlOps
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
 import com.moretv.bi.util.{DBOperationUtils, SparkSetting}
 import com.moretv.ip.IPUtils
 import org.apache.spark.SparkContext
@@ -55,7 +58,7 @@ object UserAreaDistribution extends SparkSetting{
 
   }
 
-  def getMaxId(util: DBOperationUtils) = {
+  def getMaxId(util: MySqlOps) = {
     val sql = "SELECT MAX(id) FROM mtv_account"
     val arr = util.selectOne(sql)
     arr(0).toString.toLong

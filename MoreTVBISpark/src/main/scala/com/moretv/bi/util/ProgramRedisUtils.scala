@@ -34,7 +34,6 @@ class ProgramRedisUtils {
 				System.out.println("Exception:" + e.getMessage() + "\t" +  e.getClass())
 				System.out.println("sid:" + sid)
 			}
-			case _ =>
 		}
 		if(id != null){
 			metadata=metadata_jedis.get(id.toString())
@@ -88,7 +87,6 @@ class ProgramRedisUtils {
 				System.out.println("Exception:" + e.getMessage() + "\t" +  e.getClass())
 				System.out.println("sid:" + sid)
 			}
-				case _ =>
 		}
 		if(id != null){
 			metadata=metadata_jedis.get(id.toString())

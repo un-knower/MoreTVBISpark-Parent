@@ -3,6 +3,9 @@ package com.moretv.bi.report
 import java.io.PrintWriter
 import java.sql.DriverManager
 
+import cn.whaley.sdk.dataOps.MySqlOps
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
 import com.moretv.bi.util.{DBOperationUtils, ProductModelUtils, SparkSetting}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.JdbcRDD
@@ -49,7 +52,7 @@ object UserVersionDist extends SparkSetting{
 
   }
 
-  def getMaxId(util: DBOperationUtils) = {
+  def getMaxId(util: MySqlOps) = {
     val sql = "SELECT MAX(id) FROM mtv_account"
     val arr = util.selectOne(sql)
     arr(0).toString.toLong

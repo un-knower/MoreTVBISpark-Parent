@@ -4,7 +4,10 @@ import java.sql.DriverManager
 import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateFormatUtils, HdfsUtil, SparkSetting}
 import com.moretv.bi.util.ParamsParseUtil._
 import org.apache.spark.SparkContext

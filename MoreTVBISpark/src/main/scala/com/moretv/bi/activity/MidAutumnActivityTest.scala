@@ -3,7 +3,10 @@ package com.moretv.bi.activity
 import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil, SparkSetting}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
@@ -228,7 +231,6 @@ object MidAutumnActivityTest extends BaseClass{
         case "question_8" => "第八题"
         case "question_9" => "第九题"
         case "question_10" => "第十题"
-        case "lottery"=>"抽奖"
         case "share"=>"分享"
         //未知定义
         case "undesigned" => "未知"

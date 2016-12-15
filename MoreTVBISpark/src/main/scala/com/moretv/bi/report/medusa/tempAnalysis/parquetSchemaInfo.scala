@@ -2,6 +2,8 @@ package com.moretv.bi.report.medusa.tempAnalysis
 
 import java.util.Calendar
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
 import com.moretv.bi.report.medusa.util.FilesInHDFS
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
 import org.apache.spark.SparkContext

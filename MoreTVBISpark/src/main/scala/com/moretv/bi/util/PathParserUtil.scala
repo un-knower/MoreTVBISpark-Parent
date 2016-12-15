@@ -16,17 +16,6 @@ object SubjectPathParserUtil {
     subjectCode
   }
 
-  def getHomeAccessAreaMedusa(str1:String,str2:String):String={
-    if(isSubjectMedusa(str1)){
-      if(str2!=null){
-        regexHomeAccessAreaMedusa findFirstMatchIn(str2) match {
-          case Some(p)=>
-        }
-      }
-    }
-    homeAccessArea
-  }
-
 
 
   def isSubjectMedusa(str:String):Boolean={
