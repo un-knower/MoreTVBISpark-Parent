@@ -91,7 +91,7 @@ object UDFConstant {
 
 
 
-  val MedusaPathSubAccessPath = Array("similar","peoplealselike","guessyoulike")
+  val MedusaPathSubAccessPath = Array("similar","peoplealsolike","guessyoulike")
   val MedusaPathProperty = Array("subject","tag","star")
 
   // 定义medusa的launcherArea集合、launcherAccessLocation集合
