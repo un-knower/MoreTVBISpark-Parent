@@ -4,7 +4,8 @@ import java.lang.{Long => JLong}
 import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.DataBases
+import com.moretv.bi.global.{LogTypes, DataBases}
+import com.moretv.bi.report.medusa.pageStatistics.StartPageStatistics._
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
@@ -23,9 +24,6 @@ object MedusaDailyActivityInfo extends SparkSetting{
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
 
-        val medusaDir = "/log/medusa/parquet"
-
-
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
 
@@ -34,8 +32,10 @@ object MedusaDailyActivityInfo extends SparkSetting{
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
-          val medusaDailyActiveInput = s"$medusaDir/$date/*/"
-          val medusaDailyEnterInput = s"$medusaDir/$date/enter/"
+          val medusaDailyActiveInput =DataIO.getDataFrameOps.getPath(MEDUSA,"*",date)
+          val medusaDailyEnterInput =DataIO.getDataFrameOps.getPath(MEDUSA,"enter",date)
+
+          val df=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.ENTER)
 
           sqlContext.read.parquet(medusaDailyActiveInput).select("userId","apkVersion","buildDate","productModel").
             filter("length(buildDate)<20").registerTempTable("all_log")

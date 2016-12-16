@@ -23,7 +23,7 @@ object newUserCountInfo extends BaseClass{
       case Some(p) => {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val dbsnapshotDir = "/log/dbsnapshot/parquet"
+
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
 
@@ -31,7 +31,9 @@ object newUserCountInfo extends BaseClass{
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
           val insertDate = DateFormatUtils.toDateCN(date, 0)
           calendar.add(Calendar.DAY_OF_MONTH, -1)
-          val newUserInput = s"$dbsnapshotDir/$date/moretv_mtv_account"
+
+          val inputPath = p.paramMap.getOrElse("inputPath", "/log/dbsnapshot/parquet/#{date}/moretv_mtv_account")
+          val newUserInput =inputPath.replace("#{date}",date)
 
           sqlContext.read.parquet(newUserInput).registerTempTable("log_data")
 

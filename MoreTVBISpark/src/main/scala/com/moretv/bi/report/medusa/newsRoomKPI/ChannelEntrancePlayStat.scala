@@ -63,8 +63,7 @@ object ChannelEntrancePlayStat extends BaseClass {
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          val playviewInput = s"/log/medusaAndMoretvMerger/$loadDate/playview"
-
+          val playviewInput = DataIO.getDataFrameOps.getPath(MERGER,LogTypes.PLAYVIEW,loadDate)
 
           sqlContext.read.parquet(playviewInput)
 

@@ -22,9 +22,6 @@ object EachChannelPlayInfo extends BaseClass{
   private val regex="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|mv)([0-9]+)""".r
 
   def main(args: Array[String]) {
-    config.set("spark.executor.memory", "5g").
-      set("spark.executor.cores", "5").
-      set("spark.cores.max", "100")
     ModuleClass.executor(EachChannelPlayInfo,args)
   }
 
@@ -33,7 +30,7 @@ object EachChannelPlayInfo extends BaseClass{
       case Some(p) => {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val medusaDir = "/log/medusaAndMoretvMerger/"
+
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
         (0 until p.numOfDays).foreach(i=>{
@@ -41,9 +38,8 @@ object EachChannelPlayInfo extends BaseClass{
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
 
-          val playviewInput = s"$medusaDir/$date/playview/"
-
-          sqlContext.read.parquet(playviewInput).select("userId","contentType","launcherAreaFromPath",
+          val df0=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MERGER,LogTypes.PLAYVIEW)
+          df0.select("userId","contentType","launcherAreaFromPath",
             "launcherAccessLocationFromPath","pageDetailInfoFromPath","pathIdentificationFromPath","path",
             "pathPropertyFromPath","flag","event").repartition(10).registerTempTable("log_data")
 

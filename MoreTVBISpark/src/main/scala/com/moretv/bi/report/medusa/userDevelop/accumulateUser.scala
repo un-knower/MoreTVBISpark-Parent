@@ -10,27 +10,28 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 
 /**
-  * Created by 陈佳星 on 2016/9/7.
-  */
-object accumulateUser extends BaseClass{
+ * Created by 陈佳星 on 2016/9/7.
+ */
+object accumulateUser extends BaseClass {
   def main(args: Array[String]) {
-    ModuleClass.executor(accumulateUser,args)
+    ModuleClass.executor(accumulateUser, args)
   }
+
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val dbsnapshotDir = "/log/dbsnapshot/parquet"
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
 
-        (0 until p.numOfDays).foreach(i=> {
+        (0 until p.numOfDays).foreach(i => {
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
           val insertDate = DateFormatUtils.toDateCN(date, 0)
           calendar.add(Calendar.DAY_OF_MONTH, -1)
-          val newUserInput = s"$dbsnapshotDir/$date/moretv_mtv_account"
 
+          val inputPath = p.paramMap.getOrElse("inputPath", "/log/dbsnapshot/parquet/#{date}/moretv_mtv_account")
+          val newUserInput =inputPath.replace("#{date}",date)
           sqlContext.read.parquet(newUserInput).registerTempTable("log_data")
 
           val rdd = sqlContext.sql(s"select product_model, count(distinct user_id) as user_num from log_data " +
@@ -49,7 +50,9 @@ object accumulateUser extends BaseClass{
         })
       }
 
-      case None => {throw new RuntimeException("At least needs one param: startDate!")}
+      case None => {
+        throw new RuntimeException("At least needs one param: startDate!")
+      }
     }
   }
 

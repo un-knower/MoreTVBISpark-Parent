@@ -55,9 +55,9 @@ object activeUserVersionStat extends BaseClass {
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
           //path1
-          val loadPath1 = s"/log/medusa/parquet/$loadDate/*"
+          val loadPath1 =  DataIO.getDataFrameOps.getPath(MEDUSA,"*",loadDate)
 
-          val loadPath2 = s"/mbi/parquet/*/$loadDate"
+          val loadPath2 =  DataIO.getDataFrameOps.getPath(MORETV,"*",loadDate)
 
           val loads = new Array[String](2)
 

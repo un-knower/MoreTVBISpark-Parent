@@ -26,8 +26,7 @@ object totalDailyActiveUserInfo extends BaseClass{
       case Some(p) => {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val medusaDir = "/log/medusa/parquet"
-        val moretvDir = "/mbi/parquet"
+
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
 
@@ -38,8 +37,8 @@ object totalDailyActiveUserInfo extends BaseClass{
           calendar.add(Calendar.DAY_OF_MONTH,-1)
           val enterUserIdDate = DateFormatUtils.readFormat.format(calendar.getTime)
 
-          val medusaDailyActiveInput = s"$medusaDir/$date/*/"
-          val moretvDailyActiveInput = s"$moretvDir/*/$date"
+          val medusaDailyActiveInput =DataIO.getDataFrameOps.getPath(MEDUSA,"*",date)
+          val moretvDailyActiveInput =DataIO.getDataFrameOps.getPath(MORETV,"*",date)
 
           val medusaDailyActivelog = sqlContext.read.parquet(medusaDailyActiveInput).select("userId","apkVersion")
             .registerTempTable("medusa_daily_active_log")

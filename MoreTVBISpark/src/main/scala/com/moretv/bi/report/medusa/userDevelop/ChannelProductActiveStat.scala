@@ -50,7 +50,8 @@ object ChannelProductActiveStat extends BaseClass {
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          val loadPath = s"/log/moretvloginlog/parquet/$loadDate/loginlog"
+          val inputPath=p.paramMap.getOrElse("inputPath","/log/moretvloginlog/parquet/#{date}/loginlog")
+          val loadPath = inputPath.replace("#{date}",loadDate)
 
           sqlContext.read.parquet(loadPath)
             .filter(s"date between '$sqlDate' and '$sqlDate'")
