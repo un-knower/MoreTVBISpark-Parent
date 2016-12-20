@@ -39,7 +39,7 @@ object SearchVideoContentTypeStat extends  BaseClass{
 
   def main(args: Array[String]):Unit = {
 
-    ModuleClass.executor(SearchVideoContentTypeStat,args)
+    ModuleClass.executor(this,args)
 
   }
 
@@ -63,7 +63,7 @@ object SearchVideoContentTypeStat extends  BaseClass{
           cal.add(Calendar.DAY_OF_MONTH,-1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          //path 
+         /* //path 
           val path = s"/log/medusa/parquet/$loadDate/$dataSource"
           println(path)
 
@@ -73,9 +73,12 @@ object SearchVideoContentTypeStat extends  BaseClass{
                     .select("resultSid", "resultName", "contentType", "userId", "apkVersion")
                       .filter("resultSid is not null")
                       .filter("resultName is not null")
-                      .filter("contentType is not null")
+                      .filter("contentType is not null")*/
 
-
+          val df=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.CLICKSEARCHRESULT,loadDate).select("resultSid", "resultName", "contentType", "userId", "apkVersion")
+            .filter("resultSid is not null")
+            .filter("resultName is not null")
+            .filter("contentType is not null")
           //rdd((resultSid,resultName,contentType),userId)
           val rdd = df.map(e=>((e.getString(0),e.getString(1),e.getString(2)),e.getString(3)))
                       .cache

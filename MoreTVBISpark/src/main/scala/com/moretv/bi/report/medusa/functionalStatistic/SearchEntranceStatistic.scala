@@ -25,9 +25,7 @@ object SearchEntranceStatistic extends BaseClass{
   private val tableName = "search_entrance_freq"
 
   def main(args: Array[String]) {
-
-    ModuleClass.executor(SearchEntranceStatistic,args)
-
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]): Unit = {
@@ -42,20 +40,21 @@ object SearchEntranceStatistic extends BaseClass{
         (0 until p.numOfDays).foreach(w=>{
 
           //date
-
           val loadDate = DateFormatUtils.readFormat.format(cal.getTime)
           cal.add(Calendar.DAY_OF_MONTH,-1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          //path
+         /* //path
           val loadPath = s"/log/medusa/parquet/$loadDate/clickEntrance"
+          */
 
           //df
           var df:DataFrame = null
           try{
-            df =sqlContext.read.parquet(loadPath).select("logType","userId","params['entrance']")
+          /*  df =sqlContext.read.parquet(loadPath).select("logType","userId","params['entrance']")
+              .filter("logType='event'").filter("params['entrance'] is not null")*/
+            df=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.CLICK_ENTRANCE,loadDate).select("logType","userId","params['entrance']")
               .filter("logType='event'").filter("params['entrance'] is not null")
-
           }catch {
             case ex:Exception =>{
               println(ex)

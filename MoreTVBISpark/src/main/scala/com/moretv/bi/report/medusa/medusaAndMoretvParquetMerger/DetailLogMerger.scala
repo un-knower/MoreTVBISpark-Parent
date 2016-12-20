@@ -34,30 +34,43 @@ object DetailLogMerger extends BaseClass{
         sqlContext.udf.register("getSubjectCode",PathParser.getSubjectCodeByPath _)
         sqlContext.udf.register("getSubjectNameBySid",PathParser.getSubjectNameByPath _)
         val startDate = p.startDate
-        val logType = "detail"
+      /*  val logType = "detail"
         val medusaLogType = "detail"
         val moretvLogType = "detail"
         val medusaDir = "/log/medusa/parquet"
-        val moretvDir = "/mbi/parquet"
+        val moretvDir = "/mbi/parquet"*/
         val cal = Calendar.getInstance()
         cal.setTime(DateFormatUtils.readFormat.parse(startDate))
 
         (0 until p.numOfDays).foreach(i=>{
           val inputDate = DateFormatUtils.readFormat.format(cal.getTime)
-          val logDir1 = s"$medusaDir/$inputDate/$logType"
+         /* val logDir1 = s"$medusaDir/$inputDate/$logType"
           val logDir2 = s"$moretvDir/$logType/$inputDate"
 
 
           val medusaFlag = FilesInHDFS.fileIsExist(s"$medusaDir/$inputDate",medusaLogType)
           val moretvFlag = FilesInHDFS.fileIsExist(s"$moretvDir/$moretvLogType",inputDate)
           val outputPath = s"/log/medusaAndMoretvMerger/$inputDate/$logType"
+*/
+
+
+          val medusa_input_dir= DataIO.getDataFrameOps.getPath(MEDUSA,LogTypes.DETAIL,inputDate)
+          val moretv_input_dir= DataIO.getDataFrameOps.getPath(MORETV,LogTypes.DETAIL,inputDate)
+          val outputPath= DataIO.getDataFrameOps.getPath(MERGER,LogTypes.DETAIL,inputDate)
+          val medusaFlag = FilesInHDFS.IsInputGenerateSuccess(medusa_input_dir)
+          val moretvFlag = FilesInHDFS.IsInputGenerateSuccess(moretv_input_dir)
+
+
           if(p.deleteOld){
             HdfsUtil.deleteHDFSFile(outputPath)
           }
 
           if(medusaFlag && moretvFlag){
-            val medusaDf = sqlContext.read.parquet(logDir1)
-            val moretvDf = sqlContext.read.parquet(logDir2)
+          /*  val medusaDf = sqlContext.read.parquet(logDir1)
+            val moretvDf = sqlContext.read.parquet(logDir2)*/
+            val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.DETAIL,inputDate)
+            val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MORETV,LogTypes.DETAIL,inputDate)
+
             val medusaColNames = medusaDf.columns.toList.filter(e=>{ParquetSchema.schemaArr.contains(e)}).mkString(",")
             val moretvColNames = moretvDf.columns.toList.filter(e=>{ParquetSchema.schemaArr.contains(e)}).mkString(",")
             medusaDf.registerTempTable("log_data_1")
@@ -100,7 +113,8 @@ object DetailLogMerger extends BaseClass{
 
             sqlContext.read.json(mergerDf).write.parquet(outputPath)
           }else if(!medusaFlag && moretvFlag){
-            val moretvDf = sqlContext.read.parquet(logDir2)
+            //val moretvDf = sqlContext.read.parquet(logDir2)
+            val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MORETV,LogTypes.DETAIL,inputDate)
             val moretvColNames = moretvDf.columns.toList.mkString(",")
             moretvDf.registerTempTable("log_data_2")
             val sqlSelectMoretv = s"select $moretvColNames, "+
@@ -119,7 +133,9 @@ object DetailLogMerger extends BaseClass{
             val mergerDf = sqlContext.sql(sqlSelectMoretv)
             mergerDf.write.parquet(outputPath)
           }else if(medusaFlag && !moretvFlag){
-            val medusaDf = sqlContext.read.parquet(logDir1)
+            //val medusaDf = sqlContext.read.parquet(logDir1)
+            val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.DETAIL,inputDate)
+
             val medusaColNames = medusaDf.columns.toList.mkString(",")
             medusaDf.registerTempTable("log_data_1")
             val sqlSelectMedusa = s"select $medusaColNames, " +

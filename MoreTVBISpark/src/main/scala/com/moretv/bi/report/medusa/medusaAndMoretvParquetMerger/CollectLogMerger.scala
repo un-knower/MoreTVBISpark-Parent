@@ -27,25 +27,37 @@ object CollectLogMerger extends BaseClass{
    override def execute(args: Array[String]) {
      ParamsParseUtil.parse(args) match {
        case Some(p)=>{
-         val logType = "collect"
+       /*  val logType = "collect"
          val medusaDir ="/log/medusa/parquet"
-         val moretvDir = "/mbi/parquet"
+         val moretvDir = "/mbi/parquet"*/
          val cal = Calendar.getInstance()
          cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))
 
          (0 until p.numOfDays).foreach(i=>{
            val inputDate = DateFormatUtils.readFormat.format(cal.getTime)
-           val logDir1 = s"$medusaDir/$inputDate/$logType"
+           /*val logDir1 = s"$medusaDir/$inputDate/$logType"
            val logDir2 = s"$moretvDir/$logType/$inputDate"
            val outputPath = s"/log/medusaAndMoretvMerger/$inputDate/$logType"
            val medusaFlag = FilesInHDFS.fileIsExist(s"$medusaDir/$inputDate",logType)
-           val moretvFlag = FilesInHDFS.fileIsExist(s"$moretvDir/$logType",inputDate)
+           val moretvFlag = FilesInHDFS.fileIsExist(s"$moretvDir/$logType",inputDate)*/
+
+
+           val medusa_input_dir= DataIO.getDataFrameOps.getPath(MEDUSA,LogTypes.COLLECT,inputDate)
+           val moretv_input_dir= DataIO.getDataFrameOps.getPath(MORETV,LogTypes.COLLECT,inputDate)
+           val outputPath= DataIO.getDataFrameOps.getPath(MERGER,LogTypes.COLLECT,inputDate)
+           val medusaFlag = FilesInHDFS.IsInputGenerateSuccess(medusa_input_dir)
+           val moretvFlag = FilesInHDFS.IsInputGenerateSuccess(moretv_input_dir)
+
            if(p.deleteOld){
              HdfsUtil.deleteHDFSFile(outputPath)
            }
            if(medusaFlag && moretvFlag){
-             val medusaDf = sqlContext.read.parquet(logDir1)
-             val moretvDf = sqlContext.read.parquet(logDir2)
+             /*val medusaDf = sqlContext.read.parquet(logDir1)
+             val moretvDf = sqlContext.read.parquet(logDir2)*/
+
+             val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.COLLECT,inputDate)
+             val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MORETV,LogTypes.COLLECT,inputDate)
+
              val medusaColNames = medusaDf.columns.toList.mkString(",")
              val moretvColNames = moretvDf.columns.toList.mkString(",")
              medusaDf.registerTempTable("log_data_1")
@@ -60,14 +72,18 @@ object CollectLogMerger extends BaseClass{
              sqlContext.read.json(mergerDf).write.parquet(outputPath)
 
            }else if(!medusaFlag && moretvFlag){
-             val moretvDf = sqlContext.read.parquet(logDir2)
+            // val moretvDf = sqlContext.read.parquet(logDir2)
+             val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MORETV,LogTypes.COLLECT,inputDate)
+
              val moretvColNames = moretvDf.columns.toList.mkString(",")
              moretvDf.registerTempTable("log_data_2")
 
              val sqlSelectMoretv = s"select $moretvColNames, date as day,'moretv' as flag from log_data_2"
              sqlContext.sql(sqlSelectMoretv).write.parquet(outputPath)
            }else if(medusaFlag && !moretvFlag){
-             val medusaDf = sqlContext.read.parquet(logDir1)
+             //val medusaDf = sqlContext.read.parquet(logDir1)
+             val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.COLLECT,inputDate)
+
              val medusaColNames = medusaDf.columns.toList.mkString(",")
              medusaDf.registerTempTable("log_data_1")
              val sqlSelectMedusa = s"select $medusaColNames,'medusa' as flag from log_data_1"
