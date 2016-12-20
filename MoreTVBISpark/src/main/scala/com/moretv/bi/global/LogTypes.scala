@@ -59,4 +59,5 @@ object LogTypes {
   val APP_RECOMMEND="apprecommend"
   val CLICK_ENTRANCE="clickEntrance"
   val CLICK_RESULT="clickResult"
+  val OPERATION_E="operation-e"
 }
