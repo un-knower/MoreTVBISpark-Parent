@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 
 import java.lang.{Long => JLong, Integer => JInt}
-import com.moretv.bi.util.{DBOperationUtils, ParamsParseUtil}
+import com.moretv.bi.util.{Params, DBOperationUtils, ParamsParseUtil}
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
 import cn.whaley.sdk.dataOps.MySqlOps
@@ -37,9 +37,6 @@ object ProductModelUserStat extends BaseClass {
 
 
   def main(args: Array[String]): Unit = {
-    config.set("spark.executor.memory", "5g").
-      set("spark.executor.cores", "5").
-      set("spark.cores.max", "100")
     ModuleClass.executor(ProductModelUserStat, args)
   }
 
@@ -49,7 +46,7 @@ object ProductModelUserStat extends BaseClass {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
-        val dateArr = setDateValues("month", p.startDate)
+        val dateArr = setDateValues("month", p.startDate,p)
 
 
         sqlContext.read.parquet(dateArr._1)
@@ -92,7 +89,7 @@ object ProductModelUserStat extends BaseClass {
     * @param startDate
     * @return
     */
-  def setDateValues(dateType: String, startDate: String): (String, String, String) = {
+  def setDateValues(dateType: String, startDate: String,p:Params): (String, String, String) = {
 
     val format1 = new SimpleDateFormat("yyyyMMdd")
     val format2 = new SimpleDateFormat("yyyy-MM-dd")
@@ -115,7 +112,8 @@ object ProductModelUserStat extends BaseClass {
         startDateFormat = year + "-" + currentMonth + "-" + "01"
         endDateForamt = year + "-" + currentMonth + "-" + endOfMonth
 
-        val loadPathTemplate = s"/log/moretvloginlog/parquet/$loadDateFormat/loginlog"
+        val inputPath=p.paramMap.getOrElse("inputPath","/log/moretvloginlog/parquet/#{date}/loginlog")
+        val loadPathTemplate =inputPath.replace("#{date}",loadDateFormat)
 
         (loadPathTemplate, startDateFormat, endDateForamt)
 

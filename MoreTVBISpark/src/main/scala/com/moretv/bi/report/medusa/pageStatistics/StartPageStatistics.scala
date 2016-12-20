@@ -45,13 +45,13 @@ object StartPageStatistics extends  BaseClass{
           cal.add(Calendar.DAY_OF_MONTH,-1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          //path
-          val readPath = s"/log/medusa/parquet/$loadDate/startpage"
+
+          val df=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.STARTPAGE)
 
 //          JobStatus.startRecordJobStatus()
           try{
             //df
-            val startPageDf = sqlContext.read.parquet(readPath).select("apkVersion","pageType","userId")
+            val startPageDf = df.select("apkVersion","pageType","userId")
                   .filter("pageType is not null")
             //rdd((apkVersion,pageType),userId)
             val startPageRdd =startPageDf.map(e=>((e.getString(0),e.getString(1)),e.getString(2)))
