@@ -20,33 +20,44 @@ import org.apache.spark.sql.SQLContext
   */
 object InterviewLogMerger extends BaseClass{
   def main(args: Array[String]) {
-    ModuleClass.executor(InterviewLogMerger,args)
+    ModuleClass.executor(this,args)
   }
    override def execute(args: Array[String]) {
      ParamsParseUtil.parse(args) match {
        case Some(p)=>{
          sqlContext.udf.register("pathParser",PathParser.pathParser _)
-         val logType = "interview"
+       /*  val logType = "interview"
          val medusaDir ="/log/medusa/parquet"
-         val moretvDir = "/mbi/parquet"
+         val moretvDir = "/mbi/parquet"*/
          val cal = Calendar.getInstance()
          cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))
 
          (0 until p.numOfDays).foreach(i=>{
            val inputDate = DateFormatUtils.readFormat.format(cal.getTime)
-           val logDir1 = s"/log/medusa/parquet/$inputDate/$logType"
+          /* val logDir1 = s"/log/medusa/parquet/$inputDate/$logType"
            val logDir2 = s"/mbi/parquet/$logType/$inputDate"
            val outputPath = s"/log/medusaAndMoretvMerger/$inputDate/$logType"
 
            val medusaFlag = FilesInHDFS.fileIsExist(s"$medusaDir/$inputDate",logType)
-           val moretvFlag = FilesInHDFS.fileIsExist(s"$moretvDir/$logType",inputDate)
+           val moretvFlag = FilesInHDFS.fileIsExist(s"$moretvDir/$logType",inputDate)*/
+
+           val medusa_input_dir= DataIO.getDataFrameOps.getPath(MEDUSA,LogTypes.INTERVIEW,inputDate)
+           val moretv_input_dir= DataIO.getDataFrameOps.getPath(MORETV,LogTypes.INTERVIEW,inputDate)
+           val outputPath= DataIO.getDataFrameOps.getPath(MERGER,LogTypes.INTERVIEW,inputDate)
+           val medusaFlag = FilesInHDFS.IsInputGenerateSuccess(medusa_input_dir)
+           val moretvFlag = FilesInHDFS.IsInputGenerateSuccess(moretv_input_dir)
+
+
             if(p.deleteOld){
               HdfsUtil.deleteHDFSFile(outputPath)
             }
 
            if(medusaFlag && moretvFlag){
-             val medusaDf = sqlContext.read.parquet(logDir1)
-             val moretvDf = sqlContext.read.parquet(logDir2)
+             //val medusaDf = sqlContext.read.parquet(logDir1)
+             //val moretvDf = sqlContext.read.parquet(logDir2)
+             val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.INTERVIEW,inputDate)
+             val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MORETV,LogTypes.INTERVIEW,inputDate)
+
              val medusaColNames = medusaDf.columns.toList.filter(e=>{ParquetSchema.schemaArr.contains(e)}).mkString(",")
              val moretvColNames = moretvDf.columns.toList.filter(e=>{ParquetSchema.schemaArr.contains(e)}).mkString(",")
              medusaDf.registerTempTable("log_data_1")
@@ -64,14 +75,18 @@ object InterviewLogMerger extends BaseClass{
 
              sqlContext.read.json(mergerDf).write.parquet(outputPath)
            }else if(!medusaFlag && moretvFlag){
-             val moretvDf = sqlContext.read.parquet(logDir2)
+             //val moretvDf = sqlContext.read.parquet(logDir2)
+             val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MORETV,LogTypes.INTERVIEW,inputDate)
+
              val moretvColNames = moretvDf.columns.toList.mkString(",")
              moretvDf.registerTempTable("log_data_2")
              val sqlSelectMoretv = s"select $moretvColNames,date as day, pathParser('interview',path," +
                "'path','contentType') as contentType,'moretv' as flag from log_data_2"
              sqlContext.sql(sqlSelectMoretv).write.parquet(outputPath)
            }else if(medusaFlag && !moretvFlag){
-             val medusaDf = sqlContext.read.parquet(logDir1)
+            // val medusaDf = sqlContext.read.parquet(logDir1)
+             val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.INTERVIEW,inputDate)
+
              val medusaColNames = medusaDf.columns.toList.mkString(",")
              medusaDf.registerTempTable("log_data_1")
              val sqlSelectMedusa = s"select $medusaColNames,'medusa' as flag from log_data_1"

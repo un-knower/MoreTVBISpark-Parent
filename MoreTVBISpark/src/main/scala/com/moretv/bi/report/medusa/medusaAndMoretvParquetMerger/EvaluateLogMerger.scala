@@ -21,7 +21,7 @@ import org.apache.spark.sql.SQLContext
   */
 object EvaluateLogMerger extends BaseClass{
   def main(args: Array[String]) {
-    ModuleClass.executor(EvaluateLogMerger,args)
+    ModuleClass.executor(this,args)
   }
    override def execute(args: Array[String]) {
      ParamsParseUtil.parse(args) match {

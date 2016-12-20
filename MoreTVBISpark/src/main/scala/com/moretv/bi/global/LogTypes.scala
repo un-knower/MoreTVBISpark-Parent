@@ -60,4 +60,10 @@ object LogTypes {
   val CLICK_ENTRANCE="clickEntrance"
   val CLICK_RESULT="clickResult"
   val OPERATION_E="operation-e"
+  val OPERATION_ST="operation-st"
+  val PLAY_VIEW_2_FILTER="playview2filter"
+  val PLAY_VIEW_2=  "playview2"
+  val DETAIL_SUBJECT= "detail-subject"
+  val SUBJECT_INTERVIEW="subject-interview"
+  val OPERATION_ACW="operation-acw"
 }

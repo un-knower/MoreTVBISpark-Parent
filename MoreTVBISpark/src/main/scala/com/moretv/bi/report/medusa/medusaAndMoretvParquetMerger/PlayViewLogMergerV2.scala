@@ -35,27 +35,38 @@ object PlayViewLogMergerV2 extends BaseClass{
          sqlContext.udf.register("pathParser",PathParser.pathParser _)
 //         sqlContext.udf.register("getProgramName",CodeToNameUtils.getProgramNameBySid _)
          val startDate = p.startDate
-         val medusaLogType = "playview"
+         /*val medusaLogType = "playview"
          val moretvLogType = "playview"
          val medusaDir ="/log/medusa/parquet"
          val moretvDir = "/mbi/parquet"
-         val outputLogType="playview2"
+         val outputLogType="playview2"*/
          val cal = Calendar.getInstance()
          cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))
 
          (0 until p.numOfDays).foreach(i=>{
            val inputDate = DateFormatUtils.readFormat.format(cal.getTime)
-           val logDir1 = s"/log/medusa/parquet/$inputDate/$medusaLogType"
+          /* val logDir1 = s"/log/medusa/parquet/$inputDate/$medusaLogType"
            val logDir2 = s"/mbi/parquet/$moretvLogType/$inputDate"
 
            val medusaFlag = FilesInHDFS.fileIsExist(s"$medusaDir/$inputDate",medusaLogType)
            val moretvFlag = FilesInHDFS.fileIsExist(s"$moretvDir/$moretvLogType",inputDate)
-           val outputPath = s"/log/medusaAndMoretvMerger/$inputDate/$outputLogType"
+           val outputPath = s"/log/medusaAndMoretvMerger/$inputDate/$outputLogType"*/
+
+
+           val medusa_input_dir= DataIO.getDataFrameOps.getPath(MEDUSA,LogTypes.PLAYVIEW,inputDate)
+           val moretv_input_dir= DataIO.getDataFrameOps.getPath(MORETV,LogTypes.PLAYVIEW,inputDate)
+           val outputPath= DataIO.getDataFrameOps.getPath(MERGER,LogTypes.PLAY_VIEW_2,inputDate)
+           val medusaFlag = FilesInHDFS.IsInputGenerateSuccess(medusa_input_dir)
+           val moretvFlag = FilesInHDFS.IsInputGenerateSuccess(moretv_input_dir)
 
 
            if(medusaFlag && moretvFlag){
-             val medusaDf = sqlContext.read.parquet(logDir1)
-             val moretvDf = sqlContext.read.parquet(logDir2)
+          /*   val medusaDf = sqlContext.read.parquet(logDir1)
+             val moretvDf = sqlContext.read.parquet(logDir2)*/
+             val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.PLAYVIEW,inputDate)
+             val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MORETV,LogTypes.PLAYVIEW,inputDate)
+
+
              //       注册临时表
              medusaDf.registerTempTable("log_data_1")
              moretvDf.registerTempTable("log_data_2")
@@ -99,7 +110,10 @@ object PlayViewLogMergerV2 extends BaseClass{
 
              mergerDf.write.parquet(outputPath)
            }else if(!medusaFlag && moretvFlag){
-             val moretvDf = sqlContext.read.parquet(logDir2)
+             //val moretvDf = sqlContext.read.parquet(logDir2)
+             val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MORETV,LogTypes.PLAYVIEW,inputDate)
+
+
              moretvDf.registerTempTable("log_data_2")
              val sqlSelectMoretv = "select logType, date, datetime, logVersion, event, apkSeries, apkVersion, userId,accountId," +
                "groupId, promotionChannel, weatherCode, productModel, uploadTime, duration,contentType,videoSid,episodeSid," +
@@ -122,7 +136,8 @@ object PlayViewLogMergerV2 extends BaseClass{
              mergerDf.write.parquet(outputPath)
 
            }else if(medusaFlag && !moretvFlag){
-             val medusaDf = sqlContext.read.parquet(logDir1)
+             //val medusaDf = sqlContext.read.parquet(logDir1)
+             val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.PLAYVIEW,inputDate)
              medusaDf.registerTempTable("log_data_1")
              val sqlSelectMedusa = "select logType, date,datetime, logVersion, event, apkSeries, apkVersion, " +
                "userId,accountId," +

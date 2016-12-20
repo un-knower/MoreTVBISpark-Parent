@@ -24,7 +24,7 @@ object PlayViewLogMergerFilter extends BaseClass{
     config.set("spark.executor.memory", "5g").
       set("spark.executor.cores", "5").
       set("spark.cores.max", "100")
-    ModuleClass.executor(PlayViewLogMergerFilter,args)
+    ModuleClass.executor(this,args)
   }
 
    override def execute(args: Array[String]) {
@@ -32,31 +32,38 @@ object PlayViewLogMergerFilter extends BaseClass{
        case Some(p)=>{
          val cal = Calendar.getInstance()
          cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))
-         val outLogType = "playview"
-         val inputLogType = "playview2filter"
+        /* val outLogType = "playview"
+         val inputLogType = "playview2filter"*/
          (0 until p.numOfDays).foreach(i=>{
            val inputDate = DateFormatUtils.readFormat.format(cal.getTime)
-           val inputDir = s"/log/medusaAndMoretvMerger/$inputDate/$inputLogType"
+         /*  val inputDir = s"/log/medusaAndMoretvMerger/$inputDate/$inputLogType"
            val outputPath = s"/log/medusaAndMoretvMerger/$inputDate/$outLogType"
+*/
+
+           //val medusa_input_dir= DataIO.getDataFrameOps.getPath(MERGER,LogTypes.PLAY_VIEW_2_FILTER,inputDate)
+           val outputPath= DataIO.getDataFrameOps.getPath(MERGER,LogTypes.PLAYVIEW,inputDate)
+
            if(p.deleteOld){
              HdfsUtil.deleteHDFSFile(outputPath)
            }
-           val df = sqlContext.read.load(inputDir)
+           //val df = sqlContext.read.load(inputDir)
+           val df = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MERGER,LogTypes.PLAY_VIEW_2_FILTER,inputDate)
+
            df.registerTempTable("log")
            val schemaArr = df.columns.toBuffer
            val schemaStr = schemaArr.toList.mkString(",")
            schemaArr += "filterCol"
            schemaArr.toArray
-           val arr = sqlContext.sql("select userId,videoSid,count(userId) from log group by " +
+           val arr = df.sqlContext.sql("select userId,videoSid,count(userId) from log group by " +
              "userId,videoSid").map(e=>(e.getString(0),e.getString(1),e.getLong(2))).
              filter(_._3>=playNumLimit).map(e=>"'".concat(e._1.concat(e._2)).concat("'")).collect()
            if(arr.length!=0){
              val filterStr = arr.toList.mkString(",")
-             val filterRdd = sqlContext.sql(s"select $schemaStr, concat(userId,videoSid) as filterCol from log").
+             val filterRdd = df.sqlContext.sql(s"select $schemaStr, concat(userId,videoSid) as filterCol from log").
                toDF(schemaArr:_*).filter(s"filterCol not in ($filterStr)")
              filterRdd.write.parquet(outputPath)
            }else{
-             val filterRdd = sqlContext.sql(s"select $schemaStr,concat(userId,videoSid) as filterCol from log")
+             val filterRdd = df.sqlContext.sql(s"select $schemaStr,concat(userId,videoSid) as filterCol from log")
              filterRdd.write.parquet(outputPath)
            }
            cal.add(Calendar.DAY_OF_MONTH, -1)
