@@ -5,6 +5,9 @@ import java.sql.DriverManager
 
 import com.moretv.bi.constant.Database
 import com.moretv.bi.util._
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.JdbcRDD
@@ -29,7 +32,7 @@ object ProvinceCityTotal extends BaseClass{
         val whichMonth = p.whichMonth
         val s = sqlContext
         import s.implicits._
-        val util = new DBOperationUtils("tvservice")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
         val sqlSelect = "select min(id),max(id) from mtv_account where left(openTime,7) <= ?"
         val ids = util.selectOne(sqlSelect,whichMonth)
 

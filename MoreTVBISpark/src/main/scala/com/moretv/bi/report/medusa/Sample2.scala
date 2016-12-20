@@ -2,6 +2,8 @@ package com.moretv.bi.report.medusa
 
 import java.sql.DriverManager
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
 import com.moretv.bi.util.{DBOperationUtils, SparkSetting}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.JdbcRDD
@@ -29,7 +31,7 @@ object Sample2 extends SparkSetting{
         val version = row.getString(1)
         if(!pmFilter(pm) && version == "MoreTV_TVApp2.0_Android_2.6.7") row.getString(2) else null
       }).filter(_ != null).distinct()
-    val util = new DBOperationUtils("tvservice")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
     val ids = util.selectOne(s"SELECT MIN(id),MAX(id) FROM tvservice.mtv_account WHERE openTime BETWEEN '2016-03-03 00:00:00' AND '2016-04-05 23:59:59'")
     val sampleNewRdd = new JdbcRDD(sc, ()=>{
       Class.forName("com.mysql.jdbc.Driver")

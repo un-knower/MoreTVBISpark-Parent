@@ -5,7 +5,10 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 
 import com.moretv.bi.util._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.JdbcRDD
 
@@ -37,7 +40,7 @@ object UserGenderStatistics extends BaseClass with QueryMaxAndMinIDUtil{
         val others=resultRDD.getOrElse("o",0L)
         val empty = resultRDD.getOrElse("0",0L)
 
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val oldSql = s"delete from user_gender_overview where day = '$yesterdayCN'"

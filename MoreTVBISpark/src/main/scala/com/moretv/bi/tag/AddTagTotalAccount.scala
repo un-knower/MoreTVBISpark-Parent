@@ -4,7 +4,10 @@ import java.sql.DriverManager
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateFormatUtils, DBOperationUtils, ParamsParseUtil, SparkSetting}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.JdbcRDD
@@ -40,7 +43,7 @@ object AddTagTotalAccount extends BaseClass{
         val resultRDD = programMap.subtract(userIdRDD)
 
         //save date
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

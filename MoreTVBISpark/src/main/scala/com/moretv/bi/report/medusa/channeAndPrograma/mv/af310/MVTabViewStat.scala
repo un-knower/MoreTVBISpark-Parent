@@ -3,6 +3,9 @@ package com.moretv.bi.report.medusa.channeAndPrograma.mv.af310
 import java.lang.{Long => JLong}
 import java.util.Calendar
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 
@@ -53,7 +56,7 @@ object MVTabViewStat extends BaseClass {
       case Some(p) => {
 
         // init & util
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
         val startDate = p.startDate
 

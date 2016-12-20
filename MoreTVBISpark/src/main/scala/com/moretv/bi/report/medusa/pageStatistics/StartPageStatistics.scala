@@ -4,6 +4,9 @@ import java.lang.{Long => JLong}
 import java.util.Calendar
 
 //import cn.whaley.jobsdk.{JobStatus, SendMail}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 
@@ -29,7 +32,7 @@ object StartPageStatistics extends  BaseClass{
       case Some(p) => {
 
         //init util
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         //params
         val startDate =  p.startDate
         //date
@@ -42,13 +45,13 @@ object StartPageStatistics extends  BaseClass{
           cal.add(Calendar.DAY_OF_MONTH,-1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          //path
-          val readPath = s"/log/medusa/parquet/$loadDate/startpage"
+
+          val df=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.STARTPAGE)
 
 //          JobStatus.startRecordJobStatus()
           try{
             //df
-            val startPageDf = sqlContext.read.parquet(readPath).select("apkVersion","pageType","userId")
+            val startPageDf = df.select("apkVersion","pageType","userId")
                   .filter("pageType is not null")
             //rdd((apkVersion,pageType),userId)
             val startPageRdd =startPageDf.map(e=>((e.getString(0),e.getString(1)),e.getString(2)))

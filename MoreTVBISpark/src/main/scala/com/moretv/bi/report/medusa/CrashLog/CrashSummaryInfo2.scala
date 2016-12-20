@@ -7,6 +7,9 @@ package com.moretv.bi.report.medusa.CrashLog
 import java.lang.{Long => JLong}
 import java.sql.DriverManager
 
+import cn.whaley.sdk.dataOps.MySqlOps
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
 import com.moretv.bi.util._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.JdbcRDD
@@ -19,13 +22,13 @@ object CrashSummaryInfo2 extends SparkSetting{
         val input = p.startDate
         val inputDay = DateFormatUtils.toDateCN(input)
         val sc = new SparkContext(config)
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
 
         /**
          * Define two lambda functions
          */
-        val minId = (util: DBOperationUtils,inputDay:String,flag:Boolean) => {
+        val minId = (util: MySqlOps,inputDay:String,flag:Boolean) => {
           flag match {
             case true=>{
               val sql = "SELECT Min(id) from medusa_crash_summary_info"
@@ -39,7 +42,7 @@ object CrashSummaryInfo2 extends SparkSetting{
             }
           }
         }
-        val maxId = (util: DBOperationUtils,inputDay:String,flag:Boolean) => {
+        val maxId = (util: MySqlOps,inputDay:String,flag:Boolean) => {
           flag match {
             case true=>{
               val sql = "SELECT MAX(id) FROM medusa_crash_summary_info"

@@ -1,12 +1,12 @@
 package com.moretv.bi.overview
 
-import java.text.SimpleDateFormat
-import java.util.Calendar
-
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
 import com.moretv.bi.util._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.storage.StorageLevel
 
 /**
@@ -16,21 +16,20 @@ object HomeAccessSubModule extends BaseClass with DateUtil{
 
   def main(args: Array[String]) {
     config.setAppName("HomeAccessSubModule")
-    ModuleClass.executor(HomeAccessSubModule,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
 
-        val path = "/mbi/parquet/homeaccess/"+p.startDate
-        val df = sqlContext.read.load(path)
+        val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.HOMEACCESS)
         val resultRDD = df.filter("event = 'enter'").select("date","accessArea","accessLocation","userId").map(e =>(e.getString(0),e.getString(1),e.getString(2),e.getString(3))).
                         map(e=>(getKeys(e._1,e._2,e._3),e._4)).filter(e=>e._1._5!=null).persist(StorageLevel.MEMORY_AND_DISK)
         val userNum = resultRDD.distinct().countByKey()
         val accessNum = resultRDD.countByKey()
 
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

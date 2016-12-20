@@ -2,6 +2,9 @@ package com.moretv.bi.ProgramViewAndPlayStats
 
 
 import com.moretv.bi.util._
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
@@ -39,7 +42,7 @@ object TotalPVVV extends BaseClass with DateUtil{
         detailRDD.unpersist()
 
         //save date
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if (p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

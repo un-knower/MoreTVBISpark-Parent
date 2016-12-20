@@ -1,7 +1,10 @@
 package com.moretv.bi.common
 
 import com.moretv.bi.util._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
 object PrevueVVUV extends BaseClass{
 
@@ -26,7 +29,7 @@ object PrevueVVUV extends BaseClass{
         val accessNumValue = cacheValue.countByKey()
 
         val sql = "insert into prevueVVUV(sid,title,day,user_num,user_access) values(?,?,?,?,?)"
-        val dbUtil = new DBOperationUtils("bi")
+        val dbUtil = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

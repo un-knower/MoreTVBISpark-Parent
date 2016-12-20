@@ -8,6 +8,9 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import java.lang.{Long => JLong}
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
 /**
@@ -29,7 +32,7 @@ object Live_time extends BaseClass with DateUtil{
         val resultRDD = df.select("date","channelSid","duration").map(e =>(e.getString(0),e.getString(1),e.getInt(2).toLong)).
             map(e=>(getKeys(e._1,e._2),e._3)).filter(x => {x._2 > 0 && x._2 < 100000}).reduceByKey((x,y)=>x+y).collect()
 
-        val util = new DBOperationUtils("eagletv")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_EAGLETV_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

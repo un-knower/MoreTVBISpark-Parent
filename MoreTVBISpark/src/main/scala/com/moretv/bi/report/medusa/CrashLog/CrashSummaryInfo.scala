@@ -7,7 +7,10 @@ package com.moretv.bi.report.medusa.CrashLog
 import java.lang.{Long=>JLong}
 import com.moretv.bi.report.medusa.util.FilterUnicodeString
 import com.moretv.bi.util._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.JdbcRDD
 import java.sql.DriverManager
@@ -23,11 +26,11 @@ object CrashSummaryInfo extends BaseClass{
       case Some(p) => {
         val input = p.startDate
         val inputDay = DateFormatUtils.toDateCN(input)
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         /**
          * Define two lambda functions
          */
-        val minId = (util: DBOperationUtils,inputDay:String,flag:Boolean) => {
+        val minId = (util: MySqlOps,inputDay:String,flag:Boolean) => {
           flag match {
             case true=>{
               val sql = "SELECT Min(id) from medusa_crash_summary_secondary_phase_info"
@@ -41,7 +44,7 @@ object CrashSummaryInfo extends BaseClass{
             }
           }
         }
-        val maxId = (util: DBOperationUtils,inputDay:String,flag:Boolean) => {
+        val maxId = (util: MySqlOps,inputDay:String,flag:Boolean) => {
           flag match {
             case true=>{
               val sql = "SELECT MAX(id) FROM medusa_crash_summary_secondary_phase_info"

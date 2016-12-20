@@ -4,6 +4,9 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 
 import com.moretv.bi.util._
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
@@ -29,12 +32,12 @@ object WeeklyActiveUser extends BaseClass{
         val logRdd = sqlContext.read.load(inputPaths:_*).select("mac")
         val userNum = logRdd.distinct().count().toInt
 
-        val dbTvservice = new DBOperationUtils("tvservice")
+        val dbTvservice = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
         val sqlNewNum = "select count(distinct mac) from mtv_account " +
           s"where openTime between '$mondayCN 00:00:00' and '$sundayCN 23:59:59'"
         val newNum = dbTvservice.selectOne(sqlNewNum)(0).toString.toInt
         dbTvservice.destory()
-        val db = new DBOperationUtils("bi")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         if(p.deleteOld){
           val sqlDelete = "delete from login_detail_week where day = ?"
           db.delete(sqlDelete,sundayCN)

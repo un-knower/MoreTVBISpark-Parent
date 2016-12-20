@@ -8,43 +8,48 @@ import java.sql.DriverManager
 import java.util.Calendar
 
 import com.moretv.bi.constant.Constants._
-import com.moretv.bi.report.medusa.util.{UDFSets, DFUtil}
+import com.moretv.bi.report.medusa.util.{DFUtil, UDFSets}
+import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, SparkSetting}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.JdbcRDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.storage.StorageLevel
+
 import scala.collection.JavaConversions._
 import com.moretv.bi.util.ImplicitClass._
-import java.lang.{Long=>JLong}
+import java.lang.{Long => JLong}
 
-import scala.util.parsing.json.{JSONType, JSON}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
+
+import scala.util.parsing.json.{JSON, JSONType}
 
 /*此函数用于统计需要使用count类型的统计需求*/
-object CountStatistic extends SparkSetting{
-  def main(args:Array[String]) {
+object CountStatistic extends BaseClass{
+
+  def main(args: Array[String]): Unit = {
+    //   JobStatus.getConfig(appName)
+    ModuleClass.executor(this,args)
+
+  }
+  override def execute(args: Array[String]): Unit = {
     /*从数据库中读取相应的app_name的配置参数*/
-//    val template = "CountStatistic"
-    val sc = new SparkContext(config)
-    val util = new DBOperationUtils("medusa")
-    implicit val sqlContext = new SQLContext(sc)
+
+    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+
 //   UDFSets.getPathMainInfo _这样的做法是将调用者被调用时传入参数
     sqlContext.udf.register("getPathMainInfo",UDFSets.getPathMainInfo _)
     val minId = 1
     val maxId = util.selectOne("select max(id) from statistic_app_config_info")(0).toString.toLong
     val numOfPartition = 20
-    val configRdd = new JdbcRDD(sc,
-      ()=>{
-        Class.forName("com.mysql.jdbc.Driver")
-        DriverManager.getConnection("jdbc:mysql://10.10.2.15:3306/medusa?useUnicode=true&characterEncoding=utf-8&autoReconnect=true","bi","mlw321@moretv")
-      },
-      "select app_name,params_config,template,logType from statistic_app_config_info where id >= ? and id <= ? and " +
-        "template='CountStatistic'",
-      minId,
-      maxId,
-      numOfPartition,
-      r=>(r.getString(1),r.getString(2),r.getString(3),r.getString(4))
-    )
+
+    val configRdd=DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+      .getJdbcRDD(sc,s"select app_name,params_config,template,logType from statistic_app_config_info where id >= ${minId} and id <= ${maxId} and " +
+      "template='CountStatistic'","statistic_app_config_info"
+      ,r=>(r.getString(1),r.getString(2),r.getString(3),r.getString(4))
+      ,numOfPartition)
+
     println("=====================================")
 
     val configRddByLogType = configRdd.map(e=>(e._4,(e._1,e._2,e._3))).groupByKey()

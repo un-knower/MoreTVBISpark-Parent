@@ -1,6 +1,9 @@
 package com.moretv.bi.temp.medusa
 
 import java.lang.{Long => JLong}
+
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
 import com.moretv.bi.medusa.util.PMUtils
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
 import org.apache.spark.SparkContext
@@ -26,7 +29,7 @@ object UsageDurationMoretv extends SparkSetting{
           map(row => (row.getString(0).toUpperCase, row.getInt(1), row.getString(2))).
           filter(x => PMUtils.pmfilter(x._1)).cache()
         logRdd.toDF.registerTempTable("log_data")
-        val db = new DBOperationUtils("medusa")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val day = DateFormatUtils.toDateCN(inputDate, -1)
 
         //avg usage duration by productModel

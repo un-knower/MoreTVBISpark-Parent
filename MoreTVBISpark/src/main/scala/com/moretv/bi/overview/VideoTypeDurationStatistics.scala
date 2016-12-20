@@ -4,7 +4,10 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 
 import com.moretv.bi.util._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.storage.StorageLevel
@@ -43,7 +46,7 @@ object VideoTypeDurationStatistics extends BaseClass with DateUtil{
         val pastDurationRDD = pastRDD.map(e =>((e._1._1,e._1._2,e._1._3,"total",e._1._5),e._2)).union(pastRDD).reduceByKey((x,y)=>x+y).collect().toMap
 
         //save date
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if (p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

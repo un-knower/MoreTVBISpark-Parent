@@ -4,7 +4,10 @@
 //import java.util.Calendar
 //
 //import com.moretv.bi.util._
-//import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
+//import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 //import org.apache.spark.SparkContext
 //import org.apache.spark.sql.SQLContext
 //
@@ -31,7 +34,7 @@
 //        val cal = Calendar.getInstance()
 //        cal.add(Calendar.MONTH,-p.offset)
 //        val month = format.format(cal.getTime)
-//        val db = new DBOperationUtils("bi")
+//        val db = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
 //        if(p.deleteOld){
 //          val sqlDelete = "delete from login_detail_month where month = ?"
 //          db.delete(sqlDelete,month)

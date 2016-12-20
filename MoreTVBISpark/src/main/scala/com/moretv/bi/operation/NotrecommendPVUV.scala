@@ -1,6 +1,9 @@
 package com.moretv.bi.operation
 
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import com.moretv.bi.util.SparkSetting
 import org.apache.spark.sql.SQLContext
@@ -19,7 +22,7 @@ object NotrecommendPVUV extends BaseClass{
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         //implicit val sQLContext = SQLContext.getOrCreate(sc)
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         val date = DateFormatUtils.toDateCN(p.startDate, -1)
         val sql = "select date, userId from log_data where event = 'notrecommend'"
         val input = s"/mbi/parquet/operation-acw/"+p.startDate+"/*"

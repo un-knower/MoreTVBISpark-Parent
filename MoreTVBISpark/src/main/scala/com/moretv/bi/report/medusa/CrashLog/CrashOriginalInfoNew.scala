@@ -7,6 +7,9 @@ package com.moretv.bi.report.medusa.CrashLog
 import java.lang.{Long => JLong}
 
 import com.moretv.bi.medusa.util.DevMacUtils
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{ParamsParseUtil, _}
 import org.apache.commons.codec.digest.DigestUtils
@@ -28,7 +31,7 @@ object CrashOriginalInfoNew extends BaseClass{
       case Some(p) =>{
         val s = sqlContext
         import s.implicits._
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val inputDate = p.startDate
         val day = DateFormatUtils.toDateCN(inputDate)
         val logRdd = sc.textFile(s"/log/medusa_crash/rawlog/${inputDate}/").map(log=>{
@@ -77,7 +80,7 @@ object CrashOriginalInfoNew extends BaseClass{
         val insert_sql = "INSERT INTO medusa_crash_original_info_new(day,app_version_name,android_version," +
           "date_code,product_code,stack_trace_md5,stack_trace,custom_json_data,crash_num) VALUES(?,?,?,?,?,?,?,?,?)"
         metaData.foreachPartition(rdd=>{
-          val utilInsert = new DBOperationUtils("medusa")
+          val utilInsert = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
           rdd.foreach(e=>{
             try{
               utilInsert.insert(insert_sql,day,e._1,e._2,e._3,e._4,e._5,e._6,e._7,new JLong(e._8))

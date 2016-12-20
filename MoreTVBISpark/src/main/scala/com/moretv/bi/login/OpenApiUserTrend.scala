@@ -3,6 +3,9 @@ package com.moretv.bi.login
 import java.lang.{Double => JDouble, Integer => JInt, Long => JLong}
 import java.util.Calendar
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
 import org.apache.spark.SparkContext
@@ -19,8 +22,8 @@ object OpenApiUserTrend extends BaseClass{
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
-        val util_bi = new DBOperationUtils("bi")
-        val util_tvservice = new DBOperationUtils("tvservice")
+        val util_bi = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
+        val util_tvservice = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
         val cal = Calendar.getInstance()
         cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))
 

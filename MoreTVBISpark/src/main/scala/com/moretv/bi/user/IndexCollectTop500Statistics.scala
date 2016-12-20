@@ -9,7 +9,10 @@ import com.couchbase.client.java.CouchbaseCluster
 import com.couchbase.client.java.document.JsonDocument
 import com.couchbase.client.java.document.json.{JsonObject, JsonArray}
 import com.moretv.bi.util.FileUtils._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateUtil, QueryMaxAndMinIDUtil, SparkSetting}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.JdbcRDD

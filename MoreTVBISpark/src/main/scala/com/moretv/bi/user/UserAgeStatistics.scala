@@ -5,7 +5,10 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 
 import com.moretv.bi.util._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.JdbcRDD
 
@@ -32,7 +35,7 @@ object UserAgeStatistics extends BaseClass with QueryMaxAndMinIDUtil{
           id(1), id(0), 10,
           r=>r.getString(1)).map(e=>(matchLog(e))).filter(_!=null).countByKey()
 
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val oldSql = s"delete from user_age_overview where day = '$yesterdayCN'"

@@ -7,7 +7,10 @@ import java.util.regex.Pattern
 
 import com.moretv.bi.user.UserAgeStatistics._
 import com.moretv.bi.util._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.JdbcRDD
 import org.apache.spark.sql.SQLContext
@@ -41,7 +44,7 @@ object UseAccountAboutUserDistribute extends BaseClass with QueryMaxAndMinIDUtil
           r=>r.getString(1)+" "+r.getString(2)).map(x =>splitsLog(x)).filter(_!=null).distinct()
         val resultRDD = programMap.subtract(userIdRDD)
 
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val oldSql = s"delete from accountidAndUserid where day = '$yesterdayCN'"

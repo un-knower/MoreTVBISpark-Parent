@@ -4,15 +4,19 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.lang.{Long => JLong}
 
+import com.moretv.bi.util.Params
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.sql.DataFrame
 
 /**
-  * Created by witnes on 8/29/16.
-  * 统计电视猫 2.\* & 3.\* 版本下 月活 周活 日活
-  *
-  */
+ * Created by witnes on 8/29/16.
+ * 统计电视猫 2.\* & 3.\* 版本下 月活 周活 日活
+ *
+ */
 object activeUserCountInfo extends BaseClass {
 
   private val monthCountTable = "active_user_count_month"
@@ -40,7 +44,7 @@ object activeUserCountInfo extends BaseClass {
             todayCopy.setTime(today.getTime)
             todayCopy.add(Calendar.DATE, -1)
             val numOfDays = todayCopy.get(Calendar.DAY_OF_MONTH)
-            val uv = constructDF(numOfDays, today).distinct.count
+            val uv = constructDF(numOfDays, today, p).distinct.count
             dbOperation(uv, monthCountTable, "month", today, p.deleteOld)
           }
           case _ => null
@@ -49,14 +53,14 @@ object activeUserCountInfo extends BaseClass {
         today.get(Calendar.DAY_OF_WEEK) match {
           case 2 => {
             val numOfDays = 7
-            val uv = constructDF(numOfDays, today).distinct.count
+            val uv = constructDF(numOfDays, today, p).distinct.count
             dbOperation(uv, weekCountTable, "weekstart_end", today, p.deleteOld)
           }
           case _ => null
         }
         /* 算日活 */
         val numOfDays = 1
-        val uv = constructDF(numOfDays, today).distinct.count
+        val uv = constructDF(numOfDays, today, p).distinct.count
         dbOperation(uv, dayCountTable, "day", today, p.deleteOld)
       }
       case None =>
@@ -66,12 +70,12 @@ object activeUserCountInfo extends BaseClass {
 
 
   /**
-    *
-    * @param diffDays 统计计算的天数 (月活:一个月的天数, 周活: 7天, 日活 :1天)
-    * @param cal      执行命令的当天(需减一天开始计算)
-    * @return DataFrame格式
-    */
-  def constructDF(diffDays: Int, cal: Calendar): DataFrame = {
+   *
+   * @param diffDays 统计计算的天数 (月活:一个月的天数, 周活: 7天, 日活 :1天)
+   * @param cal      执行命令的当天(需减一天开始计算)
+   * @return DataFrame格式
+   */
+  def constructDF(diffDays: Int, cal: Calendar, p: Params): DataFrame = {
     val calCopy = Calendar.getInstance
     calCopy.setTime(cal.getTime)
 
@@ -81,15 +85,14 @@ object activeUserCountInfo extends BaseClass {
 
     for (i <- 0 until diffDays) {
       date = DateFormatUtils.readFormat.format(calCopy.getTime)
-      medusaPath(i) = s"/log/medusa/parquet/$date/*"
-      mbiPath(i) = s"/mbi/parquet/*/$date/"
+      medusaPath(i) = DataIO.getDataFrameOps.getPath(MEDUSA, "*", date)
+      mbiPath(i) = DataIO.getDataFrameOps.getPath(MORETV, "*", date)
       println(medusaPath(i))
       println(mbiPath(i))
       calCopy.add(Calendar.DATE, -1)
     }
 
     val medusaDf = sqlContext.read.parquet(medusaPath: _*).select("userId")
-
     val mbiDf = sqlContext.read.parquet(mbiPath: _*).select("userId").filter("userId!= ''")
     val mergeDf = medusaDf.unionAll(mbiDf)
 
@@ -98,13 +101,13 @@ object activeUserCountInfo extends BaseClass {
 
 
   /**
-    *
-    * @param uv        日活|月活|周活
-    * @param table     active_user_count_month|active_user_count_week|active_user_count_day 表名
-    * @param field     day|month|weekstart_end 字段
-    * @param cal       执行命令的当天(需减一天插入表格)
-    * @param deleteOld 是否删除旧数据
-    */
+   *
+   * @param uv        日活|月活|周活
+   * @param table     active_user_count_month|active_user_count_week|active_user_count_day 表名
+   * @param field     day|month|weekstart_end 字段
+   * @param cal       执行命令的当天(需减一天插入表格)
+   * @param deleteOld 是否删除旧数据
+   */
   def dbOperation(uv: Long, table: String, field: String, cal: Calendar, deleteOld: Boolean): Unit = {
 
     val calCopy = Calendar.getInstance
@@ -123,7 +126,7 @@ object activeUserCountInfo extends BaseClass {
           start + end
         }
       }
-    val util = new DBOperationUtils("medusa")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
     val deleteSql = s"delete from $table where $field=?"
     val insertSql = s"insert into $table ($field,user_num) values(?,?)"

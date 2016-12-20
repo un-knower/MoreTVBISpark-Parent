@@ -3,6 +3,9 @@ package com.moretv.bi.report.medusa.channeAndPrograma.collecthistory
 import java.util.Calendar
 import java.lang.{Long => JLong, Double => JDouble}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
 /**
@@ -29,7 +32,7 @@ object CollectTabPlayStat extends BaseClass {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         // init & util
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
         val cal = Calendar.getInstance
         cal.setTime(DateFormatUtils.readFormat.parse(startDate))

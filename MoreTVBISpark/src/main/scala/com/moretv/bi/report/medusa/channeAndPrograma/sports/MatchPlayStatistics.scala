@@ -5,7 +5,10 @@ import java.lang.{Long => JLong}
 import java.lang.{Double => JDouble}
 
 import com.moretv.bi.util._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.storage.StorageLevel
@@ -24,7 +27,7 @@ object MatchPlayStatistics extends BaseClass{
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
         val medusaDir = "/log/medusa/parquet"
         val calendar = Calendar.getInstance()

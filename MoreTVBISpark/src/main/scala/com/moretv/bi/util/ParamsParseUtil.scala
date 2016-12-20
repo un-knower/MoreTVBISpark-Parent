@@ -17,13 +17,8 @@ object ParamsParseUtil {
       if(args.nonEmpty){
         val parser = new OptionParser[Params]("ParamsParse") {
           head("ParamsParse","1.2")
-          opt[String]("excuteDate").action((x,c)=>c.copy(startDate=x)).
-            validate(e => try {
-              readFormat.parse(e)
-              success
-            }catch {
-              case e:Exception => failure("wrong date format, should be 'yyyyMMdd'")
-            })
+          opt[Map[String,String]]("paramMap").valueName("k1=v1,k2=v2...").action((x,c)=>c.copy(paramMap=x)).
+            text("param Map[String,String]")
           opt[String]("startDate").action((x,c)=>c.copy(startDate=x)).
             validate(e => try {
               readFormat.parse(e)
@@ -51,23 +46,23 @@ object ParamsParseUtil {
             })
           opt[Int]("whichDay").action((x,c)=>c.copy(whichDay=x))
           opt[String]("endDate").action((x, c) => c.copy(endDate = x))
-//          opt[String]("startTime").action((x,c)=>c.copy(startTime=x)).
-//            validate(e => try {
-//              timeFormat.parse(e)
-//              success
-//            }catch {
-//              case e:Exception => failure("wrong time format, should be 'HH:mm:ss'")
-//            })
-//          opt[String]("endTime").action((x,c)=>c.copy(endTime=x)).
-//            validate(e => try {
-//              timeFormat.parse(e)
-//              success
-//            }catch {
-//              case e:Exception => failure("wrong time format, should be 'HH:mm:ss'")
-//            })
-
-//          opt[String]("sid").action((x,c)=>c.copy(sid=x))
           opt[Int]("offset").action((x,c)=>c.copy(offset=x))
+          //          opt[String]("startTime").action((x,c)=>c.copy(startTime=x)).
+          //            validate(e => try {
+          //              timeFormat.parse(e)
+          //              success
+          //            }catch {
+          //              case e:Exception => failure("wrong time format, should be 'HH:mm:ss'")
+          //            })
+          //          opt[String]("endTime").action((x,c)=>c.copy(endTime=x)).
+          //            validate(e => try {
+          //              timeFormat.parse(e)
+          //              success
+          //            }catch {
+          //              case e:Exception => failure("wrong time format, should be 'HH:mm:ss'")
+          //            })
+
+          //          opt[String]("sid").action((x,c)=>c.copy(sid=x))
 //          opt[String]("dateInfo").action((x,c)=> c.copy(dateInfo=x))
         }
         parser.parse(args,default)

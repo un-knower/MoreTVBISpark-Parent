@@ -5,7 +5,10 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 
 import com.moretv.bi.util._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.storage.StorageLevel
@@ -28,7 +31,7 @@ object CollectSubTagOperation extends BaseClass with DateUtil{
         val resultRDD = df.filter("collectType='tag'").select("date","collectContent","event").map(e =>(e.getString(0),e.getString(1),e.getString(2))).
                            map(e=>(getKeys(e._1,e._2),e._3)).groupByKey().map(e =>(e._1,countOKAndCancle(e._2))).collect()
 
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

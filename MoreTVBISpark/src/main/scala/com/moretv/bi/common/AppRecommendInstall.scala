@@ -1,7 +1,10 @@
 package com.moretv.bi.common
 
 import com.moretv.bi.util._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 
@@ -22,7 +25,7 @@ object AppRecommendInstall extends BaseClass{
         val path = "/mbi/parquet/apprecommend/"+p.startDate+"/part-*"
         val cacheValue = sqlContext.read.parquet(path).filter("event='install'").select("date","appSid","subjectCode","userId").map(e=>((e.getString(0),e.getString(1),e.getString(2)),e.getString(3))).countByKey()
         var sql = ""
-        val dbUtil = new DBOperationUtils("bi")
+        val dbUtil = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

@@ -2,6 +2,8 @@ package com.moretv.bi.report.medusa.tempAnalysis
 
 import java.util.Calendar
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
 import com.moretv.bi.report.medusa.util.FilesInHDFS
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
 import org.apache.spark.SparkContext
@@ -20,7 +22,7 @@ object parquetSchemaInfo extends SparkSetting{
        case Some(p)=>{
          val sc = new SparkContext(config)
          val sqlContext = new SQLContext(sc)
-         val util = new DBOperationUtils("medusa")
+         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
          val medusaDir ="/log/medusa/parquet"
          val moretvDir = "/mbi/parquet"
          val cal = Calendar.getInstance()

@@ -5,6 +5,9 @@ import java.util.Calendar
 import java.lang.{Long => JLong}
 
 import com.moretv.bi.util._
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
@@ -30,7 +33,7 @@ object TotalAndAvgTime extends BaseClass with DateUtil{
         val result = sqlContext.sql("select count(distinct userId),count(userId),sum(duration) from log_data where duration between 0 and 54000").collect()
 
         //save date
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         val date = DateFormatUtils.toDateCN(p.startDate, -1)
         if (p.deleteOld) {

@@ -4,7 +4,10 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 
 import com.moretv.bi.util._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 
@@ -25,7 +28,7 @@ object PlaySourceErrorStatisitcs extends BaseClass with DateUtil{
         val resultRDD = df.filter("event in('userexit','playend','sourceerror')").select("date","apkSeries","source","contentType","event").map(e =>(e.getString(0),e.getString(1),e.getString(2),e.getString(3),e.getString(4))).
             map(e=>(getKeys(e._1,e._2,e._3,e._4),e._5)).groupByKey().map(e => (e._1,countNum(e._2))).collect()
 
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

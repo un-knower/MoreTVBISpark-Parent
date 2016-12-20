@@ -3,7 +3,10 @@ package com.moretv.bi.medusa.exit
 import java.lang.{Long => JLong}
 
 import com.moretv.bi.medusa.util.PMUtils
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
@@ -30,7 +33,7 @@ object UsageDurationM3U extends BaseClass{
           map(row => (row.getString(0).toUpperCase, row.getInt(1), row.getString(2))).
           filter(x => PMUtils.pmfilter(x._1)).cache()
         logRdd.toDF.registerTempTable("log_data")
-        val db = new DBOperationUtils("medusa")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val day = DateFormatUtils.toDateCN(inputDate, -1)
 
         //avg usage duration by productModel

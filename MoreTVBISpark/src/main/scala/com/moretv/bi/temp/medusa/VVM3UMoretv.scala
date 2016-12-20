@@ -1,6 +1,9 @@
 package com.moretv.bi.temp.medusa
 
 import java.lang.{Long => JLong}
+
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
 import com.moretv.bi.medusa.util.PMUtils
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
 import org.apache.spark.SparkContext
@@ -19,7 +22,7 @@ object VVM3UMoretv extends SparkSetting{
         import sqlContext.implicits._
         val inputDate = p.startDate
         val batch = 1
-        val db = new DBOperationUtils("medusa")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val day = DateFormatUtils.toDateCN(inputDate, -1)
         val inputPath = s"/mbi/parquet/playview/$inputDate"
         val logRdd = sqlContext.read.load(inputPath).

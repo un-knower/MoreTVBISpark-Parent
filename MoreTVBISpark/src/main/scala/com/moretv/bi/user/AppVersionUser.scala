@@ -3,7 +3,10 @@ package com.moretv.bi.user
 import java.lang.{Long => JLong}
 import java.sql.DriverManager
 
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.JdbcRDD
@@ -25,7 +28,7 @@ object AppVersionUser extends BaseClass{
       case Some(p) => {
         val inputDate = p.startDate
         val day = DateFormatUtils.toDateCN(inputDate, -1)
-        val util = new DBOperationUtils("tvservice")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
         val ids = util.selectOne(s"SELECT MIN(id),MAX(id) FROM tvservice.mtv_account WHERE openTime <= '$day 23:59:59'")
         val sqlRDD = new JdbcRDD(sc, ()=>{
           Class.forName("com.mysql.jdbc.Driver")

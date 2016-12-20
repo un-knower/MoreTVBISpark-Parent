@@ -4,6 +4,9 @@ import java.util.Calendar
 import java.lang.{Long => JLong}
 
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, ProductModelUtils}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
 /**
@@ -36,7 +39,7 @@ object ChannelProductActiveStat extends BaseClass {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         // init & util
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
         val cal = Calendar.getInstance
         cal.setTime(DateFormatUtils.readFormat.parse(startDate))
@@ -47,7 +50,8 @@ object ChannelProductActiveStat extends BaseClass {
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          val loadPath = s"/log/moretvloginlog/parquet/$loadDate/loginlog"
+          val inputPath=p.paramMap.getOrElse("inputPath","/log/moretvloginlog/parquet/#{date}/loginlog")
+          val loadPath = inputPath.replace("#{date}",loadDate)
 
           sqlContext.read.parquet(loadPath)
             .filter(s"date between '$sqlDate' and '$sqlDate'")

@@ -4,6 +4,9 @@ import java.lang.{Double => JDouble, Integer => JInt, Long => JLong}
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 import org.apache.spark.sql.DataFrame
@@ -91,7 +94,7 @@ object RetentionStepStat extends BaseClass {
 
     resArray.foreach(println)
 
-    val util = new DBOperationUtils("medusa")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
     val calCopy = Calendar.getInstance
     calCopy.setTime(cal.getTime)

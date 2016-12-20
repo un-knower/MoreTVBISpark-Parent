@@ -2,8 +2,11 @@ package com.moretv.bi.report.medusa.medusaGrayTestingStatistic
 
 import java.sql.DriverManager
 import java.util.Calendar
-import java.lang.{Long=>JLong}
-import com.moretv.bi.util.{DateFormatUtils, DBOperationUtils, SparkSetting, ParamsParseUtil}
+import java.lang.{Long => JLong}
+
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
+import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.JdbcRDD
 import org.apache.spark.sql.SQLContext
@@ -18,7 +21,7 @@ object CrashAndLoginInfoByVersionAndProduct extends SparkSetting{
       case Some(p) => {
         val sc = new SparkContext(config)
         val sqlContext = new SQLContext(sc)
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val logType = "homeview"
         val fileDir = "/log/medusa/parquet/"
         val sqlSpark = "select apkVersion,productModel,count(userId),count(distinct userId) from log_data " +

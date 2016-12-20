@@ -6,27 +6,41 @@ package com.moretv.bi.report.medusa.productUpdateEvaluate.crash
 
 import java.lang.{Long => JLong}
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{LogTypes, DataBases}
 import com.moretv.bi.medusa.util.DevMacUtils
 import com.moretv.bi.medusa.util.ParquetDataStyle.ALL_CRASH_INFO
-import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
+import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import com.moretv.bi.util._
 import org.json.JSONObject
 
-object CrashTrendsByVersionProductCrashKey extends SparkSetting{
-  val sc = new SparkContext()
-  val sqlContext = new SQLContext(sc)
-  import sqlContext.implicits._
-  val util = new DBOperationUtils("medusa")
+object CrashTrendsByVersionProductCrashKey extends BaseClass  {
 
-  def main(args: Array[String]) {
+
+  val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+
+
+  def main(args: Array[String]): Unit = {
+    //   JobStatus.getConfig(appName)
+    ModuleClass.executor(this,args)
+
+  }
+  override def execute(args: Array[String]): Unit = {
+
+    val sqlCtx= sqlContext
+    import sqlCtx.implicits._
+
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
         val inputDate = p.startDate
         val day = DateFormatUtils.toDateCN(inputDate)
 
+
         // 过滤掉stack_trace没有值/空的情形
-        val logRdd = sc.textFile(s"/log/medusa_crash/rawlog/${inputDate}/").map(log=>{
+
+        val inputPath=p.paramMap.getOrElse("inputPath","/log/medusa_crash/rawlog/#{date}/")
+        val logPath=inputPath.replace("#{date}",inputDate)
+        val logRdd = sc.textFile(logPath).map(log=>{
           val json = new JSONObject(log)
           (json.optString("fileName"),json.optString("MAC"),json.optString("APP_VERSION_NAME"),json.optString("APP_VERSION_CODE"),
             json.optString("CRASH_KEY"),json.optString("STACK_TRACE"),json.optString("DATE_CODE"),json.optString("PRODUCT_CODE"))

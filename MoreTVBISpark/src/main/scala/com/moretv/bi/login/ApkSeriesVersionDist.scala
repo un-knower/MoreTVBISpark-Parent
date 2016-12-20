@@ -1,6 +1,9 @@
 package com.moretv.bi.login
 
 import com.moretv.bi.util._
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
@@ -27,7 +30,7 @@ object ApkSeriesVersionDist extends BaseClass{
         val loginNums = logRdd.countByKey()
         val userNums = logRdd.distinct().countByKey()
 
-        val db = new DBOperationUtils("bi")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         val day = DateFormatUtils.toDateCN(inputDate, -1)
         if(p.deleteOld){
           val sqlDelete = "delete from apk_version where date = ?"

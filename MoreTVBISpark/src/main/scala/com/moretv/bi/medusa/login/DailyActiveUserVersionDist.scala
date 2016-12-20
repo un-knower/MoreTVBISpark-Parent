@@ -3,7 +3,10 @@ package com.moretv.bi.medusa.login
 import java.lang.{Long => JLong}
 import com.moretv.bi.medusa.util.PMUtils
 import com.moretv.bi.util._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 
@@ -33,7 +36,7 @@ object DailyActiveUserVersionDist extends BaseClass{
         val loginNums = logRdd.map(x => ((x._1,x._2),x._3)).countByKey()
         val userNums = logRdd.distinct().map(x => ((x._1,x._2),x._3)).countByKey()
 
-        val db = new DBOperationUtils("medusa")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val day = DateFormatUtils.toDateCN(inputDate, -1)
         if(p.deleteOld){
           val sqlDelete = "delete from version_dist_product_model_m3u where day = ?"

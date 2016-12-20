@@ -2,6 +2,9 @@ package com.moretv.bi.report.database
 
 import java.sql.DriverManager
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DBOperationUtils, SparkSetting}
 import org.apache.spark.SparkContext
@@ -29,7 +32,7 @@ object NullPromotionChannelLogin extends BaseClass{
   }
   override def execute(args: Array[String]) {
 
-    val db = new DBOperationUtils("tvservice")
+    val db = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
     val sqlIds = "SELECT MIN(id),MAX(id) FROM tvservice.`mtv_account` "
     val ids = db.selectOne(sqlIds)
     val min = ids(0).toString.toLong

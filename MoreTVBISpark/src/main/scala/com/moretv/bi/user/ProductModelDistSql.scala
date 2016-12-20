@@ -4,7 +4,10 @@ import java.sql.DriverManager
 import java.util.Date
 
 import com.moretv.bi.util.FileUtils._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DBOperationUtils, ProductModelUtil, SparkSetting}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.JdbcRDD
@@ -57,7 +60,7 @@ object ProductModelDistSql extends BaseClass{
 
    def getMaxId = {
      val sql ="SELECT MAX(id) FROM tvservice.`mtv_account`"
-     val util = new DBOperationUtils("tvservice")
+     val util = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
      util.selectOne(sql)(0).toString.toLong
    }
 

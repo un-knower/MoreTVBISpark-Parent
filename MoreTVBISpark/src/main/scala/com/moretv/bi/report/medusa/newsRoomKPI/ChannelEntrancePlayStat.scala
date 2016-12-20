@@ -5,6 +5,9 @@ import java.util.Calendar
 
 import scala.collection.mutable.{Map}
 import com.moretv.bi.util._
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SQLContext}
@@ -47,7 +50,7 @@ object ChannelEntrancePlayStat extends BaseClass {
 
         val sqlContext = new SQLContext(sc)
 
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
         val startDate = p.startDate
         val cal = Calendar.getInstance
@@ -60,8 +63,7 @@ object ChannelEntrancePlayStat extends BaseClass {
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          val playviewInput = s"/log/medusaAndMoretvMerger/$loadDate/playview"
-
+          val playviewInput = DataIO.getDataFrameOps.getPath(MERGER,LogTypes.PLAYVIEW,loadDate)
 
           sqlContext.read.parquet(playviewInput)
 

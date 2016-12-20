@@ -8,7 +8,10 @@ import java.lang.{Long => JLong}
 
 import com.moretv.bi.medusa.util.DevMacUtils
 import com.moretv.bi.medusa.util.ParquetDataStyle.ALL_CRASH_INFO
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 import org.json.JSONObject
 
@@ -21,7 +24,7 @@ object CrashTrendsByVersionProduct extends BaseClass{
       case Some(p) =>{
         val s = sqlContext
         import s.implicits._
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val inputDate = p.startDate
         val day = DateFormatUtils.toDateCN(inputDate)
         val logRdd = sc.textFile(s"/log/crash/metadata/${inputDate}_extraction.log").map(log=>{

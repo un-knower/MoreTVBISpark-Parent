@@ -3,6 +3,9 @@ package com.moretv.bi.report.medusa.userDevelop
 import java.lang.{Long => JLong}
 import java.util.Calendar
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 /**
@@ -18,9 +21,9 @@ object newUserCountInfo extends BaseClass{
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val dbsnapshotDir = "/log/dbsnapshot/parquet"
+
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
 
@@ -28,7 +31,9 @@ object newUserCountInfo extends BaseClass{
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
           val insertDate = DateFormatUtils.toDateCN(date, 0)
           calendar.add(Calendar.DAY_OF_MONTH, -1)
-          val newUserInput = s"$dbsnapshotDir/$date/moretv_mtv_account"
+
+          val inputPath = p.paramMap.getOrElse("inputPath", "/log/dbsnapshot/parquet/#{date}/moretv_mtv_account")
+          val newUserInput =inputPath.replace("#{date}",date)
 
           sqlContext.read.parquet(newUserInput).registerTempTable("log_data")
 

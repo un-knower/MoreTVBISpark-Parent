@@ -1,7 +1,10 @@
 package com.moretv.bi.user
 
 import com.moretv.bi.util.ParamsParseUtil._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateFormatUtils, ProductModelUtil, SparkSetting}
 import org.apache.spark.SparkContext
 import com.moretv.bi.util.FileUtils._

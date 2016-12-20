@@ -5,6 +5,9 @@ import java.lang.{Long => JLong}
 import java.lang.{Float => JFloat}
 
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
 import scala.collection.mutable.{ListBuffer}
@@ -64,7 +67,7 @@ object MVTabPlayStat extends BaseClass{
       case Some(p) =>{
 
         // init & util
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
         val startDate = p.startDate
 
@@ -202,10 +205,8 @@ object MVTabPlayStat extends BaseClass{
 
             p.group(2) match {
 
-              case station =>  buf.+= (("电台", "电台", event, userId, duration))
-
+              case `station` =>  buf.+= (("电台", "电台", event, userId, duration))
               case _ => null
-
             }
           }
 

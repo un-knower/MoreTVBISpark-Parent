@@ -9,6 +9,9 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.storage.StorageLevel
 import com.moretv.bi.util.SubjectUtils._
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
 object Subject_pv_uv extends BaseClass with DateUtil{
@@ -28,7 +31,7 @@ object Subject_pv_uv extends BaseClass with DateUtil{
         val pvNums = logRdd.countByKey()
         val uvNums = logRdd.distinct().countByKey()
         //save date
-        val util = new DBOperationUtils("eagletv")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_EAGLETV_MYSQL)
         //delete old data
         val date = DateFormatUtils.toDateCN(p.startDate, -1)
         if (p.deleteOld) {

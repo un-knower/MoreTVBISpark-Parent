@@ -4,6 +4,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import com.moretv.bi.util.DBOperationUtils
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
 import scala.util.parsing.json.JSONObject
@@ -19,7 +22,7 @@ object MovieDifferentClassificationPlayNum extends BaseClass{
      /*该函数用于配置MovieSummaryViewNum*/
      val date = new Date()
      val dateFormat = new SimpleDateFormat("yyyyMMdd")
-     val db = new DBOperationUtils("medusa")
+     val db = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
      /*设置参数*/
      val startDate = dateFormat.format(date)

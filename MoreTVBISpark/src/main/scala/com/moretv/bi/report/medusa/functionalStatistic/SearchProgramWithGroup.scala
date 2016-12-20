@@ -5,6 +5,9 @@ import java.lang.{Long => JLong}
 
 //import com.moretv.bi.constant.ApkVersion
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
 import scala.collection.immutable.ListMap
@@ -33,7 +36,7 @@ object SearchProgramWithGroup extends  BaseClass{
 
       case Some(p) => {
         //init util
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
         val startDate = p.startDate
         val cal = Calendar.getInstance

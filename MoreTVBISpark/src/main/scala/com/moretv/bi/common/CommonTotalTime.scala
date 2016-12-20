@@ -2,7 +2,10 @@ package com.moretv.bi.common
 
 
 import com.moretv.bi.util._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.storage.StorageLevel
@@ -29,7 +32,7 @@ object CommonTotalTime extends BaseClass with DateUtil{
         val userNum = resultRDD.map(e=>(e._1,e._2)).distinct().countByKey()
         val time = resultRDD.map(e=>(e._1,e._3.toLong)).reduceByKey((x,y)=>x+y).collect().toMap
 
-        val util = new DBOperationUtils("bi")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

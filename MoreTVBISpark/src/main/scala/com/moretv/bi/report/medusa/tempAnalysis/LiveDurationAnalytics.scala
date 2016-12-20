@@ -3,6 +3,8 @@ package com.moretv.bi.report.medusa.tempAnalysis
 import java.lang.{Long => JLong}
 import java.util.Calendar
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
@@ -17,7 +19,7 @@ object LiveDurationAnalytics extends SparkSetting{
     if(args.length>0) {
       val sc = new SparkContext(config)
       implicit val sqlContext = new SQLContext(sc)
-      val util = new DBOperationUtils("medusa")
+      val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
       val time = args(0)
       val dir = s"/log/medusaAndMoretvMerger/$time/live"
       sqlContext.read.parquet(dir).select("duration","userId","event","liveType").registerTempTable("log")

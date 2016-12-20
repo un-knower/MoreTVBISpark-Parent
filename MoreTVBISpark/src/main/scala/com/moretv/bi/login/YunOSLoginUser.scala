@@ -3,6 +3,9 @@ package com.moretv.bi.login
 import java.lang.{Long => JLong}
 import java.util.regex.Pattern
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
 import org.apache.spark.SparkContext
@@ -30,7 +33,7 @@ object YunOSLoginUser extends BaseClass{
         val loginNum = logRdd.count()
         val userNum = logRdd.distinct().count()
 
-        val db = new DBOperationUtils("bi")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         //delete old data
         val day = DateFormatUtils.toDateCN(inputDate, -1)
         if(p.deleteOld) {

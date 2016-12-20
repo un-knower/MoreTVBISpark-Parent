@@ -6,6 +6,8 @@ package com.moretv.bi.report.medusa.medusaAndMoretvParquetMerger
  */
 import java.lang.{Long => JLong}
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
 import com.moretv.bi.medusa.util.DevMacUtils
 import com.moretv.bi.util.{ParamsParseUtil, SparkSetting, _}
 import org.apache.commons.codec.digest.DigestUtils
@@ -18,7 +20,7 @@ object CrashOriginalInfoTemp extends SparkSetting{
   val sc = new SparkContext(config)
   val sqlContext = new SQLContext(sc)
   import sqlContext.implicits._
-  val util = new DBOperationUtils("medusa")
+  val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
 
   def main(args: Array[String]) {

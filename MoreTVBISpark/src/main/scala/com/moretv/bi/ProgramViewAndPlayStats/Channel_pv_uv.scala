@@ -2,6 +2,9 @@ package com.moretv.bi.ProgramViewAndPlayStats
 
 
 import com.moretv.bi.util._
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
@@ -29,7 +32,7 @@ object Channel_pv_uv extends BaseClass with DateUtil{
         val accessNum = playRDD.countByKey()
 
         //save date
-        val util = new DBOperationUtils("eagletv")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_EAGLETV_MYSQL)
         //delete old data
         if (p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)

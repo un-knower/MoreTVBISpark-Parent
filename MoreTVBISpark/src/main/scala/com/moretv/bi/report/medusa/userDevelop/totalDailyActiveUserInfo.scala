@@ -3,7 +3,10 @@ package com.moretv.bi.report.medusa.userDevelop
 import java.lang.{Long => JLong}
 import java.util.Calendar
 
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
@@ -21,10 +24,9 @@ object totalDailyActiveUserInfo extends BaseClass{
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val medusaDir = "/log/medusa/parquet"
-        val moretvDir = "/mbi/parquet"
+
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
 
@@ -35,8 +37,8 @@ object totalDailyActiveUserInfo extends BaseClass{
           calendar.add(Calendar.DAY_OF_MONTH,-1)
           val enterUserIdDate = DateFormatUtils.readFormat.format(calendar.getTime)
 
-          val medusaDailyActiveInput = s"$medusaDir/$date/*/"
-          val moretvDailyActiveInput = s"$moretvDir/*/$date"
+          val medusaDailyActiveInput =DataIO.getDataFrameOps.getPath(MEDUSA,"*",date)
+          val moretvDailyActiveInput =DataIO.getDataFrameOps.getPath(MORETV,"*",date)
 
           val medusaDailyActivelog = sqlContext.read.parquet(medusaDailyActiveInput).select("userId","apkVersion")
             .registerTempTable("medusa_daily_active_log")

@@ -1,7 +1,10 @@
 package com.moretv.bi.kidslogin
 
 import com.moretv.bi.util._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 
@@ -24,7 +27,7 @@ object MtvKidsAccessUsers extends BaseClass{
         val loginNum = logRdd.count()
         val userNum = logRdd.distinct().count()
 
-        val db = new DBOperationUtils("bi")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         val day = DateFormatUtils.toDateCN(inputDate, -1)
         if(p.deleteOld){
           val sqlDelete = "delete from mtv_kids_useraccess where day = ?"

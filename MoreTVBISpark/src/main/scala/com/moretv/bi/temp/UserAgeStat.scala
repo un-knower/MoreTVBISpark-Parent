@@ -4,6 +4,9 @@ import java.util.Calendar
 import java.lang.{Long => JLong}
 import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.{AccountIDInfoUtils, DBOperationUtils}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
 import scala.runtime.AbstractFunction0
@@ -38,7 +41,7 @@ object UserAgeStat extends BaseClass {
 
   override def execute(args: Array[String]): Unit = {
 
-    val util = new DBOperationUtils("medusa")
+    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
     val cal = Calendar.getInstance
 

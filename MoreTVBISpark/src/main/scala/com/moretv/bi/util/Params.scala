@@ -27,5 +27,26 @@ case class Params (startDate:String ="yyyyMMdd", //起始日期,格式为yyyyMMd
                    alarmFlag:Boolean = true,  //限定版本号
 //                   contentType:String = "",
 //                   dateInfo:String="" ,
-                   outputFile: String = "" //输出csv文件路径
-                    )//节目类型
+                   outputFile: String = "", //输出csv文件路径
+                   paramMap: Map[String,String] = Map[String,String]() //参数集合
+                  ){
+
+  def get[T](key:String) = paramMap(key).asInstanceOf[T]
+
+  def getOrElse[T](key:String,default: => T) = {
+    paramMap.get(key) match {
+      case Some(value) => value.asInstanceOf[T]
+      case None => default
+    }
+  }
+
+  def getString = get[String] _
+  def getInt = get[Int] _
+  def getLong = get[Long] _
+  def getDouble = get[Double] _
+  def getBoolean = get[Boolean] _
+  def contains = paramMap.contains _
+
+}
+
+
