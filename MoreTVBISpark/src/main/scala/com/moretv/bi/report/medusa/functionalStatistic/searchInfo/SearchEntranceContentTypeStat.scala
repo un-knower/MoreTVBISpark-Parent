@@ -37,7 +37,7 @@ object SearchEntranceContentTypeStat extends BaseClass{
 
   def main(args: Array[String]) {
 
-    ModuleClass.executor(SearchEntranceContentTypeStat, args)
+    ModuleClass.executor(this, args)
 
   }
 
@@ -59,13 +59,17 @@ object SearchEntranceContentTypeStat extends BaseClass{
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
           //path
-          val loadPath = s"/log/medusa/parquet/$loadDate/$dataSource"
+          /*val loadPath = s"/log/medusa/parquet/$loadDate/$dataSource"
 
           //df
           val df = sqlContext.read.parquet(loadPath)
                               .select("contentType", "userId", "entrance")
                               .filter("contentType is not null")
-                              .filter("entrance is not null")
+                              .filter("entrance is not null")*/
+          val df=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.CLICKSEARCHRESULT,loadDate)
+            .select("contentType", "userId", "entrance")
+            .filter("contentType is not null")
+            .filter("entrance is not null")
 
           //rdd ((entrance, contentType), userId)
           val rdd = df.map(e=>((e.getString(2),e.getString(0)),e.getString(1)))

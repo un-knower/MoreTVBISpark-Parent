@@ -26,7 +26,7 @@ object SearchProgramWithGroup extends  BaseClass{
 
   def main(args: Array[String]):Unit = {
 
-    ModuleClass.executor(SearchProgramWithGroup,args)
+    ModuleClass.executor(this,args)
 
   }
 
@@ -50,23 +50,23 @@ object SearchProgramWithGroup extends  BaseClass{
           cal.add(Calendar.DAY_OF_MONTH,-1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          //path 
+         /* //path 
           val path = s"/log/medusa/parquet/$loadDate/clickResult"
-          println(path)
+          println(path)*/
 
           try{
             //df 
-            sqlContext.read.parquet(path).registerTempTable("log")
+            //sqlContext.read.parquet(path).registerTempTable("log")
 
-          //  val avaiableVersion = ApkVersion.availableMedusaApkVersionStr
-            val df = sqlContext.sql(
-              "select userId, params['resultSid'] as resultSid," +
-              "params['resultName'] as resultName," +
-              s" contentType,apkVersion from log ")
-                  .filter("contentTYpe is not null")
-
+           val df1=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.CLICK_RESULT,loadDate)
+            df1.registerTempTable("log")
+           //  val avaiableVersion = ApkVersion.availableMedusaApkVersionStr
             //rdd((resultSid,resultName,contentType),userId)
-            val rdd = df.map(e=>((e.getString(1),e.getString(2),e.getString(3)),e.getString(0)))
+            val rdd = df1.sqlContext.sql(
+              "select userId, params['resultSid'] as resultSid," +
+                "params['resultName'] as resultName," +
+                s" contentType,apkVersion from log ")
+              .filter("contentTYpe is not null").map(e=>((e.getString(1),e.getString(2),e.getString(3)),e.getString(0)))
 
             val uvMap = rdd.distinct.countByKey
             val pvMap = rdd.countByKey

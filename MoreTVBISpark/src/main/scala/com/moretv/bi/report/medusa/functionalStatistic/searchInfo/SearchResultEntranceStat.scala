@@ -26,7 +26,7 @@ import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
   */
 object SearchResultEntranceStat extends BaseClass{
 
-  private val dataSource = "clickSearchResult"
+  //private val dataSource = "clickSearchResult"
 
   private val tableName = "search_result_entrance_stat"
 
@@ -38,7 +38,7 @@ object SearchResultEntranceStat extends BaseClass{
 
   def main(args: Array[String]) {
 
-    ModuleClass.executor(SearchResultEntranceStat,args)
+    ModuleClass.executor(this,args)
 
   }
 
@@ -59,13 +59,16 @@ object SearchResultEntranceStat extends BaseClass{
           cal.add(Calendar.DAY_OF_MONTH,-1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          //path
+          /*//path
           val loadPath = s"/log/medusa/parquet/$loadDate/$dataSource"
           println(loadPath)
 
           //df
           val df = sqlContext.read.parquet(loadPath)
             .select("userId","entrance")
+            .filter("entrance is not null")*/
+
+          val df=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.CLICKSEARCHRESULT,loadDate).select("userId","entrance")
             .filter("entrance is not null")
           //rdd
           val rdd = df.map(e=>(e.getString(1),e.getString(0)))

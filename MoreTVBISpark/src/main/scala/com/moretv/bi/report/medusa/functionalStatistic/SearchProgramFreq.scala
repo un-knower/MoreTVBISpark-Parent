@@ -36,12 +36,16 @@ object SearchProgramFreq extends BaseClass{
             cal.add(Calendar.DAY_OF_MONTH,-1)
             val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-            //path
+           /* //path
             val path = s"/log/medusa/parquet/$loadDate/clickResult"
             println(path)
             //df
             val df = sqlContext.read.parquet(path).select("userId","contentType")
-                        .filter("contentType is not null")
+                        .filter("contentType is not null")*/
+
+            val df=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.CLICK_RESULT,loadDate).select("userId","contentType")
+              .filter("contentType is not null")
+
             //rdd
             val rdd = df.map(e=>(e.getString(1),e.getString(0)))
 

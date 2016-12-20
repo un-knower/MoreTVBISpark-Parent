@@ -24,7 +24,7 @@ object SearchEntranceContentTypeResultFreq extends BaseClass{
 
   def main(args: Array[String]) {
 
-    ModuleClass.executor(SearchEntranceContentTypeResultFreq, args)
+    ModuleClass.executor(this, args)
 
   }
 
@@ -45,12 +45,17 @@ object SearchEntranceContentTypeResultFreq extends BaseClass{
           cal.add(Calendar.DAY_OF_MONTH,-1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          //path
+        /*  //path
           val loadPath = s"/log/medusa/parquet/$loadDate/clickResult"
 
           //df
           sqlContext.read.parquet(loadPath).registerTempTable("log")
           val df = sqlContext.sql("select params['contentType'], userId from log " +
+            "where logType='event' and eventId='medusa-search-clickResult' and params['contentType'] is not null ")
+*/
+          val df1=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.CLICKSEARCHRESULT,loadDate)
+          df1.registerTempTable("log")
+          val df = df1.sqlContext.sql("select params['contentType'], userId from log " +
             "where logType='event' and eventId='medusa-search-clickResult' and params['contentType'] is not null ")
 
           //rdd
