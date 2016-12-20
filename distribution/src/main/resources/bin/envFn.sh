@@ -8,8 +8,12 @@ load_args()
         then
             x=`echo $x|tr -d '\n'|tr -d '\r'|tr -d '-'`
             arr=(${x/=/ })
-            eval ${arr[0]//./_}=${arr[1]}
-            echo arg: ${arr[0]//./_}=${arr[1]}
+            propName=${arr[0]}
+            propValue=${arr[1]}
+            propName=${propName//./_}
+            propName=${propName//-/_}
+            eval "$propName=$propValue"
+            echo arg: $propName=$propValue
         fi
     done
 }
@@ -25,8 +29,12 @@ load_properties()
             then
                 line=`echo $line|tr -d ' '|tr -d '\n'|tr -d '\r'`
                 arr=(${line/=/ })
-                eval ${arr[0]//./_}=${arr[1]}
-                echo propline: ${arr[0]//./_}=${arr[1]}
+                propName=${arr[0]}
+                propValue=${arr[1]}
+                propName=${propName//./_}
+                propName=${propName//-/_}
+                eval "$propName=$propValue"
+                echo propline: $propName=$propValue
             fi
     done
 }
