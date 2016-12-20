@@ -13,7 +13,7 @@ object ParamsParseUtil {
   private val readFormat = DateFormatUtils.readFormat
   private val timeFormat = new SimpleDateFormat("HH:mm:ss")
 
-  def parse(args: Seq[String],default:Params = default) = {
+  def parse(args: Seq[String],default:Params = default):Option[Params] = {
       if(args.nonEmpty){
         val parser = new OptionParser[Params]("ParamsParse") {
           head("ParamsParse","1.2")
@@ -65,11 +65,18 @@ object ParamsParseUtil {
           //          opt[String]("sid").action((x,c)=>c.copy(sid=x))
 //          opt[String]("dateInfo").action((x,c)=> c.copy(dateInfo=x))
         }
-        parser.parse(args,default)
-      }else Some(default)
+        parser.parse(args,default) match {
+          case Some(p) => {
+            p.paramMap += "startDate" -> p.startDate
+            Some(p)
+          }
+          case None => throw new RuntimeException("parse exception")
+        }
+
+      }else throw new RuntimeException("args is empty")
   }
 
-  def withParse(args:Seq[String])(f : Params => Unit) = {
+  def withParse(args:Seq[String])(f : Params => Unit):Unit = {
     parse(args) match {
       case Some(p) => f(p)
       case None =>
