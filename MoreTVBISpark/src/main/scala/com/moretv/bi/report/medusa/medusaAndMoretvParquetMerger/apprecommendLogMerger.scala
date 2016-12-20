@@ -43,9 +43,9 @@ object apprecommendLogMerger extends BaseClass{
 
 
           // val medusaFlag = FilesInHDFS.fileIsExist(s"$medusaDir/$inputDate",medusaType)
-             val medusaFlag = FilesInHDFS.IsDirectoryExist(s"$medusa_input_dir")
+             val medusaFlag = FilesInHDFS.IsInputGenerateSuccess(s"$medusa_input_dir")
            //val moretvFlag = FilesInHDFS.fileIsExist(s"$moretvDir/$moretvType",inputDate)
-             val moretvFlag = FilesInHDFS.IsDirectoryExist(s"$moretv_input_dir")
+             val moretvFlag = FilesInHDFS.IsInputGenerateSuccess(s"$moretv_input_dir")
 
            if(p.deleteOld){
              HdfsUtil.deleteHDFSFile(outputPath)
@@ -69,13 +69,15 @@ object apprecommendLogMerger extends BaseClass{
              val mergerJson = json1.union(json2)
              sqlContext.read.json(mergerJson).write.parquet(outputPath)
            }else if(!medusaFlag && moretvFlag){
-             val moretvDf = sqlContext.read.parquet(s"$moretv_input_dir")
+             //val moretvDf = sqlContext.read.parquet(s"$moretv_input_dir")
+             val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MORETV,LogTypes.APP_RECOMMEND,inputDate)
              val moretvColumnsName = moretvDf.columns.toList.mkString(",")
              moretvDf.registerTempTable("log_data_2")
              val sqlSelectMoretv = s"select $moretvColumnsName,date as day,'moretv' as flag from log_data_2"
              sqlContext.sql(sqlSelectMoretv).write.parquet(outputPath)
            }else if(medusaFlag && !moretvFlag){
-             val medusaDf = sqlContext.read.parquet(s"$medusa_input_dir")
+             //val medusaDf = sqlContext.read.parquet(s"$medusa_input_dir")
+             val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.APPACCESS,inputDate)
              val meudsaColumnsName = medusaDf.columns.toList.mkString(",")
              medusaDf.registerTempTable("log_data_1")
              val sqlSelectMedusa = s"select $meudsaColumnsName,'medusa' as flag from log_data_1"
