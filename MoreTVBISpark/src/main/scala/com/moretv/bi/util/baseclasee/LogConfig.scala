@@ -11,5 +11,8 @@ trait LogConfig {
   val MERGER = "merger"
   val LOGINLOG = "loginlog"
   val DBSNAPSHOT = "dbsnapshot"
+  val WHALEY = "whaley"
+  val VR = "vr"
+  val EAGLE = "eagle"
 
 }
