@@ -39,7 +39,7 @@ object SearchContentTypeStat extends BaseClass{
 
   def main(args: Array[String]): Unit ={
 
-      ModuleClass.executor(SearchContentTypeStat,args)
+      ModuleClass.executor(this,args)
 
   }
   override def execute(args: Array[String]): Unit = {
@@ -62,13 +62,10 @@ object SearchContentTypeStat extends BaseClass{
             val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
             //path
-            val path = s"/log/medusa/parquet/$loadDate/$dataSource"
-            println(path)
+            //val path = s"/log/medusa/parquet/$loadDate/$dataSource"
+            val df=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.CLICKSEARCHRESULT,loadDate).select("userId","contentType")
+              .filter("contentType is not null")
 
-            //df
-            val df = sqlContext.read.parquet(path)
-                        .select("userId","contentType")
-                        .filter("contentType is not null")
             //rdd
             val rdd = df.map(e=>(e.getString(1),e.getString(0)))
                         .cache

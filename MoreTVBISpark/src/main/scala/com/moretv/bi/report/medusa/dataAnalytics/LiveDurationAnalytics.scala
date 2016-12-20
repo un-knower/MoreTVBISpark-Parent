@@ -15,6 +15,8 @@ import org.apache.spark.storage.StorageLevel
  * Created by xia jun on 2016/9/5.
  * @author xia jun
  * Computing the live duration of each time period
+  *
+  * need to delete,not used on prod
  */
 object LiveDurationAnalytics extends BaseClass{
   val secondInterval = 10
@@ -32,10 +34,24 @@ object LiveDurationAnalytics extends BaseClass{
    * @param args
    */
   override def execute(args:Array[String]) ={
-    val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+    val db = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+    val url = db.prop.getProperty("url")
+    val driver = db.prop.getProperty("driver")
+    val user = db.prop.getProperty("user")
+    val password = db.prop.getProperty("password")
+
+    val (min,max) = db.queryMaxMinID("mtv_account","id")
+    db.destory()
+
+    val sqlInfo ="select time,probability from medusa.liveDurationProbabilityByTenSecends where id >=? and id <= ?"
+    val probabilityRdd = MySqlOps.
+      getJdbcRDD(sc,sqlInfo,"liveDurationProbabilityByTenSecends",r=>(r.getString(1),r.getDouble(2)),driver,url,user,password,(min,max),20)
+
+
+
     val tempSqlContext = sqlContext
     import tempSqlContext.implicits._
-    val numOfPartition = 20
+    /*val numOfPartition = 20
     val minId = (util: MySqlOps) => {
       val sql = "select min(id) from medusa.liveDurationProbabilityByTenSecends"
       val id = util.selectOne(sql)
@@ -54,11 +70,12 @@ object LiveDurationAnalytics extends BaseClass{
           ".15:3306/medusa?useUnicode=true&characterEncoding=utf-8&autoReconnect=true", "bi", "mlw321@moretv")
       },
      "select time,probability from medusa.liveDurationProbabilityByTenSecends where id >=? and id <= ?",
-      minId(util),
-      maxId(util),
+      minId(db),
+      maxId(db),
       numOfPartition,
       r => (r.getString(1),r.getDouble(2))
     )
+*/
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         val calendar = Calendar.getInstance()

@@ -56,4 +56,8 @@ object LogTypes {
   val SWITCHONOFF = "switchonoff"
   val TABVIEW = "tabview"
   val VIDEOBUTTON = "videobutton"
+  val APP_RECOMMEND="apprecommend"
+  val CLICK_ENTRANCE="clickEntrance"
+  val CLICK_RESULT="clickResult"
+  val OPERATION_E="operation-e"
 }

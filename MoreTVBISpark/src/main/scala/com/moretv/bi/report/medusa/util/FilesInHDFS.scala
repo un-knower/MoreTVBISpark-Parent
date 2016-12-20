@@ -5,6 +5,8 @@ package com.moretv.bi.report.medusa.util
  * 从HDFS中获取文件
  */
 
+import java.io.File
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
 
@@ -26,6 +28,16 @@ object FilesInHDFS {
         flag = true
       }
     })
+    flag
+  }
+
+
+  //check if the directory contains _SUCCESS file
+  def IsInputGenerateSuccess(path:String):Boolean={
+    var flag = false
+    val conf = new Configuration()
+    val fs = FileSystem.get(conf)
+    flag=fs.exists(new Path(path+File.separator+"_SUCCESS"))
     flag
   }
 

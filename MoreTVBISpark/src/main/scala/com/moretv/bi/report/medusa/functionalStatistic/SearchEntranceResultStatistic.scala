@@ -21,7 +21,7 @@ object SearchEntranceResultStatistic extends BaseClass{
 
   def main(args: Array[String]) {
 
-    ModuleClass.executor(SearchEntranceResultStatistic,args)
+    ModuleClass.executor(this,args)
 
   }
   override def execute(args: Array[String]): Unit = {
@@ -41,12 +41,16 @@ object SearchEntranceResultStatistic extends BaseClass{
           cal.add(Calendar.DAY_OF_MONTH,-1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          //path
+        /*  //path
           val loadPath = s"/log/medusa/parquet/$loadDate/clickResult"
 
           //df
           val df = sqlContext.read.parquet(loadDate).select("logType","eventId","userId","entrance")
                       .filter("logType ='event'").filter("eventId='medusa-search-clickResult'")
+*/
+          val df=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.CLICKSEARCHRESULT,loadDate).select("logType","eventId","userId","entrance")
+            .filter("logType ='event'").filter("eventId='medusa-search-clickResult'")
+
           //rdd
           val rdd = df.map(e=>(e.getString(3),e.getString(2)))
 
