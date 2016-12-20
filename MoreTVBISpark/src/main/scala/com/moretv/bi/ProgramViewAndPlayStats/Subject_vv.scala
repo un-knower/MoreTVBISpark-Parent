@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 
 import com.moretv.bi.constant.LogType._
+import com.moretv.bi.set.WallpaperSetUsage._
 import com.moretv.bi.util.SubjectUtils._
 import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
@@ -17,16 +18,13 @@ import org.apache.spark.storage.StorageLevel
 object Subject_vv extends BaseClass with DateUtil{
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(Subject_vv,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-
-        val logType = PLAYVIEW
-        val sqlLog = "select path,userId from log_data"
-        val logRdd = DFUtil.getDFByDateWithSql(sqlLog,logType,p.startDate).
+        val logRdd = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.PLAYVIEW).
           flatMap(row => getSubjectCodeAndPathWithId(row.getString(0),row.getString(1))).persist(StorageLevel.MEMORY_AND_DISK)
         val vvNums = logRdd.countByKey()
         val uvNums = logRdd.distinct().countByKey()

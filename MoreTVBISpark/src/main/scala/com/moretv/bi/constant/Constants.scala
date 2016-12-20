@@ -6,4 +6,5 @@ package com.moretv.bi.constant
 object Constants {
 
   val COLUMN_SEPARATOR = ","
+  val MYSQL_DRIVER = "com.mysql.jdbc.Driver"
 }

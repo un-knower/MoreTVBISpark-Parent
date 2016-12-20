@@ -18,14 +18,12 @@ import org.apache.spark.storage.StorageLevel
 object WallpaperSetUsage extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("WallpaperSetUsage")
-    ModuleClass.executor(WallpaperSetUsage,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
-
-        val path = "/mbi/parquet/set/"+p.startDate+"/part-*"
-        val df = sqlContext.read.load(path)
+        val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.SET)
         val resultRDD = df.filter("event='wallpaper'").select("date","userId").map(e =>(e.getString(0),e.getString(1))).
             map(e=>(getKeys(e._1),e._2)).persist(StorageLevel.MEMORY_AND_DISK)
         val userNum = resultRDD.distinct().countByKey()

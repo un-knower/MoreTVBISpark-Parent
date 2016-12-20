@@ -3,6 +3,7 @@ package com.moretv.bi.ProgramViewAndPlayStats
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
+import com.moretv.bi.set.WallpaperSetUsage._
 import com.moretv.bi.util._
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
@@ -20,15 +21,12 @@ object Live_time extends BaseClass with DateUtil{
 
   def main(args: Array[String]): Unit = {
     config.setAppName("Live_time")
-    ModuleClass.executor(Live_time,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
-
-
-        val path = "/mbi/parquet/live/"+p.startDate
-        val df = sqlContext.read.load(path)
+        val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.LIVE)
         val resultRDD = df.select("date","channelSid","duration").map(e =>(e.getString(0),e.getString(1),e.getInt(2).toLong)).
             map(e=>(getKeys(e._1,e._2),e._3)).filter(x => {x._2 > 0 && x._2 < 100000}).reduceByKey((x,y)=>x+y).collect()
 

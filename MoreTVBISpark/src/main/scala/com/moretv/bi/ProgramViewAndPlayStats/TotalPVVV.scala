@@ -1,6 +1,7 @@
 package com.moretv.bi.ProgramViewAndPlayStats
 
 
+import com.moretv.bi.set.WallpaperSetUsage._
 import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
@@ -16,25 +17,19 @@ import org.apache.spark.storage.StorageLevel
 object TotalPVVV extends BaseClass with DateUtil{
   def main(args: Array[String]): Unit = {
     config.setAppName("TotalPVVV")
-    ModuleClass.executor(TotalPVVV,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-
-
-        //calculate log whose type is play
-        val playPath = "/mbi/parquet/playview/" + p.startDate
-        val df_play = sqlContext.read.load(playPath)
+        val df_play = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.PLAYVIEW)
         val playRDD = df_play.select("date","userId").
             map(e => (getKeys(e.getString(0)), e.getString(1))).persist(StorageLevel.MEMORY_AND_DISK)
         val userNum_play = playRDD.distinct().countByKey()
         val accessNum_play = playRDD.countByKey()
         playRDD.unpersist()
-
-        val detailPath = "/mbi/parquet/detail/" + p.startDate
-        val df_detail = sqlContext.read.load(detailPath)
+        val df_detail = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.DETAIL)
         val detailRDD = df_detail.select("date","userId").
             map(e => (getKeys(e.getString(0),"detail"), e.getString(1))).persist(StorageLevel.MEMORY_AND_DISK)
         val userNum_detail = detailRDD.distinct().countByKey()

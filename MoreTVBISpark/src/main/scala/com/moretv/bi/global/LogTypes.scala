@@ -56,4 +56,7 @@ object LogTypes {
   val SWITCHONOFF = "switchonoff"
   val TABVIEW = "tabview"
   val VIDEOBUTTON = "videobutton"
+  val SET = "set"
+  val MORETV_MTV_ACCOUNT = "moretv_mtv_account"
+  val LOGINLOG = "loginlog"
 }

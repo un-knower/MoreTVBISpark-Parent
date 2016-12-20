@@ -3,6 +3,7 @@ package com.moretv.bi.ProgramViewAndPlayStats
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
+import com.moretv.bi.set.WallpaperSetUsage._
 import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
@@ -19,15 +20,12 @@ object Live_user extends BaseClass with DateUtil{
 
   def main(args: Array[String]): Unit = {
     config.setAppName("Live_user")
-    ModuleClass.executor(Live_user,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
-
-
-        val path = "/mbi/parquet/live/"+p.startDate+"/part-*"
-        val df = sqlContext.read.load(path)
+        val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.LIVE)
         val resultRDD = df.select("date","userId").map(e =>(e.getString(0),e.getString(1))).
             map(e=>(getKeys(e._1),e._2)).persist(StorageLevel.MEMORY_AND_DISK)
 
