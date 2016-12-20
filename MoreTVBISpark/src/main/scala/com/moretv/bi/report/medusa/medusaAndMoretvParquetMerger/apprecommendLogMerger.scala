@@ -43,9 +43,9 @@ object apprecommendLogMerger extends BaseClass{
 
 
           // val medusaFlag = FilesInHDFS.fileIsExist(s"$medusaDir/$inputDate",medusaType)
-             val medusaFlag = FilesInHDFS.IsInputGenerateSuccess(s"$medusa_input_dir")
+             val medusaFlag = FilesInHDFS.IsInputGenerateSuccess(medusa_input_dir)
            //val moretvFlag = FilesInHDFS.fileIsExist(s"$moretvDir/$moretvType",inputDate)
-             val moretvFlag = FilesInHDFS.IsInputGenerateSuccess(s"$moretv_input_dir")
+             val moretvFlag = FilesInHDFS.IsInputGenerateSuccess(moretv_input_dir)
 
            if(p.deleteOld){
              HdfsUtil.deleteHDFSFile(outputPath)
