@@ -3,6 +3,8 @@ package com.moretv.bi.report.medusa.CrashLog
 /**
  * Created by xiajun on 2016/9/21.
  * 该对象用于获取每天的crash的原始数据
+  *
+  * this class is used
  */
 import java.lang.{Long => JLong}
 
@@ -23,7 +25,7 @@ object CrashOriginalInfoNew extends BaseClass{
     config.set("spark.executor.memory", "5g").
       set("spark.executor.cores", "5").
       set("spark.cores.max", "100")
-    ModuleClass.executor(CrashOriginalInfoNew,args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {
@@ -34,7 +36,8 @@ object CrashOriginalInfoNew extends BaseClass{
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val inputDate = p.startDate
         val day = DateFormatUtils.toDateCN(inputDate)
-        val logRdd = sc.textFile(s"/log/medusa_crash/rawlog/${inputDate}/").map(log=>{
+        val inputPath=p.paramMap.getOrElse("inputPath",s"/log/medusa_crash/rawlog/#{date}/").replace("#{date}",inputDate)
+        val logRdd = sc.textFile(inputPath).map(log=>{
           val json = new JSONObject(log)
           (json.optString("fileName"),json.optString("MAC"),json.optString("APP_VERSION_NAME"),json.optString("APP_VERSION_CODE"),
             json.optString("ANDROID_VERSION"),json.optString("STACK_TRACE"),json.optString("DATE_CODE"),

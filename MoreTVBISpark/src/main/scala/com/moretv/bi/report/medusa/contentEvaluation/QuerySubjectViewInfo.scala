@@ -29,7 +29,7 @@ object QuerySubjectViewInfo extends BaseClass {
       set("spark.default.parallelism", "40").
       set("spark.sql.shuffle.partitions", "400").
       set("spark.cores.max", "100")
-    ModuleClass.executor(QuerySubjectViewInfo, args)
+    ModuleClass.executor(this, args)
   }
 
   override def execute(args: Array[String]) {
@@ -37,16 +37,18 @@ object QuerySubjectViewInfo extends BaseClass {
       case Some(p) => {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val logType = "detail"
-        val medusaDir = "/log/medusaAndMoretvMerger/"
+ /*       val logType = "detail"
+        val medusaDir = "/log/medusaAndMoretvMerger/"*/
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
         (0 until p.numOfDays).foreach(i => {
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH, -1)
-          val inputDir = s"${medusaDir}${date}/${logType}"
-          sqlContext.read.parquet(inputDir).registerTempTable("log_data")
+          /*val inputDir = s"${medusaDir}${date}/${logType}"
+          sqlContext.read.parquet(inputDir).registerTempTable("log_data")*/
+
+          DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MERGER,LogTypes.DETAIL,date).registerTempTable("log_data")
 
           val rdd = sqlContext.sql("select userId,launcherAreaFromPath," +
             "launcherAccessLocationFromPath,pageDetailInfoFromPath," +

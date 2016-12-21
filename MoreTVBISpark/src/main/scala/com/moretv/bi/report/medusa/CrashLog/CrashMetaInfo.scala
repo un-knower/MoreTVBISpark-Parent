@@ -4,24 +4,18 @@ package src.com.moretv.bi.report.medusa.CrashLog
  * Created by Administrator on 2016/3/30.
  */
 
-//import java.text.SimpleDateFormat
 import java.lang.{Long=>JLong}
 import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.global.{DataBases}
 import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import org.apache.spark.SparkContext
-import org.apache.spark.rdd.JdbcRDD
-import java.sql.DriverManager
-//import java.util.Date
-//import java.util.Calendar
-import org.apache.spark.storage.StorageLevel
+
 
 object CrashMetaInfo extends BaseClass{
 
   def main(args: Array[String]) {
-    ModuleClass.executor(CrashMetaInfo,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
@@ -29,6 +23,11 @@ object CrashMetaInfo extends BaseClass{
         val input = p.startDate
         val inputDay = DateFormatUtils.toDateCN(input)
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+        val url = util.prop.getProperty("url")
+        val driver = util.prop.getProperty("driver")
+        val user = util.prop.getProperty("user")
+        val password = util.prop.getProperty("password")
+
         /**
          * Define two lambda functions
          */
@@ -69,7 +68,7 @@ object CrashMetaInfo extends BaseClass{
          * Getting the data from original table, which includes the information of each day
          */
 
-        val jdbc_original_rdd_pri = new JdbcRDD(sc,
+      /*  val jdbc_original_rdd_pri = new JdbcRDD(sc,
           () => {
             Class.forName("com.mysql.jdbc.Driver")
             DriverManager.getConnection("jdbc:mysql://10.10.2" +
@@ -83,12 +82,18 @@ object CrashMetaInfo extends BaseClass{
           r => (r.getString(1), r.getString(2), r.getString(3), r.getString(4), r.getString(5), r.getString(6), r.getString
             (7), r.getLong(8))
         )
+*/
+
+        val jdbc_original_rdd_sql = "SELECT day, app_version_name, android_version, date_code, product_code,stack_trace,stack_trace_md5," +
+          "crash_num from medusa_crash_original_secondary_phase_info where id >=? and id <= ? "
+        val jdbc_original_rdd_pri =MySqlOps.getJdbcRDD(sc,jdbc_original_rdd_sql,"medusa_crash_original_secondary_phase_info",r=>(r.getString(1), r.getString(2), r.getString(3), r.getString(4), r.getString(5), r.getString(6), r.getString
+        (7), r.getLong(8)),driver,url,user,password,(minId(util,inputDay,false),maxId(util,inputDay,false)),numOfPartition)
 
         val jdbc_original_rdd = jdbc_original_rdd_pri.filter(_._2.length<=30).filter(_._3.length<=30)
         /**
          * Getting the info from the meta table
          */
-        val jdbc_meta_rdd = new JdbcRDD(sc,
+       /* val jdbc_meta_rdd = new JdbcRDD(sc,
           () =>{
             Class.forName("com.mysql.jdbc.Driver")
             DriverManager.getConnection("jdbc:mysql://10.10.2" +
@@ -101,13 +106,16 @@ object CrashMetaInfo extends BaseClass{
           numOfPartition,
           r=>(r.getString(1),r.getString(2),r.getString(3),r.getString(4),r.getString(5),r.getString(6),r.getString(7),r
             .getString(8),r.getLong(9))
-        )
+        )*/
+
+        val jdbc_meta_rdd_sql = "SELECT create_day, update_day, app_version_name, android_version, date_code, product_code, " +
+          "stack_trace, stack_trace_md5, crash_num FROM medusa_crash_meta_secondary_phase_info where id >= ? and id<=?"
+        val jdbc_meta_rdd =MySqlOps.getJdbcRDD(sc,jdbc_meta_rdd_sql,"medusa_crash_meta_secondary_phase_info",r=>(r.getString(1),r.getString(2),r.getString(3),r.getString(4),r.getString(5),r.getString(6),r.getString(7),r
+          .getString(8),r.getLong(9)),driver,url,user,password,(minId(util,inputDay,true),maxId(util,inputDay,true)),numOfPartition)
+
 
         val insertNew = "INSERT INTO medusa_crash_meta_secondary_phase_info(create_day,update_day,app_version_name," +
           "android_version,date_code,product_code,stack_trace,stack_trace_md5,crash_num) VALUES(?,?,?,?,?,?,?,?,?)"
-
-
-
 
         /**
          * @1:the new crash has not appear in the meta_info table

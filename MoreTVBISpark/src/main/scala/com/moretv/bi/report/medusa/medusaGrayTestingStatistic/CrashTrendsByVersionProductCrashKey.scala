@@ -9,24 +9,36 @@ import java.lang.{Long => JLong}
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.DataBases
 import com.moretv.bi.medusa.util.DevMacUtils
+import com.moretv.bi.report.medusa.medusaGrayTestingStatistic.CrashTrendsByVersionCrashKey._
+import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import org.json.JSONObject
 import com.moretv.bi.medusa.util.ParquetDataStyle.ALL_CRASH_INFO
 
-object CrashTrendsByVersionProductCrashKey extends SparkSetting{
-  val sc = new SparkContext()
-  val sqlContext = new SQLContext(sc)
-  import sqlContext.implicits._
-  val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+object CrashTrendsByVersionProductCrashKey extends BaseClass{
 
   def main(args: Array[String]) {
+    config.set("spark.executor.memory", "5g").
+      set("spark.executor.cores", "5").
+      set("spark.cores.max", "100")
+    ModuleClass.executor(this,args)
+  }
+
+  override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
+        val s =sqlContext
+        import s.implicits._
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+
         val inputDate = p.startDate
         val day = DateFormatUtils.toDateCN(inputDate)
-        val logRdd = sc.textFile(s"/log/crash/metadata/${inputDate}_extraction.log").map(log=>{
+        val inputPath=p.paramMap.getOrElse("inputPath",s"/log/crash/metadata/#{date}_extraction.log")
+          .replace("#{date}",inputDate)
+
+        val logRdd = sc.textFile(inputPath).map(log=>{
           val json = new JSONObject(log)
           (json.optString("fileName"),json.optString("MAC"),json.optString("APP_VERSION_NAME"),json.optString("APP_VERSION_CODE"),
             json.optString("CRASH_KEY"),json.optString("STACK_TRACE"),json.optString("DATE_CODE"),json.optString("PRODUCT_CODE"))
