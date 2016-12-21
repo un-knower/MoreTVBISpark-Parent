@@ -27,14 +27,14 @@ object QuerySubjectPlayInfo extends BaseClass{
     config.set("spark.executor.memory", "5g").
       set("spark.executor.cores", "5").
       set("spark.cores.max", "100")
-    ModuleClass.executor(QuerySubjectPlayInfo,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val medusaDir = "/log/medusaAndMoretvMerger/"
+        //val medusaDir = "/log/medusaAndMoretvMerger/"
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
         (0 until p.numOfDays).foreach(i=>{
@@ -42,9 +42,12 @@ object QuerySubjectPlayInfo extends BaseClass{
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
 
-          val playviewInput = s"$medusaDir/$date/playview/"
-
+/*          val playviewInput = s"$medusaDir/$date/playview/"
           sqlContext.read.parquet(playviewInput).select("userId","launcherAreaFromPath","launcherAccessLocationFromPath",
+            "pageDetailInfoFromPath","pathIdentificationFromPath","path","pathPropertyFromPath","flag","event","pathMain").
+            repartition(16).registerTempTable("log_data")*/
+
+           DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MERGER,LogTypes.PLAYVIEW,date).select("userId","launcherAreaFromPath","launcherAccessLocationFromPath",
             "pageDetailInfoFromPath","pathIdentificationFromPath","path","pathPropertyFromPath","flag","event","pathMain").
             repartition(16).registerTempTable("log_data")
 
@@ -75,7 +78,6 @@ object QuerySubjectPlayInfo extends BaseClass{
             util.delete(deleteSql,insertDate)
           }
 
-
             mergerPlayInfo.collect.foreach(e=>{
               try{
                 util.insert(insertSql,insertDate,e._1._1,CodeToNameUtils.getSubjectNameBySid(e._1._1),e._1._2,new JLong(e._2._1),
@@ -85,7 +87,6 @@ object QuerySubjectPlayInfo extends BaseClass{
                   e.printStackTrace()}
               }
             })
-
 
           mergerInfoRdd.unpersist()
           rdd.unpersist()
