@@ -33,6 +33,8 @@ object PathParserDimension {
     }
   }
 
+
+
   //medusa 列表页入口  少儿 正则表达式
   private val regex_medusa_list_category_kids =("home\\*(classification|my_tv)\\*kids-kids_home-([0-9A-Za-z_]+)\\*([a-zA-Z0-9-\\u4e00-\\u9fa5]+)").r
 
@@ -50,7 +52,38 @@ object PathParserDimension {
   private val MEDUSA_LIST_PAGE_LEVEL_2_REGEX = UDFConstantDimension.MedusaPageDetailInfo.filter(!_.contains("*")).mkString("|")
   private val regex_medusa_list_category_other = (s"home\\*(classification|my_tv)\\*($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)\\*($MEDUSA_LIST_PAGE_LEVEL_2_REGEX)").r
 
-  /*获取列表页入口信息
+
+  private val regex_moretv_filter = (".*multi_search-(hot|new|score)-([\\S]+)-([\\S]+)-(all|[0-9]+-[0-9]+)").r
+  private val regex_medusa_filter = (".*retrieval\\*(hot|new|score)\\*([\\S]+)\\*([\\S]+)\\*(all|[0-9]+\\*[0-9]+)").r
+
+  //获取筛选维度【排序方式：最新、最热、得分；标签；地区；年代】
+  def getFilterCategory(path: String,come_from: String,index:Int): String = {
+    var result: String = null
+    if(index>4){
+      //CHECK INDEX IF OUT OF BOUND
+      result
+    }else{
+    if(come_from.equalsIgnoreCase(UDFConstantDimension.RETRIEVAL_DIMENSION)) {
+      regex_medusa_filter findFirstMatchIn  path match {
+        case Some(p) =>  {
+          result=p.group(index)
+        }
+        case None => null
+      }
+      result = null
+    } else if (come_from.equalsIgnoreCase(UDFConstantDimension.MULTI_SEARCH)) {
+      regex_moretv_filter findFirstMatchIn  path match {
+        case Some(p) =>  {
+          result=p.group(index)
+        }
+        case None => null
+      }
+    }
+    result
+  }
+  }
+
+      /*获取列表页入口信息
      第一步，过滤掉包含search字段的pathMain
      第二步，判别是来自classification还是来自my_tv
      第三步，分音乐、体育、少儿以及其他类型【电视剧，电影等】获得列表入口信息,根据具体的分类做正则表达*/
@@ -60,8 +93,6 @@ object PathParserDimension {
     if(path.contains(UDFConstantDimension.SEARCH_DIMENSION)||path.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)){
       result=null
     }else if(path.contains(UDFConstantDimension.HOME_CLASSIFICATION)||path.contains(UDFConstantDimension.HOME_MY_TV)){
-      println("matched HOME_CLASSIFICATION and my tv...")
-
       /*少儿
       home*classification*kids-kids_home-kids_anim*动画专题    拆分出   kids_anim*动画专题
       home*classification*kids-kids_home-kandonghua*4-6岁     拆分出    kandonghua*4-6岁
@@ -142,6 +173,19 @@ object PathParserDimension {
           // medusa的detail日志中的pathMain字段
           case UDFConstant.PATHMAIN => {
             outputType match {
+              //获取筛选维度【排序方式：最新、最热、得分；标签；地区；年代】
+              case UDFConstantDimension.FILTER_CATEGORY_1 => {
+                result=getFilterCategory(path,UDFConstantDimension.RETRIEVAL_DIMENSION,1)
+              }
+              case UDFConstantDimension.FILTER_CATEGORY_2 => {
+                result=getFilterCategory(path,UDFConstantDimension.RETRIEVAL_DIMENSION,2)
+              }
+              case UDFConstantDimension.FILTER_CATEGORY_3 => {
+                result=getFilterCategory(path,UDFConstantDimension.RETRIEVAL_DIMENSION,3)
+              }
+              case UDFConstantDimension.FILTER_CATEGORY_4 => {
+                result=getFilterCategory(path,UDFConstantDimension.RETRIEVAL_DIMENSION,4)
+              }
 
               // medusa的pathMain,列表页一级分类
               case UDFConstantDimension.MAIN_CATEGORY => {
@@ -309,6 +353,20 @@ object PathParserDimension {
           case UDFConstant.PATH => {
             if(path.contains("-")){
               outputType match {
+
+                //获取筛选维度【排序方式：最新、最热、得分；标签；地区；年代】
+                case UDFConstantDimension.FILTER_CATEGORY_1 => {
+                  result=getFilterCategory(path,UDFConstantDimension.MULTI_SEARCH,1)
+                }
+                case UDFConstantDimension.FILTER_CATEGORY_2 => {
+                  result=getFilterCategory(path,UDFConstantDimension.MULTI_SEARCH,2)
+                }
+                case UDFConstantDimension.FILTER_CATEGORY_3 => {
+                  result=getFilterCategory(path,UDFConstantDimension.MULTI_SEARCH,3)
+                }
+                case UDFConstantDimension.FILTER_CATEGORY_4 => {
+                  result=getFilterCategory(path,UDFConstantDimension.MULTI_SEARCH,4)
+                }
 
                 //moretv的path,列表页一级分类
                 case UDFConstantDimension.MAIN_CATEGORY => {
