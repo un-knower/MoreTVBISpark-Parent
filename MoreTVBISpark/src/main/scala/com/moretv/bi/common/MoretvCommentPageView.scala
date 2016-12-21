@@ -18,7 +18,7 @@ object MoretvCommentPageView extends BaseClass{
 
   def main(args: Array[String]) {
     config.setAppName("MoretvCommentPageView")
-    ModuleClass.executor(MoretvCommentPageView,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

@@ -22,7 +22,7 @@ object EachChannelPlayInfo extends BaseClass{
   private val regex="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|mv)([0-9]+)""".r
 
   def main(args: Array[String]) {
-    ModuleClass.executor(EachChannelPlayInfo,args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

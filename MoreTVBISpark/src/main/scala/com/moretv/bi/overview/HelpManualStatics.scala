@@ -19,7 +19,7 @@ object HelpManualStatics extends BaseClass with DateUtil{
 
   def main(args: Array[String]) {
     config.setAppName("HelpManualStatics")
-    ModuleClass.executor(HelpManualStatics,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {

@@ -24,7 +24,7 @@ import org.apache.spark.sql.SQLContext
 object ProductModelNewDist extends BaseClass{
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(ProductModelNewDist,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

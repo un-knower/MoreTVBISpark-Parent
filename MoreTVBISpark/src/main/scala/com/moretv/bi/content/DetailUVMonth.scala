@@ -17,7 +17,7 @@ import com.moretv.bi.constant.LogType._
 object DetailUVMonth extends BaseClass{
 
   def main(args: Array[String]) {
-    ModuleClass.executor(DetailUVMonth,args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

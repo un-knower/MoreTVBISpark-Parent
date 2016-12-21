@@ -17,7 +17,7 @@ import org.apache.spark.sql.SQLContext
 object ProgramPlayErrorStatistics extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("ProgramPlayErrorStatistics")
-    ModuleClass.executor(ProgramPlayErrorStatistics,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {

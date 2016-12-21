@@ -26,7 +26,7 @@ object LiveDurationAnalytics extends BaseClass{
    * @param args
    */
   def main(args: Array[String]) {
-    ModuleClass.executor(LiveDurationAnalytics,args)             //用于调用运行框架
+    ModuleClass.executor(this,args)             //用于调用运行框架
   }
 
   /**

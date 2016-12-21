@@ -15,7 +15,7 @@ import org.apache.spark.SparkContext
 object ActivityLog2Json extends BaseClass{
 
   def main(args: Array[String]) {
-    ModuleClass.executor(ActivityLog2Json,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     val inputDate = args(0)

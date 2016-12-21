@@ -16,7 +16,7 @@ import scala.util.parsing.json.JSONObject
   */
 object MovieDifferentClassificationViewNum extends BaseClass{
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(MovieDifferentClassificationViewNum,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
      /*该函数用于配置MovieSummaryViewNum*/

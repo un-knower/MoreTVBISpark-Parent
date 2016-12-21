@@ -16,7 +16,7 @@ import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 object OlympicActivityTest extends BaseClass{
 
   def main(args: Array[String]) {
-    ModuleClass.executor(OlympicActivityTest,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args:Array[String]): Unit = {
     ParamsParseUtil.parse(args) match {

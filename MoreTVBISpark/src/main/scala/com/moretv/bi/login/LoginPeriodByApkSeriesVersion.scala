@@ -22,7 +22,7 @@ object LoginPeriodByApkSeriesVersion extends BaseClass{
   val regex = "^[\\w\\.]+$".r
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(LoginPeriodByApkSeriesVersion,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

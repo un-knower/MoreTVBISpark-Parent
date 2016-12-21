@@ -13,7 +13,7 @@ import org.apache.spark.sql.Row
 
 object HistoryAndCollectPageStatistics extends BaseClass{
   def main(args: Array[String]) {
-    ModuleClass.executor(HistoryAndCollectPageStatistics,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {

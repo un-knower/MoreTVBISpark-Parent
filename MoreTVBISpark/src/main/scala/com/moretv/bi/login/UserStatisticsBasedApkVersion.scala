@@ -23,7 +23,7 @@ import scala.collection.JavaConversions._
   */
 object UserStatisticsBasedApkVersion extends BaseClass{
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(UserStatisticsBasedApkVersion,args)
+    ModuleClass.executor(this,args)
   }
   override def  execute(args:Array[String]): Unit ={
     ParamsParseUtil.parse(args) match{

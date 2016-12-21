@@ -30,7 +30,7 @@ object SubjectInterviewLogMerger extends BaseClass{
       set("spark.speculation.interval", "100").
       set("spark.speculation.quantile","0.75").
       set("spark.speculation.multiplier","1.5")
-    ModuleClass.executor(SubjectInterviewLogMerger,args)
+    ModuleClass.executor(this,args)
   }
    override def execute(args: Array[String]) {
      ParamsParseUtil.parse(args) match {

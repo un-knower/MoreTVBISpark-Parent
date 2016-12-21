@@ -14,7 +14,7 @@ import org.apache.spark.sql.SQLContext
 object MtvKidsAccessUsers extends BaseClass{
 
   def main(args: Array[String]) {
-    ModuleClass.executor(MtvKidsAccessUsers,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

@@ -14,7 +14,7 @@ import com.moretv.bi.util._
 object HomepageStatistics extends BaseClass{
 
   def main(args: Array[String]) {
-    ModuleClass.executor(HomepageStatistics,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {

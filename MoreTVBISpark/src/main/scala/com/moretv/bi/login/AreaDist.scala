@@ -20,7 +20,7 @@ import scala.collection.JavaConversions._
 object AreaDist extends BaseClass{
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(AreaDist,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

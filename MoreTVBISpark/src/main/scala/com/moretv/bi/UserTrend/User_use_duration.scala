@@ -18,7 +18,7 @@ import org.apache.spark.storage.StorageLevel
 object User_use_duration extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("User_use_duration")
-    ModuleClass.executor(User_use_duration,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {

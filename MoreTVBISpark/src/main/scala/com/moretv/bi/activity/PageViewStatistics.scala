@@ -19,7 +19,7 @@ object PageViewStatistics extends BaseClass{
   val SEPARATOR = ","
 
   def main(args: Array[String]) {
-    ModuleClass.executor(PageViewStatistics,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     val inputPath = args(0)

@@ -13,7 +13,7 @@ object annualReviewReport extends BaseClass{
 
   def main(args: Array[String]) {
     config.setAppName("annualReviewReport")
-    ModuleClass.executor(annualReviewReport,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     val outFile = new File("/script/bi/moretv/zhehua/file/activity/annualReviewReport.csv")

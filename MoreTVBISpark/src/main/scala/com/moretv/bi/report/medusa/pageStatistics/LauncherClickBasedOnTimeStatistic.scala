@@ -13,7 +13,7 @@ import org.apache.spark.SparkContext
  */
 object LauncherClickBasedOnTimeStatistic extends BaseClass{
   def main (args: Array[String]) {
-    ModuleClass.executor(LauncherClickBasedOnTimeStatistic,args)
+    ModuleClass.executor(this,args)
   }
   /*基于时间统计*/
   override def execute(args: Array[String]) {

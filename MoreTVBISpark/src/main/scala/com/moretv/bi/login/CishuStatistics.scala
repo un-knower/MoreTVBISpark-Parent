@@ -17,7 +17,7 @@ object CishuStatistics extends BaseClass{
   val regex = "^[\\w\\.]+$".r
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(CishuStatistics,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

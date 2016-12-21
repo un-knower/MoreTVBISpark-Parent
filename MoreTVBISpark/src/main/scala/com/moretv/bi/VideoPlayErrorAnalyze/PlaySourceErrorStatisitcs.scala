@@ -17,7 +17,7 @@ import org.apache.spark.sql.SQLContext
 object PlaySourceErrorStatisitcs extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("PlaySourceErrorStatisitcs")
-    ModuleClass.executor(PlaySourceErrorStatisitcs,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {

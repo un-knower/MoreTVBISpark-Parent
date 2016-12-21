@@ -18,7 +18,7 @@ import org.apache.spark.storage.StorageLevel
 object MovieUpDown extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("MovieUpDown")
-    ModuleClass.executor(MovieUpDown,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

@@ -22,7 +22,7 @@ import org.apache.spark.storage.StorageLevel
   */
 object AdduserBasedApkVersionAndPromotionChannel extends BaseClass{
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(AdduserBasedApkVersionAndPromotionChannel,args)
+    ModuleClass.executor(this,args)
   }
   override def  execute(args:Array[String]): Unit ={
     ParamsParseUtil.parse(args) match{

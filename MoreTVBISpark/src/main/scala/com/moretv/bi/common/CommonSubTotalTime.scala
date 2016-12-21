@@ -18,7 +18,7 @@ import org.apache.spark.storage.StorageLevel
 object CommonSubTotalTime extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("CommonSubTotalTime")
-    ModuleClass.executor(CommonSubTotalTime,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

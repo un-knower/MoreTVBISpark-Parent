@@ -22,7 +22,7 @@ object SportsOlympicLiveCenterEachMatchLiveInfo extends BaseClass{
     config.set("spark.executor.memory", "5g").
       set("spark.executor.cores", "5").
       set("spark.cores.max", "100")
-    ModuleClass.executor(SportsOlympicLiveCenterEachMatchLiveInfo,args)
+    ModuleClass.executor(this,args)
   }
   def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {

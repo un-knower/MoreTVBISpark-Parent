@@ -20,7 +20,7 @@ object AddTagTotalAccount extends BaseClass{
 
   def main(args: Array[String]) {
     config.setAppName("AddTagTotalAccount")
-    ModuleClass.executor(AddTagTotalAccount,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

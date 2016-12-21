@@ -18,7 +18,7 @@ import org.apache.spark.storage.StorageLevel
 object AppRecommendUseNum extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("AppRecommendUseNum")
-    ModuleClass.executor(AppRecommendUseNum,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {

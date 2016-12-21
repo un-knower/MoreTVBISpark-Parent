@@ -18,7 +18,7 @@ import org.apache.spark.storage.StorageLevel
 object History_PVUVVV extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("History_PVUVVV")
-    ModuleClass.executor(History_PVUVVV,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

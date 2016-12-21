@@ -10,7 +10,7 @@ object PrevueVVUV extends BaseClass{
 
   def main(args: Array[String]) {
     config.setAppName("PrevueVVUV")
-    ModuleClass.executor(PrevueVVUV,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

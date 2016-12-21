@@ -23,7 +23,7 @@ object KidsEachTabViewInfo extends BaseClass{
     "|1_kids_tags_yuer)-?").r
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(KidsEachTabViewInfo,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {

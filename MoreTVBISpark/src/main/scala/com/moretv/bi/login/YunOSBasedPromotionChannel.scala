@@ -25,7 +25,7 @@ import scala.collection.JavaConversions._
 object YunOSBasedPromotionChannel extends BaseClass{
 
   def main(args: Array[String]) {
-    ModuleClass.executor(YunOSBasedPromotionChannel,args)
+    ModuleClass.executor(this,args)
   }
   override def  execute(args:Array[String]): Unit ={
     ParamsParseUtil.parse(args) match{

@@ -13,7 +13,7 @@ import org.apache.spark.SparkContext
  */
 object LauncherClassificationStatistic extends BaseClass{
   def main (args: Array[String]) {
-    ModuleClass.executor(LauncherClassificationStatistic,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     val logType = MedusaLogInfoUtil.LAUNCHCLICK

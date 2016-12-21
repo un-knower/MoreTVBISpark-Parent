@@ -19,7 +19,7 @@ object LoginLog2Parquet extends BaseClass{
   private val outputPartionNum = 10
 
   def main(args: Array[String]) {
-    ModuleClass.executor(LoginLog2Parquet,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {

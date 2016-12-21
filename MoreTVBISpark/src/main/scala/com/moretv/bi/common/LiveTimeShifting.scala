@@ -17,7 +17,7 @@ import org.apache.spark.sql.SQLContext
 object LiveTimeShifting extends BaseClass{
   def main(args: Array[String]) {
     config.setAppName("LiveTimeShifting")
-    ModuleClass.executor(LiveTimeShifting,args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

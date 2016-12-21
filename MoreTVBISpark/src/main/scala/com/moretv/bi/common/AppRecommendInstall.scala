@@ -15,7 +15,7 @@ object AppRecommendInstall extends BaseClass{
 
   def main(args: Array[String]) {
     config.setAppName("AppRecommendInstall")
-    ModuleClass.executor(AppRecommendInstall,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

@@ -14,7 +14,7 @@ import java.lang.{Long => JLong}
  */
 object SubjectChannelPVUV extends BaseClass{
   def main(args: Array[String]) {
-    ModuleClass.executor(SubjectChannelPVUV,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match{

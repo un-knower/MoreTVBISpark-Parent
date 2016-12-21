@@ -11,7 +11,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
  */
 object LauncherFoundationStatistic extends BaseClass{
   def main(args: Array[String]) {
-    ModuleClass.executor(LauncherFoundationStatistic,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     val logType = MedusaLogInfoUtil.LAUNCHCLICK

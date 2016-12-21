@@ -22,7 +22,7 @@ object sportsLiveDurationInfo extends BaseClass{
     "|1_kids_tags_shaoerpingdao|movie_comic|1_kids_tags_qingzi|1_kids_tags_yizhi|1_kids_tags_dongwu|1_kids_tags_tonghua" +
     "|1_kids_tags_yuer)-?").r
   def main(args: Array[String]) {
-    ModuleClass.executor(sportsLiveDurationInfo,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {

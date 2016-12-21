@@ -19,7 +19,7 @@ object VideoTypeDurationStatistics extends BaseClass with DateUtil{
 
   def main(args: Array[String]) {
     config.setAppName("VideoTypeDurationStatistics")
-    ModuleClass.executor(VideoTypeDurationStatistics,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

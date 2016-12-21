@@ -20,7 +20,7 @@ import org.apache.spark.storage.StorageLevel
 object MatchPlayStatistics extends BaseClass{
 
   def main(args: Array[String]) {
-    ModuleClass.executor(MatchPlayStatistics,args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]): Unit = {

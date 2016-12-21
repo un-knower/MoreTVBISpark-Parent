@@ -17,7 +17,7 @@ import java.lang.{Long => JLong}
 object CommonTotalTime extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("CommonTotalTime")
-    ModuleClass.executor(CommonTotalTime,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

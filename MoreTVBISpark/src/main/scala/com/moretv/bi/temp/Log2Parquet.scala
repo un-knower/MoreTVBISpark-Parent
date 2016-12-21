@@ -26,7 +26,7 @@ object Log2Parquet extends BaseClass{
       set("spark.cores.max", "200").
       set("spark.executor.cores", "5").
       set("spark.storage.memoryFraction", "0.1")
-    ModuleClass.executor(Log2Parquet,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {

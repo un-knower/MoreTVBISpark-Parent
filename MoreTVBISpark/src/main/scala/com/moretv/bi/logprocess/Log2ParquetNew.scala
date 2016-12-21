@@ -34,7 +34,7 @@ object Log2ParquetNew extends BaseClass {
       set("spark.speculation.multiplier","1.4").
       set("spark.speculation.interval","1000").
       set("spark.scheduler.mode","FIFO")
-    ModuleClass.executor(Log2ParquetNew,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

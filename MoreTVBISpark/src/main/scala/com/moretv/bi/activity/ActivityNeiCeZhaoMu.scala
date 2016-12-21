@@ -17,7 +17,7 @@ object ActivityNeiCeZhaoMu extends BaseClass{
   val SEPARATOR = ","
 
   def main(args: Array[String]) {
-    ModuleClass.executor(ActivityNeiCeZhaoMu,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     val inputPath = args(0)

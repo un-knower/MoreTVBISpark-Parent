@@ -16,7 +16,7 @@ import org.apache.spark.sql.SQLContext
 object DailyActiveUser extends BaseClass{
 
   def main(args: Array[String]) {
-    ModuleClass.executor(DailyActiveUser,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

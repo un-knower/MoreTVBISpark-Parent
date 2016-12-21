@@ -17,7 +17,7 @@ import org.apache.spark.sql.SQLContext
 object VVDurationM3U extends BaseClass{
 
   def main(args: Array[String]) {
-    ModuleClass.executor(VVDurationM3U,args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

@@ -16,7 +16,7 @@ import org.apache.spark.sql.SQLContext
  */
 object DanmuSubmitPVUV extends BaseClass{
   def main(args: Array[String]) {
-    ModuleClass.executor(DanmuSubmitPVUV,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match{

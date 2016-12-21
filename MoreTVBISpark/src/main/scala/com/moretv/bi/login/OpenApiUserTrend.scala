@@ -16,7 +16,7 @@ object OpenApiUserTrend extends BaseClass{
   val Regex = ("mac=(\\w{12})").r
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(OpenApiUserTrend,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {

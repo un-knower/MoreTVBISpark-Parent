@@ -18,7 +18,7 @@ import org.apache.spark.sql.SQLContext
 object MidAutumnActivityTest extends BaseClass{
 
   def main(args: Array[String]) {
-    ModuleClass.executor(MidAutumnActivityTest,args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args:Array[String]): Unit = {

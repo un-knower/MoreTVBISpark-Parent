@@ -18,7 +18,7 @@ import org.apache.spark.storage.StorageLevel
 object AddTagAndCommentAccountIdOperation extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("AddTagAndCommentAccountIdOperation")
-    ModuleClass.executor(AddTagAndCommentAccountIdOperation,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

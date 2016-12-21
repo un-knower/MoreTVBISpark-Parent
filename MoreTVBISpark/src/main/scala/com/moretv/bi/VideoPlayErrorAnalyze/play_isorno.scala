@@ -18,7 +18,7 @@ import org.apache.spark.storage.StorageLevel
 object play_isorno extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("play_isorno")
-    ModuleClass.executor(play_isorno,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {

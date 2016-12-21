@@ -18,7 +18,7 @@ import org.apache.spark.storage.StorageLevel
 object TotalUVVVStatistics extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("HotRecommendSanjiPagePVUVVV")
-    ModuleClass.executor(TotalUVVVStatistics,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

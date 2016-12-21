@@ -15,7 +15,7 @@ object ActiveUser extends BaseClass{
 
 
   def main(args: Array[String]) {
-    ModuleClass.executor(ActiveUser,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     sqlContext.read.load("/log/medusa/parquet/*/enter").registerTempTable("log_data")

@@ -18,7 +18,7 @@ object MVEachAreaPlayInfo extends BaseClass{
     config.set("spark.executor.memory", "5g").
       set("spark.executor.cores", "5").
       set("spark.cores.max", "100")
-    ModuleClass.executor(MVEachAreaPlayInfo,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {

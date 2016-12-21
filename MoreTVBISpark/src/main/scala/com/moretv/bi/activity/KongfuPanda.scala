@@ -14,7 +14,7 @@ object KongfuPanda extends BaseClass{
 
   def main(args: Array[String]) {
     config.setAppName("KongfuPanda")
-    ModuleClass.executor(KongfuPanda,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

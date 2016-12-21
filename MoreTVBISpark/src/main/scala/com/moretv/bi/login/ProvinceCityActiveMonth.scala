@@ -19,7 +19,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 object ProvinceCityActiveMonth extends BaseClass{
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(ProvinceCityActiveMonth,args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

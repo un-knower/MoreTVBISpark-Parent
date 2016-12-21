@@ -22,7 +22,7 @@ object Log2ParquetForActivity extends BaseClass{
     config.set("spark.executor.memory", "3g").
       set("spark.cores.max", "100").
       set("spark.storage.memoryFraction", "0.6")
-    ModuleClass.executor(Log2ParquetForActivity,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {

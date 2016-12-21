@@ -19,7 +19,7 @@ import org.apache.spark.sql.SQLContext
 object SportPlayAndLiveTotalUserInfo extends BaseClass{
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(SportPlayAndLiveTotalUserInfo,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
