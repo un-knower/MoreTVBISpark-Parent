@@ -3,6 +3,7 @@ package com.moretv.bi.ProgramViewAndPlayStats
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
+import com.moretv.bi.set.WallpaperSetUsage._
 import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
@@ -19,7 +20,7 @@ object ProgramVV extends BaseClass with DateUtil{
 
   def main(args: Array[String]): Unit = {
     config.setAppName("ProgramVV")
-    ModuleClass.executor(ProgramVV,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 
@@ -29,10 +30,10 @@ object ProgramVV extends BaseClass with DateUtil{
         //calculate log whose type is play
         val pathA = "/mbi/parquet/playview/" + p.startDate
         val pathB = "/mbi/parquet/playqos/" + p.startDate
-        val resultA = sqlContext.read.load(pathA).select("date","contentType","videoSid").
+        val resultA = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.PLAYVIEW).select("date","contentType","videoSid").
           map(row => (row.getString(0),row.getString(1),row.getString(2),"playview")).
           countByValue()
-        val resultB = sqlContext.read.load(pathB).select("date","contentType","videoSid","event","apkVersion").
+        val resultB = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.PLAYQOS).select("date","contentType","videoSid","event","apkVersion").
           map(row => (row.getString(0),row.getString(1),row.getString(2),row.getString(3),row.getString(4))).
           filter(x => PlayExitTypeUtils.isVVLog(x._5)).
           countByValue()

@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.lang.{Long => JLong}
 
+import com.moretv.bi.set.WallpaperSetUsage._
 import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
@@ -18,17 +19,13 @@ import org.apache.spark.sql.SQLContext
 object TotalAndAvgTime extends BaseClass with DateUtil{
   def main(args: Array[String]): Unit = {
     config.setAppName("TotalAndAvgTime")
-    ModuleClass.executor(TotalAndAvgTime,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-
-
-        //calculate log whose type is play
-        val path = "/mbi/parquet/exit/" + p.startDate
-        val df = sqlContext.read.load(path)
+        val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.EXIT)
         df.registerTempTable("log_data")
         val result = sqlContext.sql("select count(distinct userId),count(userId),sum(duration) from log_data where duration between 0 and 54000").collect()
 

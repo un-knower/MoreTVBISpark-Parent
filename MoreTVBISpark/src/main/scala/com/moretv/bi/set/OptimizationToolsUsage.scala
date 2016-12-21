@@ -18,14 +18,12 @@ import org.apache.spark.storage.StorageLevel
 object OptimizationToolsUsage extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("OptimizationToolsUsage")
-    ModuleClass.executor(OptimizationToolsUsage,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
-
-        val path = "/mbi/parquet/pageview/"+p.startDate+"/part-*"
-        val df = sqlContext.read.load(path)
+        val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.PAGEVIEW)
         val resultRDD = df.filter("page in ('network_check','network_source','network_speed')")
           .select("date","page","userId").map(e =>(e.getString(0),e.getString(1),e.getString(2))).
             map(e=>(getKeys(e._1,e._2),e._3)).persist(StorageLevel.MEMORY_AND_DISK)

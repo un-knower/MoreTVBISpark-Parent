@@ -19,7 +19,7 @@ import scala.collection.JavaConversions._
 object PromotionChannelTotalDist extends BaseClass{
 
   def main(args: Array[String]) {
-    ModuleClass.executor(PromotionChannelTotalDist,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
@@ -37,13 +37,13 @@ object PromotionChannelTotalDist extends BaseClass{
           val logDay = DateFormatUtils.readFormat.format(cal.getTime)
          // println(logDay)
 
-          val logPath = s"/log/dbsnapshot/parquet/$logDay/moretv_mtv_account"
 
           val day = DateFormatUtils.toDateCN(logDay)
           //println(day)
 
 
-          sqlContext.read.load(logPath).registerTempTable("log_data")
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,DBSNAPSHOT,LogTypes.MORETV_MTV_ACCOUNT,logDay).
+            registerTempTable("log_data")
 
           val result = sqlContext.sql("select promotion_channel,count(distinct mac) from log_data " +
             s"where openTime <= '$day 23:59:59' group by promotion_channel").

@@ -3,6 +3,7 @@ package com.moretv.bi.sports
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
+import com.moretv.bi.sports.SportSubjectUVVV._
 import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
@@ -18,14 +19,12 @@ import org.apache.spark.storage.StorageLevel
 object SportZhuanTiUVVV extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("SportZhuanTiUVVV")
-    ModuleClass.executor(SportZhuanTiUVVV,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
-
-        val path = "/mbi/parquet/playview/"+p.startDate+"/part-*"
-        val df = sqlContext.read.load(path)
+        val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.PLAYVIEW)
         val resultRDD = df.filter("path like 'home-sports-arragne_sport_news%'").select("date","path","userId").map(e =>(e.getString(0),e.getString(1),e.getString(2))).
             map(e=>(getKeys(e._1,e._2),e._3)).filter(e =>e._1._5 !=null).persist(StorageLevel.MEMORY_AND_DISK)
         val userNum = resultRDD.distinct().countByKey()

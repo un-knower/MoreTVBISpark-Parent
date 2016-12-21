@@ -14,26 +14,22 @@ import org.apache.spark.SparkContext
  * Created by Will on 2015/2/5.
  */
 object YunOSLoginUser extends BaseClass{
-
-  val pattern = Pattern.compile("/login/Service/(login|enlogin)\\?.?" +
-    "mac=([a-zA-Z0-9]{12}).+?version=MoreTV[\\w\\.]+(Alibaba|YunOS)")
-
+  val re = "MoreTV[\\w\\.]+(Alibaba|YunOS)".r
   def main(args: Array[String]) {
     config.set("spark.executor.memory", "2g").
       set("spark.cores.max", "30").
       set("spark.storage.memoryFraction", "0.6")
-    ModuleClass.executor(YunOSLoginUser,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-
-
-
         val inputDate =  p.startDate
-        val logRDD = sc.textFile(s"/log/loginlog/loginlog.access.log_$inputDate-portalu*").
-          map(matchLog).filter(_ != null).cache()
+        val logRDD = DataIO.getDataFrameOps.getDF(sc,p.paramMap,LOGINLOG,LogTypes.LOGINLOG).
+          select("userId","version").
+          map(e=>(e.getString(0),e.getString(1))).filter(e=>matchVersion(e._2)).
+        map(e=>e._1).cache()
 
         val accessNum = logRDD.count()
         val userNum = logRDD.distinct().count()
@@ -57,9 +53,12 @@ object YunOSLoginUser extends BaseClass{
 
   }
 
-  def matchLog(log:String) ={
-    val matcher = pattern.matcher(log)
-    if(matcher.find()) matcher.group(2) else null
+
+  def matchVersion(version:String) = {
+    re findFirstMatchIn(version) match {
+      case Some(p) => true
+      case _ => false
+    }
   }
 
 }

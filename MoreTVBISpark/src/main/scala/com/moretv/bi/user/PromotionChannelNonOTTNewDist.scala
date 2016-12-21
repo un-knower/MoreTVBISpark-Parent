@@ -18,17 +18,18 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 object PromotionChannelNonOTTNewDist extends BaseClass{
 
   def main(args: Array[String]) {
-    ModuleClass.executor(PromotionChannelNonOTTNewDist,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         val inputDate = DateFormatUtils.enDateAdd(p.startDate,-1)
-        val inputPath = s"/log/dbsnapshot/parquet/$inputDate/moretv_mtv_account"
         val day = DateFormatUtils.toDateCN(p.startDate, -1)
 
-        sqlContext.read.load(inputPath).registerTempTable("log_data")
+        DataIO.getDataFrameOps.
+          getDF(sc,p.paramMap,DBSNAPSHOT,LogTypes.MORETV_MTV_ACCOUNT).
+          registerTempTable("log_data")
 
         val result = sqlContext.sql("select product_model,promotion_channel,mac from log_data " +
           s"where openTime between '$day 00:00:00' and '$day 23:59:59' ").

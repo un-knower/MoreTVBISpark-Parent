@@ -9,4 +9,5 @@ object DataBases {
   val MORETV_MEDUSA_MYSQL = "moretv_medusa_mysql"
   val MORETV_EAGLETV_MYSQL = "moretv_eagletv_mysql"
   val MORETV_TVSERVICE_MYSQL = "moretv_tvservice_mysql"
+  val MORETV_UCENTER_MYSQL = "moretv_ucenter_mysql"
 }

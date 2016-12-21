@@ -10,4 +10,7 @@ object Database {
   //电视猫早期数据库
   val EAGLE_TV = "eagletv"
   val BI = "bi"
+  val TVSERVICE = "tvservice"
+  val DB_2_15_USER = "bi"
+  val DB_2_15_PASSWORD = "mlw321@moretv"
 }

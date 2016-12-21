@@ -3,6 +3,7 @@ package com.moretv.bi.ProgramViewAndPlayStats
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
+import com.moretv.bi.set.WallpaperSetUsage._
 import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
@@ -18,17 +19,13 @@ import org.apache.spark.storage.StorageLevel
 object Channel_vv extends BaseClass with DateUtil{
   def main(args: Array[String]): Unit = {
     config.setAppName("Channel_vv")
-    ModuleClass.executor(Channel_vv,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-
-
-        //calculate log whose type is play
-        val path = "/mbi/parquet/playview/" + p.startDate
-        val df = sqlContext.read.load(path)
+        val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.PLAYVIEW)
         val playRDD = df.select("date","path","userId").map(e => (e.getString(0), e.getString(1), e.getString(2))).
             map(e => (getKeys(e._1,e._2), e._3)).filter(_._1 != null).persist(StorageLevel.MEMORY_AND_DISK)
         val userNum = playRDD.distinct().countByKey()

@@ -3,6 +3,7 @@ package com.moretv.bi.ProgramViewAndPlayStats
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
+import com.moretv.bi.set.WallpaperSetUsage._
 import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
@@ -18,16 +19,12 @@ import org.apache.spark.storage.StorageLevel
 object KidsDurationAndUserNum extends BaseClass with DateUtil{
   def main(args: Array[String]): Unit = {
     config.setAppName("KidsDurationAndUserNum")
-    ModuleClass.executor(KidsDurationAndUserNum,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
-
-
-
-        val path = "/mbi/parquet/interview/"+p.startDate+"/part-*"
-        val df = sqlContext.read.load(path)
+        val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.INTERVIEW)
         val resultRDD = df.filter("event = 'exit' and path in ('home-kids_home','thirdparty_1-kids_home'," +
           "'thirdparty_0-kids_home')").select("date","productModel","duration","userId").map(e =>(e.getString(0),e
           .getString(1),e.getInt(2),e.getString(3))).

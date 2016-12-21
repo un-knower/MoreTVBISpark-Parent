@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.constant.Tables
 import com.moretv.bi.global.{DataBases, LogTypes}
 import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
@@ -19,7 +20,7 @@ object DayRetentionRate extends BaseClass{
 
   def main(args: Array[String]) {
     config.setAppName("DayRetentionRate")
-    ModuleClass.executor(DayRetentionRate,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
@@ -41,14 +42,17 @@ object DayRetentionRate extends BaseClass{
           val c = Calendar.getInstance()
           c.set(calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DATE)-1)
           val inputDate = readFormat.format(calendar.getTime)
-          val logPath = s"/log/moretvloginlog/parquet/$inputDate/loginlog"
           calendar.add(Calendar.DAY_OF_MONTH,1)
-          val userLog = sqlContext.read.load(logPath)
+          val userLog = DataIO.getDataFrameOps.getDF(sc,p.paramMap,LOGINLOG,LogTypes.LOGINLOG,inputDate)
           val logUserID = userLog.select("mac").map(row => row.getString(0)).filter(_ != null).
             map(UserIdUtils.userId2Long).distinct().cache()
           Class.forName("com.mysql.jdbc.Driver")
-          val connection = DriverManager.getConnection("jdbc:mysql://10.10.2.15:3306/tvservice?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
-            "bi", "mlw321@moretv")
+          val db = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
+          val driver = db.prop.getProperty("driver")
+          val url = db.prop.getProperty("url")
+          val user = db.prop.getProperty("user")
+          val password = db.prop.getProperty("password")
+          val connection = DriverManager.getConnection(url,user, password)
           val stmt = connection.createStatement()
 
           for(j<- 0 until needToCalc.length){
@@ -57,16 +61,10 @@ object DayRetentionRate extends BaseClass{
             val id = getID(date2,stmt)
             val min = id(0)
             val max =id(1)
-            val sqlRDD = new JdbcRDD(sc, ()=>{
-              Class.forName("com.mysql.jdbc.Driver")
-              DriverManager.getConnection("jdbc:mysql://10.10.2.15:3306/tvservice?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
-                "bi", "mlw321@moretv")
-            },
-              s"SELECT mac FROM `mtv_account` WHERE ID >= ? AND ID <= ? and left(openTime,10) = '$date2'",
-              min,
-              max,
-              numOfPartition,
-              r=>r.getString(1)).map(UserIdUtils.userId2Long).distinct()
+            val sqlInfo = s"SELECT mac FROM `mtv_account` WHERE ID >= ? AND ID <= ? and left(openTime,10) = '$date2'"
+            val sqlRDD = MySqlOps.getJdbcRDD(sc,sqlInfo,Tables.MTV_ACCOUNT,r=>{r.getString(1)},
+            driver,url,user,password,(min,max),numOfPartition).
+              map(UserIdUtils.userId2Long).distinct()
 
             val retention = logUserID.intersection(sqlRDD).count()
             val newUser = sqlRDD.count().toInt

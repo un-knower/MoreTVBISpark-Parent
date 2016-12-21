@@ -16,20 +16,17 @@ object SubchannelPeriod extends BaseClass with DateUtil{
 
   def main(args: Array[String]): Unit = {
     config.setAppName("SubchannelPeriod")
-    ModuleClass.executor(SubchannelPeriod,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-
-        //calculate log whose type is play
-        val path = "/mbi/parquet/{playview,detail}/" + p.startDate + "/part-*"
-        val df = sqlContext.read.load(path).persist(StorageLevel.MEMORY_AND_DISK)
-        val playRDD = df.filter("logType='playview'").select("datetime", "path","userId").map(e => (e.getString(0), e.getString(1), e.getString(2))).
+        val df1 = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.PLAYVIEW).persist(StorageLevel.MEMORY_AND_DISK)
+        val playRDD = df1.select("datetime", "path","userId").map(e => (e.getString(0), e.getString(1), e.getString(2))).
             map(e => (getKeys(e._1, e._2),e._3)).filter(e =>(e._1._6 !=null && e._1._7 !=null && e._1._8 != null)).persist(StorageLevel.MEMORY_AND_DISK)
-
-        val detailRDD = df.filter("logType='detail'").select("datetime","path","userId").map(e => (e.getString(0), e.getString(1), e.getString(2))).
+        val df2 = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.DETAIL).persist(StorageLevel.MEMORY_AND_DISK)
+        val detailRDD = df2.select("datetime","path","userId").map(e => (e.getString(0), e.getString(1), e.getString(2))).
             map(e => (getKeys(e._1, e._2, "detail"),e._3)).filter(e =>(e._1._6 !=null && e._1._7 !=null && e._1._8 != null)).persist(StorageLevel.MEMORY_AND_DISK)
 
         val result = playRDD.union(detailRDD).persist(StorageLevel.MEMORY_AND_DISK)
@@ -54,7 +51,8 @@ object SubchannelPeriod extends BaseClass with DateUtil{
         playRDD.unpersist()
         result.unpersist()
         detailRDD.unpersist()
-        df.unpersist()
+        df1.unpersist()
+        df2.unpersist()
       }
       case None =>{
         throw new RuntimeException("At least need param --excuteDate.")

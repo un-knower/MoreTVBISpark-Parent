@@ -19,23 +19,19 @@ object KidsSubchannelPVUVVUV extends BaseClass with DateUtil{
 
   def main(args: Array[String]): Unit = {
     config.setAppName("KidsSubchannelPVUVVUV")
-    ModuleClass.executor(KidsSubchannelPVUVVUV,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-
-
-        //calculate log whose type is play
-        val path = "/mbi/parquet/{playview,detail}/" + p.startDate + "/part-*"
-        val df = sqlContext.read.load(path).persist(StorageLevel.MEMORY_AND_DISK)
-        val playRDD = df.filter("logType='playview' and path like '%kids_home%'").select("date", "path","productModel", "userId").map(e => (e.getString(0), e.getString(1), e.getString(2), e.getString(3))).
+        val df1 = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.PLAYVIEW).persist(StorageLevel.MEMORY_AND_DISK)
+        val playRDD = df1.filter("path like '%kids_home%'").select("date", "path","productModel", "userId").map(e => (e.getString(0), e.getString(1), e.getString(2), e.getString(3))).
             map(e => (getKeys(e._1, e._2,e._3), e._4)).persist(StorageLevel.MEMORY_AND_DISK)
         val userNum_play = playRDD.distinct().countByKey()
         val accessNum_play = playRDD.countByKey()
-
-        val detailRDD = df.filter("logType='detail' and path like '%kids_home%'").select("date", "path","productModel", "userId").map(e => (e.getString(0), e.getString(1), e.getString(2), e.getString(3))).
+        val df2 = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.PLAYVIEW).persist(StorageLevel.MEMORY_AND_DISK)
+        val detailRDD = df2.filter("logType='detail' and path like '%kids_home%'").select("date", "path","productModel", "userId").map(e => (e.getString(0), e.getString(1), e.getString(2), e.getString(3))).
             map(e => (getKeys(e._1, e._2,e._3, "detail"), e._4)).persist(StorageLevel.MEMORY_AND_DISK)
         val userNum_detail = detailRDD.distinct().countByKey()
         val accessNum_detail = detailRDD.countByKey()
@@ -68,7 +64,8 @@ object KidsSubchannelPVUVVUV extends BaseClass with DateUtil{
 
         playRDD.unpersist()
         detailRDD.unpersist()
-        df.unpersist()
+        df1.unpersist()
+        df2.unpersist()
       }
       case None =>{
         throw new RuntimeException("At least need param --excuteDate.")

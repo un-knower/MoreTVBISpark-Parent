@@ -18,14 +18,12 @@ import org.apache.spark.storage.StorageLevel
 object SportSubjectUVVV extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("SportSubjectUVVV")
-    ModuleClass.executor(SportSubjectUVVV,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
-
-        val path = "/mbi/parquet/playview/"+p.startDate+"/part-*"
-        val df = sqlContext.read.load(path)
+        val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.PLAYVIEW)
         val resultRDD = df.filter("path like 'home-sports%'").select("date","path","userId").map(e =>(e.getString(0),e.getString(1),e.getString(2))).
             map(e=>(getKeys(e._1,e._2),e._3)).filter(e =>(e._1._5 !=null && e._1._6!=null)).persist(StorageLevel.MEMORY_AND_DISK)
         val userNum = resultRDD.distinct().countByKey()
