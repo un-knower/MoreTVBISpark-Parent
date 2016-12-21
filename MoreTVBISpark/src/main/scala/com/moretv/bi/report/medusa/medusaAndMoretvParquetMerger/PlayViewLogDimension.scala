@@ -82,7 +82,11 @@ object PlayViewLogDimension extends BaseClass{
                s"pathParserDimension('play',pathMain,'pathMain','"+UDFConstantDimension.SEARCH_FROM+"') as searchFrom," +
                s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.MAIN_CATEGORY+"') as mainCategory," +
                s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.SUB_CATEGORY+"') as subCategory," +
-               s"'medusa' as flag " +
+               s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.FILTER_CATEGORY_1+"') as filter_c1," +
+               s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.FILTER_CATEGORY_2+"') as filter_c2," +
+               s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.FILTER_CATEGORY_3+"') as filter_c3," +
+               s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.FILTER_CATEGORY_4+"') as filter_c4," +
+               s" 'medusa' as flag " +
                s" from log_data_1"
              val sqlSelectMoretv = s"select $moretvColNames," +
                s"pathParser('playview',path,'path','launcherArea') as launcherAreaFromPath, " +
@@ -101,7 +105,11 @@ object PlayViewLogDimension extends BaseClass{
                s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.SEARCH_FROM+"') as searchFrom," +
                s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.MAIN_CATEGORY+"') as mainCategory," +
                s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.SUB_CATEGORY+"') as subCategory," +
-               s"'moretv' as flag "+
+               s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.FILTER_CATEGORY_1+"') as filter_c1," +
+               s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.FILTER_CATEGORY_2+"') as filter_c2," +
+               s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.FILTER_CATEGORY_3+"') as filter_c3," +
+               s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.FILTER_CATEGORY_4+"') as filter_c4," +
+               s" 'moretv' as flag "+
                s" from log_data_2"
 
              val df1 = sqlContext.sql(sqlSelectMedusa).toJSON

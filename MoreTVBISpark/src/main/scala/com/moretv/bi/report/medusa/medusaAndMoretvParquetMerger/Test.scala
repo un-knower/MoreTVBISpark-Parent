@@ -113,9 +113,69 @@ object Test  {
     }
   }
 
-  def main(args: Array[String]): Unit = {
 
-    test
+  //测试筛选功能
+  def test_shaixuan: Unit ={
+    //测试medusa
+    val regex_medusa_filter = (".*retrieval\\*(hot|new|score)\\*([\\S]+)\\*([\\S]+)\\*(all|[0-9]+\\*[0-9]+)").r
+    val retrieval_list=List("home*classification*tv-tv-retrieval*hot*dushi*hanguo*all","home*classification*tv-tv-retrieval*hot*dushi*hanguo*2000*2009")
+    for (path <- retrieval_list){
+      regex_medusa_filter findFirstMatchIn path match {
+        case Some(p) => {
+          println(path)
+          println("1:"+p.group(1))
+          println("2:"+p.group(2))
+          println("3:"+p.group(3))
+          println("4:"+p.group(4))
+        }
+        case None => null
+      }
+    }
+
+    //测试moretv
+    /*home-movie-multi_search-hot-kongbu-meiguo-all-peoplealsolike
+home-movie-multi_search-hot-kongbu-ouzhou-all-similar
+home-movie-multi_search-hot-lishi-hanguo-all
+home-movie-multi_search-hot-kehuan-meiguo-2015           单个日期
+home-movie-multi_search-hot-juqing-meiguo-2000-2009      最后年代是日期范围*/
+    val regex_moretv_filter = (".*multi_search-(hot|new|score)-([\\S]+)-([\\S]+)-(all|[0-9]+-[0-9]+)").r
+    val multi_search_list=List("home-movie-multi_search-hot-kongbu-meiguo-all-peoplealsolike",
+      "home-movie-multi_search-hot-kongbu-ouzhou-all-similar","home-movie-multi_search-hot-lishi-hanguo-all",
+      "home-movie-multi_search-hot-kehuan-meiguo-2015",
+    "home-movie-multi_search-hot-juqing-meiguo-2000-2009")
+    for (path <- multi_search_list){
+      regex_moretv_filter findFirstMatchIn path match {
+        case Some(p) => {
+          println(path)
+          println("1:"+p.group(1))
+          println("2:"+p.group(2))
+          println("3:"+p.group(3))
+          println("4:"+p.group(4))
+        }
+        case None => null
+      }
+    }
+
+
+
+  }
+
+
+
+  def main(args: Array[String]): Unit = {
+    val index=5
+    if(index>4){
+      println("bbbb")
+
+      return null
+    }
+    println("a")
+    //test_shaixuan
+    //test
+
+
+    //val regex_moretv_search = (".*retrieval\\*([\\S]+)\\*([\\S]+)\\*([\\S]+)\\*([\\S]+)").r
+
 
     System.exit(0)
 

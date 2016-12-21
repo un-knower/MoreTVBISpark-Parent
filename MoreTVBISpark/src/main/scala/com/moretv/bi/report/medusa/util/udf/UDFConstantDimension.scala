@@ -40,13 +40,26 @@ object UDFConstantDimension {
 
 
   /*------------------------------------------add by michael start------------------------------------------*/
-  // pathMain
-  val SEARCH_DIMENSION = "search"
+  // pathMain from medusa
   val RETRIEVAL_DIMENSION = "retrieval"
+
+  //path from moretv
+  val MULTI_SEARCH = "multi_search"
+
+  val SEARCH_DIMENSION = "search"
   val SEARCH_KEYWORD = "search_keyword"    // For medusa,从pathMain中获取;For moretv,从path中获取;
   val SEARCH_FROM = "search_from"          // For medusa,从pathMain中获取;For moretv,从path中获取
   val MAIN_CATEGORY = "main_category"      // For medusa,从pathMain中获取;For moretv,从path中获取
   val SUB_CATEGORY = "sub_category"        // For medusa,从pathMain中获取;For moretv,从path中获取
+
+
+
+
+  //筛选维度【排序方式：最新、最热、得分；标签；地区；年代】
+  val FILTER_CATEGORY_1="filter_c1"
+  val FILTER_CATEGORY_2="filter_c2"
+  val FILTER_CATEGORY_3="filter_c3"
+  val FILTER_CATEGORY_4="filter_c4"
 
   //用来获取列表页使用
   val HOME_CLASSIFICATION = "home*classification"
