@@ -16,9 +16,6 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 object EachMVPlayTopBoard extends BaseClass{
   val regex = """(mv_category\*)(.+)""".r
   def main(args: Array[String]): Unit = {
-    config.set("spark.executor.memory", "5g").
-      set("spark.executor.cores", "5").
-      set("spark.cores.max", "100")
     ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
@@ -27,7 +24,6 @@ object EachMVPlayTopBoard extends BaseClass{
 
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val medusaDir = "/log/medusa/parquet"
         val calendar = Calendar.getInstance()
         sqlContext.udf.register("getSourceFromPath",getSourceFromPath _)
 
@@ -37,9 +33,8 @@ object EachMVPlayTopBoard extends BaseClass{
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
 
-          val playviewInput = s"$medusaDir/$date/play/"
 
-          sqlContext.read.parquet(playviewInput).select("userId","event","pathMain","videoSid","contentType","duration")
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.PLAY,date).select("userId","event","pathMain","videoSid","contentType","duration")
             .registerTempTable("log_data")
 
           val playRdd = sqlContext.sql("select videoSid,getSourceFromPath(pathMain),count(userId),count(distinct userId) " +

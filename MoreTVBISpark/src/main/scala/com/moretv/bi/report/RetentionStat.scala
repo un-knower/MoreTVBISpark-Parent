@@ -31,7 +31,7 @@ object RetentionStat extends BaseClass {
 
 
   def main(args: Array[String]) {
-    ModuleClass.executor(RetentionStat, args)
+    ModuleClass.executor(this,args)
   }
 
 

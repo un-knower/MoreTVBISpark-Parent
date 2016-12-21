@@ -28,7 +28,7 @@ object DetailContentTypeStat extends BaseClass {
 
   def main(args: Array[String]) {
 
-    ModuleClass.executor(this, args)
+    ModuleClass.executor(this,args)
 
   }
 

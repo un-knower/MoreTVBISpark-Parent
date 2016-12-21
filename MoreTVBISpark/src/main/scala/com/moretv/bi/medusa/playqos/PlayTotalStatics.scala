@@ -21,7 +21,7 @@ object PlayTotalStatics extends  BaseClass{
   private  val tableName = "medusa_play_total"
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(PlayTotalStatics, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]): Unit =  {

@@ -23,8 +23,6 @@ import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
   */
 object MVPositionClickStat extends BaseClass {
 
-  private val dataSource = "positionaccess"
-
   private val tableName = "channel_position_click_stat"
 
   private val insertSql = s"insert into $tableName(day,channel,access_area,location_index,pv,uv)values(?,?,?,?,?,?)"
@@ -33,7 +31,7 @@ object MVPositionClickStat extends BaseClass {
 
   def main(args: Array[String]) {
 
-    ModuleClass.executor(MVPositionClickStat, args)
+    ModuleClass.executor(this,args)
 
   }
 
@@ -62,14 +60,9 @@ object MVPositionClickStat extends BaseClass {
 
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          //path
-
-          val loadPath = s"/log/medusa/parquet/$loadDate/$dataSource"
-          println(loadPath)
-
           //df
 
-          val df = sqlContext.read.parquet(loadPath)
+          val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.POSITIONACCESS,loadDate)
             .select("belongTo", "accessArea", "locationIndex", "userId")
             .filter("accessArea is not null and locationIndex is not null")
             .filter("belongTo ='mv'")

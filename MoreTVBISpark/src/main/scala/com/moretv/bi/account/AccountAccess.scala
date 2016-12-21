@@ -17,7 +17,7 @@ import org.apache.spark.storage.StorageLevel
   */
 object AccountAccess extends BaseClass with DateUtil {
   def main(args: Array[String]) {
-    ModuleClass.executor(this, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

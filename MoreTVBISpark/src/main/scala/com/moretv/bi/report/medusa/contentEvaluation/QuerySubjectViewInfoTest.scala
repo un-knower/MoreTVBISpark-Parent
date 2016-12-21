@@ -28,7 +28,7 @@ object QuerySubjectViewInfoTest extends BaseClass {
       set("spark.default.parallelism", "40").
       set("spark.sql.shuffle.partitions", "400").
       set("spark.cores.max", "100")
-    ModuleClass.executor(QuerySubjectViewInfoTest, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

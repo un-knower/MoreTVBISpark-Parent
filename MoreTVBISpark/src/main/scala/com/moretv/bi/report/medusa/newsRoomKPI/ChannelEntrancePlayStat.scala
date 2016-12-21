@@ -39,7 +39,7 @@ object ChannelEntrancePlayStat extends BaseClass {
 
   def main(args: Array[String]) {
 
-    ModuleClass.executor(ChannelEntrancePlayStat, args)
+    ModuleClass.executor(this,args)
 
   }
 

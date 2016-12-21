@@ -24,7 +24,7 @@ object PlayCodeVideoSourceStatics extends BaseClass {
   private val tableName = "medusa_video_playqos_playcode_source"
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(PlayCodeVideoSourceStatics, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]): Unit = {

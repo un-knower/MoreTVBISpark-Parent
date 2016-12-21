@@ -5,11 +5,8 @@ import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import org.apache.spark.storage.StorageLevel
 
 /**
@@ -31,7 +28,6 @@ object KidsEachTabPlayInfo extends BaseClass{
 
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val medusaDir = "/log/medusaAndMoretvMerger"
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
 
@@ -40,10 +36,8 @@ object KidsEachTabPlayInfo extends BaseClass{
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
-          val enterUserIdDate = DateFormatUtils.readFormat.format(calendar.getTime)
 
-          val playDir=s"$medusaDir/$date/playview"
-          sqlContext.read.parquet(playDir).registerTempTable("log")
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MERGER,LogTypes.PLAYVIEW,date).registerTempTable("log")
           val rdd=sqlContext.sql("select flag,userId,path,pageDetailInfoFromPath from log where path like '%kids%' or " +
             "pathMain like '%kids%' and event in ('startplay','playview')").map(e=>(e.getString(0),e.getString(1),e.getString(2),e.getString(3))).
             persist(StorageLevel.MEMORY_AND_DISK)

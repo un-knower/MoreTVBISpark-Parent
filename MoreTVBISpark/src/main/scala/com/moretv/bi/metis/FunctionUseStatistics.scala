@@ -18,7 +18,7 @@ import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
  */
 object FunctionUseStatistics extends BaseClass {
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(FunctionUseStatistics, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]): Unit = {

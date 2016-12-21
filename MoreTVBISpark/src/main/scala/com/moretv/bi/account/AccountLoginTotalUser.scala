@@ -18,7 +18,7 @@ import org.apache.spark.storage.StorageLevel
 object AccountLoginTotalUser extends BaseClass with DateUtil {
   def main(args: Array[String]) {
     config.setAppName("AccountLoginTotalUser")
-    ModuleClass.executor(AccountLoginTotalUser, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

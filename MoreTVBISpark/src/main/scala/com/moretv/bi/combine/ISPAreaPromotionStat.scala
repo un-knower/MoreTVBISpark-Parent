@@ -14,7 +14,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 object ISPAreaPromotionStat extends BaseClass {
 
   def main(args: Array[String]) {
-    ModuleClass.executor(ISPAreaPromotionStat, args)
+    ModuleClass.executor(this,args)
   }
 
 

@@ -35,7 +35,7 @@ object VideoSourceStat extends BaseClass {
   private val deleteSql = s"delete from $tableName where day = ?"
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(VideoSourceStat, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]): Unit = {

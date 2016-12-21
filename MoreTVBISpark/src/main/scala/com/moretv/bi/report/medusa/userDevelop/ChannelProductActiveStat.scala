@@ -30,7 +30,7 @@ object ChannelProductActiveStat extends BaseClass {
 
   def main(args: Array[String]) {
 
-    ModuleClass.executor(ChannelProductActiveStat, args)
+    ModuleClass.executor(this,args)
 
   }
 

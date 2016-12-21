@@ -1,16 +1,9 @@
 package com.moretv.bi.VideoPlayErrorAnalyze
 
-import java.text.SimpleDateFormat
-import java.util.Calendar
-
-import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.storage.StorageLevel
 
 /**
  * Created by laishun on 15/10/9.
@@ -24,8 +17,7 @@ object play_isorno extends BaseClass with DateUtil{
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
 
-        val path = "/mbi/parquet/playqos/"+p.startDate+"/part-*"
-        val df = sqlContext.read.load(path)
+        val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.PLAYQOS,p.startDate)
         val resultRDD = df.filter("event in('playerror','userexit','playend','sourceerror')").select("date","source","event").map(e =>(e.getString(0),e.getString(1),e.getString(2))).
             map(e=>(getKeys(e._1,e._2),e._3)).groupByKey().map(e => (e._1,countNum(e._2))).collect()
 

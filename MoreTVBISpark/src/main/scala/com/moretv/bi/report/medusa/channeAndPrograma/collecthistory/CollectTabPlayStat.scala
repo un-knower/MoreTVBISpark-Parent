@@ -1,12 +1,12 @@
 package com.moretv.bi.report.medusa.channeAndPrograma.collecthistory
 
+import java.lang.{Double => JDouble, Long => JLong}
 import java.util.Calendar
-import java.lang.{Long => JLong, Double => JDouble}
-import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
+
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 
 /**
   * Created by witnes on 11/28/16.
@@ -23,7 +23,7 @@ object CollectTabPlayStat extends BaseClass {
 
   def main(args: Array[String]) {
 
-    ModuleClass.executor(CollectTabPlayStat, args)
+    ModuleClass.executor(this,args)
 
   }
 
@@ -43,9 +43,7 @@ object CollectTabPlayStat extends BaseClass {
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          val loadPath = s"/log/medusaAndMoretvMerger/$loadDate/playview"
-
-          sqlContext.read.parquet(loadPath)
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MERGER,LogTypes.PLAYVIEW,loadDate)
             .filter(s"date between '$sqlDate' and '$sqlDate'")
             .filter("pathMain like '%collect%'")
             .select("pathMain", "userId", "event", "duration")

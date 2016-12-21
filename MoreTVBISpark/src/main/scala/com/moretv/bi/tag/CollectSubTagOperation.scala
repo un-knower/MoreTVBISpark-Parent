@@ -26,8 +26,7 @@ object CollectSubTagOperation extends BaseClass with DateUtil{
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
 
-        val path = "/mbi/parquet/collect/"+p.startDate+"/part-*"
-        val df = sqlContext.read.load(path)
+        val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.COLLECT,p.startDate)
         val resultRDD = df.filter("collectType='tag'").select("date","collectContent","event").map(e =>(e.getString(0),e.getString(1),e.getString(2))).
                            map(e=>(getKeys(e._1,e._2),e._3)).groupByKey().map(e =>(e._1,countOKAndCancle(e._2))).collect()
 

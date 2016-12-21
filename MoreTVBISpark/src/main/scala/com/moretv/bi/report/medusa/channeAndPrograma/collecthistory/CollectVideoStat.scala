@@ -1,14 +1,13 @@
 package com.moretv.bi.report.medusa.channeAndPrograma.collecthistory
 
-import java.util.Calendar
 import java.lang.{Long => JLong}
+import java.util.Calendar
 
-import com.moretv.bi.temp.ProgramRedisUtil
-import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, LiveCodeToNameUtils, ParamsParseUtil}
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.temp.ProgramRedisUtil
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 
 /**
   * Created by witnes on 11/28/16.
@@ -30,7 +29,7 @@ object CollectVideoStat extends BaseClass {
 
 
   def main(args: Array[String]) {
-    ModuleClass.executor(CollectVideoStat, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]): Unit = {
@@ -49,9 +48,7 @@ object CollectVideoStat extends BaseClass {
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          val loadPath = s"/log/medusa/parquet/$loadDate/collect"
-
-          sqlContext.read.parquet(loadPath)
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.COLLECT,loadDate)
             .filter(s"date between '$sqlDate' and '$sqlDate'")
             .filter("collectClass ='video'")
             .select("collectContent", "userId")

@@ -30,7 +30,6 @@ object sportsLiveDurationInfo extends BaseClass{
 
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val medusaDir = "/log/medusaAndMoretvMerger"
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
 
@@ -39,10 +38,8 @@ object sportsLiveDurationInfo extends BaseClass{
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
-          val enterUserIdDate = DateFormatUtils.readFormat.format(calendar.getTime)
 
-          val playDir=s"$medusaDir/$date/playview"
-          sqlContext.read.parquet(playDir).registerTempTable("log")
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MERGER,LogTypes.PLAYVIEW,date).registerTempTable("log")
           val rdd=sqlContext.sql("select flag,userId,path,pageDetailInfoFromPath from log where path like '%kids%' or " +
             "pathMain like '%kids%' and event in ('startplay','playview')").map(e=>(e.getString(0),e.getString(1),e.getString(2),e.getString(3))).
             persist(StorageLevel.MEMORY_AND_DISK)

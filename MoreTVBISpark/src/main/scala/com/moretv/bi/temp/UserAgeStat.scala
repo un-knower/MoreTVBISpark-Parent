@@ -35,7 +35,7 @@ object UserAgeStat extends BaseClass {
 
   def main(args: Array[String]) {
 
-    ModuleClass.executor(UserAgeStat, args)
+    ModuleClass.executor(this,args)
 
   }
 

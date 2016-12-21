@@ -41,7 +41,7 @@ object RetentionStepStat extends BaseClass {
   private val sqlFormat = new SimpleDateFormat("yyyy-MM-dd")
 
   def main(args: Array[String]) {
-    ModuleClass.executor(RetentionStepStat, args)
+    ModuleClass.executor(this,args)
   }
 
 

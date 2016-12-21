@@ -1,16 +1,11 @@
 package com.moretv.bi.tag
 
 import java.net.URLDecoder
-import java.text.SimpleDateFormat
-import java.util.Calendar
 
-import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
 import org.apache.spark.storage.StorageLevel
 
 /**
@@ -26,15 +21,14 @@ object TagPagePVUVVV extends BaseClass with DateUtil{
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
 
-        //calculate log whose type is play
-        val path = "/mbi/parquet/{playview,detail}/"+p.startDate+"/part-*"
-        val df = sqlContext.read.load(path).persist(StorageLevel.MEMORY_AND_DISK)
-        val playRDD = df.filter("logType='playview' and event ='playview'").select("date","path","userId").map(e =>(e.getString(0),e.getString(1),e.getString(2))).
+        val playRDD = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.PLAY,p.startDate)
+          .filter("event ='playview'").select("date","path","userId").map(e =>(e.getString(0),e.getString(1),e.getString(2))).
           filter(e =>judgePath(e._2)).map(e=>(getKeys(e._1,e._2),e._3)).persist(StorageLevel.MEMORY_AND_DISK)
         val userNum_play = playRDD.distinct().countByKey()
         val accessNum_play = playRDD.countByKey()
 
-        val detailRDD = df.filter("logType='detail'").select("date","path","userId").map(e =>(e.getString(0),e.getString(1),e.getString(2))).
+        val detailRDD = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.DETAIL,p.startDate).
+          select("date","path","userId").map(e =>(e.getString(0),e.getString(1),e.getString(2))).
           filter(e =>judgePath(e._2)).map(e=>(getKeys(e._1,e._2,"detail"),e._3)).persist(StorageLevel.MEMORY_AND_DISK)
         val userNum_detail = detailRDD.distinct().countByKey()
         val accessNum_detail = detailRDD.countByKey()
@@ -59,7 +53,6 @@ object TagPagePVUVVV extends BaseClass with DateUtil{
 
         playRDD.unpersist()
         detailRDD.unpersist()
-        df.unpersist()
       }
       case None =>{
         throw new RuntimeException("At least need param --excuteDate.")

@@ -27,7 +27,7 @@ object PlayQosTotalStatics extends BaseClass {
   //private val tableName = "medusa_total_playqos"
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(PlayQosTotalStatics, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]): Unit = {

@@ -37,7 +37,7 @@ object MVTabViewStat extends BaseClass{
 
   def main(args: Array[String]) {
 
-    ModuleClass.executor(MVTabViewStat, args)
+    ModuleClass.executor(this,args)
 
   }
 
@@ -65,13 +65,9 @@ object MVTabViewStat extends BaseClass{
 
             val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-            //path
-            val loadPath = s"/log/medusa/parquet/$loadDate/tabview"
-            println(loadPath)
-
             //df
             val df =
-                  sqlContext.read.parquet(loadPath)
+              DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.TABVIEW,loadDate)
                     .select("pathMain","stationcode","userId")
                     .filter("pathMain is not null")
                     .filter("stationcode is not null")

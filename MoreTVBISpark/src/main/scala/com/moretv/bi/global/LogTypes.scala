@@ -69,4 +69,5 @@ object LogTypes {
   val DETAIL_SUBJECT= "detail-subject"
   val SUBJECT_INTERVIEW="subject-interview"
   val OPERATION_ACW="operation-acw"
+  val OPERATION_MM="operation-mm"
 }

@@ -29,7 +29,7 @@ object QuerySubjectViewInfo extends BaseClass {
       set("spark.default.parallelism", "40").
       set("spark.sql.shuffle.partitions", "400").
       set("spark.cores.max", "100")
-    ModuleClass.executor(this, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

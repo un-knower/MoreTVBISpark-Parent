@@ -1,15 +1,9 @@
 package com.moretv.bi.tag
 
-import java.text.SimpleDateFormat
-import java.util.Calendar
-
-import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
 import org.apache.spark.storage.StorageLevel
 
 /**
@@ -25,8 +19,7 @@ object AddTagAndCommentOperation extends BaseClass with DateUtil{
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
 
-        val path = "/mbi/parquet/operation-acw/"+p.startDate+"/part-*"
-        val df = sqlContext.read.load(path)
+        val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.OPERATION_ACW,p.startDate)
         val resultRDD = df.filter("event in ('addtag','comment')").select("date","event","userId").map(e =>(e.getString(0),e.getString(1),e.getString(2))).
                            map(e=>(getKeys(e._1,e._2),e._3)).persist(StorageLevel.MEMORY_AND_DISK)
         val userNum = resultRDD.distinct().countByKey()

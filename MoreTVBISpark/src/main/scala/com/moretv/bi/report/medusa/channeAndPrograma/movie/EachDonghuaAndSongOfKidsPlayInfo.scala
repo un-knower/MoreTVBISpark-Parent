@@ -3,13 +3,10 @@ package com.moretv.bi.report.medusa.channeAndPrograma.movie
 import java.lang.{Long => JLong}
 import java.util.Calendar
 
-import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
 
 /**
  * Created by xiajun on 2016/5/16.
@@ -18,9 +15,6 @@ import org.apache.spark.sql.SQLContext
 object EachDonghuaAndSongOfKidsPlayInfo extends BaseClass{
 
   def main(args: Array[String]): Unit = {
-    config.set("spark.executor.memory", "5g").
-      set("spark.executor.cores", "5").
-      set("spark.cores.max", "100")
     ModuleClass.executor(this,args)
   }
 
@@ -29,18 +23,14 @@ object EachDonghuaAndSongOfKidsPlayInfo extends BaseClass{
       case Some(p) => {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val medusaDir = "/log/medusaAndMoretvMerger/"
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
         (0 until p.numOfDays).foreach(i=>{
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
-          val enterUserIdDate = DateFormatUtils.readFormat.format(calendar.getTime)
 
-          val playviewInput = s"$medusaDir/$date/playview/"
-
-          sqlContext.read.parquet(playviewInput).select("userId","path","pathMain","event","contentType",
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MERGER,LogTypes.PLAYVIEW,date).select("userId","path","pathMain","event","contentType",
             "videoSid").registerTempTable("log_data")
 
           val donghuaRdd = sqlContext.sql("select videoSid,count(userId),count(distinct userId)" +
