@@ -17,7 +17,7 @@ import org.json.JSONObject
 
 object CrashTrendsByVersionProduct extends BaseClass{
   def main(args: Array[String]) {
-    ModuleClass.executor(CrashTrendsByVersionProduct,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
@@ -27,7 +27,9 @@ object CrashTrendsByVersionProduct extends BaseClass{
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val inputDate = p.startDate
         val day = DateFormatUtils.toDateCN(inputDate)
-        val logRdd = sc.textFile(s"/log/crash/metadata/${inputDate}_extraction.log").map(log=>{
+        val inputPath=p.paramMap.getOrElse("inputPath",s"/log/crash/metadata/#{date}_extraction.log").replace("#{date}",inputDate)
+
+        val logRdd = sc.textFile(inputPath).map(log=>{
           val json = new JSONObject(log)
           (json.optString("fileName"),json.optString("MAC"),json.optString("APP_VERSION_NAME"),json.optString("APP_VERSION_CODE"),
             json.optString("CRASH_KEY"),json.optString("STACK_TRACE"),json.optString("DATE_CODE"),json.optString("PRODUCT_CODE"))

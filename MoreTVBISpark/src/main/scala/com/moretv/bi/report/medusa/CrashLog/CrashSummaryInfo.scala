@@ -19,7 +19,7 @@ import org.apache.spark.storage.StorageLevel
 object CrashSummaryInfo extends BaseClass{
 
   def main(args: Array[String]) {
-    ModuleClass.executor(CrashSummaryInfo,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
@@ -27,6 +27,10 @@ object CrashSummaryInfo extends BaseClass{
         val input = p.startDate
         val inputDay = DateFormatUtils.toDateCN(input)
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+        val url = util.prop.getProperty("url")
+        val driver = util.prop.getProperty("driver")
+        val user = util.prop.getProperty("user")
+        val password = util.prop.getProperty("password")
         /**
          * Define two lambda functions
          */
@@ -65,7 +69,7 @@ object CrashSummaryInfo extends BaseClass{
          * Getting the data from original table, which includes the information of each day
          */
 
-        val jdbcOriginalRdd = new JdbcRDD(sc,
+    /*    val jdbcOriginalRdd = new JdbcRDD(sc,
           () => {
             Class.forName("com.mysql.jdbc.Driver")
             DriverManager.getConnection("jdbc:mysql://10.10.2" +
@@ -77,7 +81,14 @@ object CrashSummaryInfo extends BaseClass{
           maxId(util,inputDay,false),
           numOfPartition,
           r => (r.getString(1), r.getString(2), r.getString(3),r.getLong(4))
-        )
+        )*/
+
+//
+        val jdbcOriginalRdd_sql = "SELECT stack_trace_md5,stack_trace,app_version_name, crash_num " +
+  " from medusa_crash_original_secondary_phase_info where id >=? and id <= ? "
+        val jdbcOriginalRdd =MySqlOps.getJdbcRDD(sc,jdbcOriginalRdd_sql,"medusa_crash_original_secondary_phase_info",r=>(r.getString(1), r.getString(2), r.getString(3),r.getLong(4)),driver,url,user,password,(minId(util,inputDay,false),maxId(util,inputDay,false)),numOfPartition)
+//
+
         /**
          * Calculating the sum_crash_num of each crash_key
          * 需要过滤乱码的问题
@@ -103,7 +114,7 @@ object CrashSummaryInfo extends BaseClass{
         /**
          * Getting the info from the summary table
          */
-        val jdbcSummaryRdd = new JdbcRDD(sc,
+       /* val jdbcSummaryRdd = new JdbcRDD(sc,
           () =>{
             Class.forName("com.mysql.jdbc.Driver")
             DriverManager.getConnection("jdbc:mysql://10.10.2" +
@@ -116,7 +127,13 @@ object CrashSummaryInfo extends BaseClass{
           numOfPartition,
           r=>(r.getString(1),r.getString(2),r.getLong(3),r.getString(4),r.getString(5),r.getString(6),r.getString(7),r
             .getLong(8),r.getLong(9))
-        )
+        )*/
+
+        val jdbcSummaryRdd_sql = "SELECT stack_trace_md5, stack_trace,crash_num,create_day,reappear_day,resolve_day," +
+          "resolve_version,is_resolve,reappear from medusa_crash_summary_secondary_phase_info where id >= ? and id<=?"
+        val jdbcSummaryRdd =MySqlOps.getJdbcRDD(sc,jdbcOriginalRdd_sql,"medusa_crash_summary_secondary_phase_info",r=>(r.getString(1),r.getString(2),r.getLong(3),r.getString(4),r.getString(5),r.getString(6),r.getString(7),r
+          .getLong(8),r.getLong(9)),driver,url,user,password,(minId(util,inputDay,true),maxId(util,inputDay,true)),numOfPartition)
+        //
 
 
         /**

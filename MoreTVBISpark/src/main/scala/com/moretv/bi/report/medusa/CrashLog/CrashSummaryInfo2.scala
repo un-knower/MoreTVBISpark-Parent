@@ -2,6 +2,8 @@ package com.moretv.bi.report.medusa.CrashLog
 
 /**
  * Created by Administrator on 2016/4/6.
+  *
+  * not used
  */
 
 import java.lang.{Long => JLong}

@@ -1,18 +1,13 @@
 package com.moretv.bi.report.medusa.medusaGrayTestingStatistic
 
-import java.sql.DriverManager
 import java.util.Calendar
 import java.lang.{Long => JLong}
 
 import cn.whaley.sdk.dataOps.MySqlOps
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{LogTypes, DataBases}
-import com.moretv.bi.report.medusa.medusaAndMoretvParquetMerger.PlayViewLogMerger._
 import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
-import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
-import org.apache.spark.SparkContext
-import org.apache.spark.rdd.JdbcRDD
-import org.apache.spark.sql.SQLContext
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import org.apache.spark.storage.StorageLevel
 
 /**

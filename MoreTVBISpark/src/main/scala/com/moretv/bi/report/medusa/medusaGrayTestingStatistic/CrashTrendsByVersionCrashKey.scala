@@ -30,8 +30,8 @@ object CrashTrendsByVersionCrashKey extends BaseClass {
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
-        val sqlContext = new SQLContext(sc)
-        import sqlContext.implicits._
+        val s =sqlContext
+        import s.implicits._
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val inputDate = p.startDate
         val day = DateFormatUtils.toDateCN(inputDate)
