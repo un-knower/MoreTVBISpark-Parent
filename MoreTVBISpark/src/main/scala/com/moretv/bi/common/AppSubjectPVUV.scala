@@ -18,7 +18,7 @@ object AppSubjectPVUV extends BaseClass {
 
   def main(args: Array[String]) {
     config.setAppName("AppSubjectPVUV")
-    ModuleClass.executor(AppSubjectPVUV, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

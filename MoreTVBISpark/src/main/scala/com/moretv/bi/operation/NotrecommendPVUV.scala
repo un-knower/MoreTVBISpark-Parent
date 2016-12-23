@@ -15,7 +15,7 @@ import com.moretv.bi.util._
 object NotrecommendPVUV extends BaseClass{
   def main(args: Array[String]) {
     config.setAppName("NotrecommendPVUV")
-    ModuleClass.executor(NotrecommendPVUV,args)
+    ModuleClass.executor(this,args)
   }
   override def execute (args: Array[String]) {
 

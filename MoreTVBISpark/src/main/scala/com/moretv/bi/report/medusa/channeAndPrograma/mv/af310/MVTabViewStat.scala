@@ -27,8 +27,6 @@ import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 
 object MVTabViewStat extends BaseClass {
 
-  private val dataSource = "tabview"
-
   private val tableName = "mv_tab_view_stat"
 
   private val fields = "day,tabname,entrance,pv,uv"
@@ -45,7 +43,7 @@ object MVTabViewStat extends BaseClass {
 
   def main(args: Array[String]) {
 
-    ModuleClass.executor(MVTabViewStat, args)
+    ModuleClass.executor(this,args)
 
   }
 
@@ -73,13 +71,9 @@ object MVTabViewStat extends BaseClass {
 
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          //path
-          val loadPath = s"/log/medusa/parquet/$loadDate/$dataSource"
-          println(loadPath)
-
           //df
           val df =
-            sqlContext.read.parquet(loadPath)
+            DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.TABVIEW,loadDate)
               .select("pathMain", "stationcode", "userId")
               .filter("pathMain is not null")
               .filter("stationcode is not null")

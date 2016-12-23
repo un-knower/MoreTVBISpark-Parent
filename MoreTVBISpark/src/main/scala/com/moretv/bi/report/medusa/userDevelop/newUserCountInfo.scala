@@ -16,7 +16,7 @@ import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
   */
 object newUserCountInfo extends BaseClass{
   def main(args: Array[String]) {
-    ModuleClass.executor(newUserCountInfo,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {

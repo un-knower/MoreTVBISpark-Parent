@@ -16,7 +16,7 @@ import scala.util.parsing.json.JSONObject
  */
 object MovieSummaryViewNum extends BaseClass{
   def main(args: Array[String]) {
-    ModuleClass.executor(MovieSummaryViewNum,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     /*该函数用于配置MovieSummaryViewNum*/

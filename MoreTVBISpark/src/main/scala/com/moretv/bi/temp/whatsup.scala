@@ -21,7 +21,7 @@ object whatsup extends BaseClass {
 
 
   def main(args: Array[String]) {
-    ModuleClass.executor(whatsup, args)
+    ModuleClass.executor(this,args)
   }
 
 

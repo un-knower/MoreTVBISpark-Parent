@@ -31,8 +31,6 @@ import scala.collection.mutable.ListBuffer
 
 object MVTabPlayStat extends BaseClass {
 
-  private val dataSource = "play"
-
   private val tableName = "mv_tab_play_stat"
 
   private val fields = "day,tabname,entrance,uv,pv,mean_duration"
@@ -44,7 +42,7 @@ object MVTabPlayStat extends BaseClass {
 
   def main(args: Array[String]) {
 
-    ModuleClass.executor(MVTabPlayStat, args)
+    ModuleClass.executor(this,args)
 
   }
 
@@ -70,12 +68,7 @@ object MVTabPlayStat extends BaseClass {
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          //path
-          val loadPath = s"/log/medusa/parquet/$loadDate/$dataSource"
-          println(loadPath)
-
-
-          val df = sqlContext.read.parquet(loadPath)
+          val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.PLAY,loadDate)
             .select("pathMain", "event", "userId", "duration","contentType")
             .filter("contentType ='mv'")
             .filter("pathMain is not null")

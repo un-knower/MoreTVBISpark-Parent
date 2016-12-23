@@ -26,7 +26,7 @@ object PlayCodeVideoUserStatics extends BaseClass {
     "fhmoqta1cev0,fh7nv0fg23s9"
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(PlayCodeVideoUserStatics, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]): Unit = {

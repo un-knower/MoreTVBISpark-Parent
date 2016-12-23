@@ -20,7 +20,7 @@ import org.apache.spark.storage.StorageLevel
 object MatchPlayStatistics extends BaseClass{
 
   def main(args: Array[String]) {
-    ModuleClass.executor(MatchPlayStatistics,args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]): Unit = {
@@ -29,7 +29,6 @@ object MatchPlayStatistics extends BaseClass{
       case Some(p) => {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val medusaDir = "/log/medusa/parquet"
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
 
@@ -38,10 +37,8 @@ object MatchPlayStatistics extends BaseClass{
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
-          val enterUserIdDate = DateFormatUtils.readFormat.format(calendar.getTime)
 
-          val playDir=s"$medusaDir/$date/play"
-          sqlContext.read.parquet(playDir).registerTempTable("log_data")
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.PLAY,date).registerTempTable("log_data")
           val rdd=sqlContext.sql("select aa.videoSid,aa.pathMain,aa.user_num,aa.access_num,bb.watch_time/aa.user_num as `per_play` " +
             "from (select videoSid, pathMain, count(distinct userId) as `user_num`, count(userId) as `access_num` from " +
             "(select videoSid,userId,case when pathMain like '%sports*horizontal%' then '体育首页' when pathMain like '%sports*League%' then '联赛' " +

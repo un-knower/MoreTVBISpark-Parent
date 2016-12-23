@@ -18,7 +18,7 @@ object KidsPromotionChannelDetail extends BaseClass {
   val regex = "^\\w+$".r
 
   def main(args: Array[String]) {
-    ModuleClass.executor(KidsPromotionChannelDetail, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

@@ -21,7 +21,7 @@ import org.apache.spark.sql.SQLContext
 object ProductBrandVV extends BaseClass {
 
   def main(args: Array[String]) {
-    ModuleClass.executor(ProductBrandVV, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

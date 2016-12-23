@@ -21,7 +21,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 //
 //  def main(args: Array[String]) {
 //    config.setAppName("CommentTotalAccount")
-//    ModuleClass.executor(CommentTotalAccount,args)
+//    ModuleClass.executor(this,args)
 //  }
 //  override def execute(args: Array[String]) {
 //

@@ -3,6 +3,7 @@ package com.moretv.bi.util
 import java.text.SimpleDateFormat
 
 import scopt.OptionParser
+//import scala.
 
 /**
  * Created by Will on 2015/9/28.
@@ -67,10 +68,11 @@ object ParamsParseUtil {
         }
         parser.parse(args,default) match {
           case Some(p) => {
-            p.paramMap += "startDate" -> p.startDate
-            Some(p)
+            val startDate = p.startDate
+            val pMap = p.paramMap.+("startDate" -> startDate)
+            Some(p.copy(paramMap = pMap))
           }
-          case None => throw new RuntimeException("parse exception")
+          case None => throw new RuntimeException("parse error")
         }
 
       }else throw new RuntimeException("args is empty")

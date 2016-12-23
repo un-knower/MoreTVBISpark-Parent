@@ -22,7 +22,7 @@ object AccountAccess extends BaseClass with DateUtil {
   private val sql = "INSERT INTO account_access_users(year,month,day,accessCode,accessName,user_num,access_num) VALUES(?,?,?,?,?,?,?)"
 
   def main(args: Array[String]) {
-    ModuleClass.executor(this, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

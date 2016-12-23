@@ -13,7 +13,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
   */
 object PlayContentTypeStat extends BaseClass {
 
-  private val dataSource = "playview"
+  //private val dataSource = "playview"
 
   private val tableName = "play_contenttype_stat"
 
@@ -23,11 +23,8 @@ object PlayContentTypeStat extends BaseClass {
 
   private val delete1Sql = s"delete from $tableName  where day = ?"
 
-
   def main(args: Array[String]) {
-
-    ModuleClass.executor(PlayContentTypeStat, args)
-
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]): Unit = {
@@ -49,16 +46,20 @@ object PlayContentTypeStat extends BaseClass {
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
           //path
-          val loadPath2 = s"/log/medusaAndMoretvMerger/$loadDate/$dataSource"
+         /* val loadPath2 = s"/log/medusaAndMoretvMerger/$loadDate/$dataSource"
 
           val df2 = sqlContext.read.parquet(loadPath2)
             .select("userId", "contentType")
+            .filter("contentType is not null")*/
+
+
+          val df2=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MERGER,LogTypes.PLAYVIEW,loadDate).select("userId", "contentType")
             .filter("contentType is not null")
 
           df2.registerTempTable("log_data")
 
           val dfPlay =
-            sqlContext.sql(
+            df2.sqlContext.sql(
               "select contentType, count(userId) as pv, count(distinct userId) as uv from log_data" +
                 " group by contentType "
             )

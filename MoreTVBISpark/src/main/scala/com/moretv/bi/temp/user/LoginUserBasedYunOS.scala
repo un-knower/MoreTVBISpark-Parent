@@ -19,7 +19,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 object LoginUserBasedYunOS extends BaseClass{
 
   def main(args: Array[String]): Unit ={
-    ModuleClass.executor(LoginUserBasedYunOS,args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) = {

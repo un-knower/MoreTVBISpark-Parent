@@ -35,7 +35,7 @@ object PlayInfoByAreaAndISPStatics extends BaseClass {
 
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(PlayInfoByAreaAndISPStatics, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]): Unit = {

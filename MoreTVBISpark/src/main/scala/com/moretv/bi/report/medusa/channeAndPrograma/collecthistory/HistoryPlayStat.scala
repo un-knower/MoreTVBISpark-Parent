@@ -1,13 +1,12 @@
 package com.moretv.bi.report.medusa.channeAndPrograma.collecthistory
 
+import java.lang.{Float => JFloat, Long => JLong}
 import java.util.Calendar
-import java.lang.{Long => JLong,Float => JFloat}
 
-import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 
 
 /**
@@ -28,7 +27,7 @@ object HistoryPlayStat extends BaseClass {
   private val deleteSql = s"delete from $tableName where  interval_type = ? and intervals = ?"
 
   def main(args: Array[String]) {
-    ModuleClass.executor(HistoryPlayStat, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]): Unit = {
@@ -47,9 +46,7 @@ object HistoryPlayStat extends BaseClass {
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          val loadPath = s"/log/medusaAndMoretvMerger/$loadDate/playview"
-
-          val df = sqlContext.read.parquet(loadPath)
+          val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MERGER,LogTypes.PLAYVIEW,loadDate)
             .filter(s"date between '$sqlDate' and '$sqlDate'")
             .filter("pathMain like '%history%' or pathMain like '%观看历史%'")
             .select("date", "userId", "event", "duration")

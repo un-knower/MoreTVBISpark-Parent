@@ -3,13 +3,10 @@ package com.moretv.bi.VideoPlayErrorAnalyze
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
-import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
 
 /**
  * Created by laishun on 15/10/9.
@@ -17,14 +14,13 @@ import org.apache.spark.sql.SQLContext
 object PlaySourceErrorStatisitcs extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("PlaySourceErrorStatisitcs")
-    ModuleClass.executor(PlaySourceErrorStatisitcs,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
 
-        val path = "/mbi/parquet/playqos/"+p.startDate+"/part-*"
-        val df = sqlContext.read.load(path)
+        val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.PLAYQOS,p.startDate)
         val resultRDD = df.filter("event in('userexit','playend','sourceerror')").select("date","apkSeries","source","contentType","event").map(e =>(e.getString(0),e.getString(1),e.getString(2),e.getString(3),e.getString(4))).
             map(e=>(getKeys(e._1,e._2,e._3,e._4),e._5)).groupByKey().map(e => (e._1,countNum(e._2))).collect()
 

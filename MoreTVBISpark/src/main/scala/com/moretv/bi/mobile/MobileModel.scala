@@ -20,7 +20,7 @@ object MobileModel extends BaseClass {
 
   def main(args: Array[String]) {
     config.setAppName("MobileModel")
-    ModuleClass.executor(MobileModel,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

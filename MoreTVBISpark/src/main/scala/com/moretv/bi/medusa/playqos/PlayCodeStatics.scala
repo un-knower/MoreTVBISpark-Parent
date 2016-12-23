@@ -27,7 +27,7 @@ object PlayCodeStatics extends BaseClass{
   private val tableName = "medusa_playqos_playcode"
 
   def main(args: Array[String]) {
-    ModuleClass.executor(PlayCodeStatics,args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]): Unit = {

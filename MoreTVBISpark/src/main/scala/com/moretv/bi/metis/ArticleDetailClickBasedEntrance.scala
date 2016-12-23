@@ -19,7 +19,7 @@ import org.apache.spark.storage.StorageLevel
  */
 object ArticleDetailClickBasedEntrance extends BaseClass {
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(ArticleDetailClickBasedEntrance, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]): Unit = {

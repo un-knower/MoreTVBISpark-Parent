@@ -37,7 +37,7 @@ object MVVideoStat extends BaseClass {
 
   def main(args: Array[String]) {
 
-    ModuleClass.executor(MVVideoStat, args)
+    ModuleClass.executor(this,args)
 
   }
 
@@ -67,7 +67,7 @@ object MVVideoStat extends BaseClass {
 
           //df
           val df =
-            sqlContext.read.parquet(loadPath)
+            DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.PLAY,loadDate)
               .select("videoSid", "videoName", "userId", "event", "duration", "contentType")
               .filter("videoSid is not null")
               .filter("videoName is not null")

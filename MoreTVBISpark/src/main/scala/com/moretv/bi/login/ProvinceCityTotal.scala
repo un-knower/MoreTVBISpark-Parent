@@ -21,7 +21,7 @@ import scala.collection.JavaConversions._
 object ProvinceCityTotal extends BaseClass {
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(ProvinceCityTotal, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

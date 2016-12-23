@@ -17,10 +17,7 @@ object MVEachAreaPlayInfo extends BaseClass{
 
 
   def main(args: Array[String]): Unit = {
-    config.set("spark.executor.memory", "5g").
-      set("spark.executor.cores", "5").
-      set("spark.cores.max", "100")
-    ModuleClass.executor(MVEachAreaPlayInfo,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
@@ -29,7 +26,6 @@ object MVEachAreaPlayInfo extends BaseClass{
         import s.implicits._
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val medusaDir = "/log/medusa/parquet"
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
         (0 until p.numOfDays).foreach(i=>{
@@ -37,9 +33,7 @@ object MVEachAreaPlayInfo extends BaseClass{
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
 
-          val playviewInput = s"$medusaDir/$date/play/"
-
-          sqlContext.read.parquet(playviewInput)
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.PLAY,date)
             .select("userId","event","pathMain","contentType","duration")
             .registerTempTable("log_data")
 

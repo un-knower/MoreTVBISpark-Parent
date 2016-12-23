@@ -14,7 +14,7 @@ import org.apache.spark.SparkContext
 object LauncherDifferentAreaClickStatistic extends BaseClass{
 
   def main(args: Array[String]) {
-    ModuleClass.executor(LauncherDifferentAreaClickStatistic,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     val logType = MedusaLogInfoUtil.LAUNCHCLICK

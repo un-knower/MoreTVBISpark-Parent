@@ -18,7 +18,7 @@ import java.util.Calendar
   * */
 object Diandilamei extends BaseClass {
   def main(args: Array[String]) {
-    ModuleClass.executor(Diandilamei, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

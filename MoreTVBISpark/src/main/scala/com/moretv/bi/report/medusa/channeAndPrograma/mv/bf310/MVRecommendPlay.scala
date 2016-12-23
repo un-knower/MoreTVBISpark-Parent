@@ -15,10 +15,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
   */
 object MVRecommendPlay extends BaseClass {
   def main(args: Array[String]): Unit = {
-    config.set("spark.executor.memory", "5g").
-      set("spark.executor.cores", "5").
-      set("spark.cores.max", "100")
-    ModuleClass.executor(MVRecommendPlay, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {
@@ -26,7 +23,6 @@ object MVRecommendPlay extends BaseClass {
       case Some(p) => {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val medusaDir = "/log/medusa/parquet"
         val calendar = Calendar.getInstance()
         val s = sqlContext
         import s.implicits._
@@ -37,9 +33,8 @@ object MVRecommendPlay extends BaseClass {
           val insertDate = DateFormatUtils.toDateCN(date, -1)
           calendar.add(Calendar.DAY_OF_MONTH, -1)
 
-          val playviewInput = s"$medusaDir/$date/play/"
 
-          sqlContext.read.parquet(playviewInput).select("userId", "event", "pathMain", "duration", "videoSid")
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.PLAY,date).select("userId", "event", "pathMain", "duration", "videoSid")
             .registerTempTable("log_data")
 
           sqlContext.sql("select userId,case when duration is null then 0 else duration end,event,getSidFromPath(pathMain),videoSid from log_data where pathMain like" +

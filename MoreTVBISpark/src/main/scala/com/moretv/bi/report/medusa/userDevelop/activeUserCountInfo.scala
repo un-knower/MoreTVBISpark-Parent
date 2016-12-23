@@ -26,7 +26,7 @@ object activeUserCountInfo extends BaseClass {
   private val dayCountTable = "active_user_count_day"
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(activeUserCountInfo, args)
+    ModuleClass.executor(this,args)
   }
 
 

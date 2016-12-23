@@ -19,10 +19,7 @@ import org.apache.spark.sql.SQLContext
 object SportsOlympicEachMatchViewInfo extends BaseClass{
 
   def main(args: Array[String]) {
-    config.set("spark.executor.memory", "5g").
-      set("spark.executor.cores", "5").
-      set("spark.cores.max", "100")
-      ModuleClass.executor(SportsOlympicEachMatchViewInfo,args)
+      ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {
@@ -31,7 +28,6 @@ object SportsOlympicEachMatchViewInfo extends BaseClass{
         sqlContext.udf.register("getLeagueId",OlympicMatchUtils.getMatchLeague _)
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val medusaDir = "/log/medusa/parquet"
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
 
@@ -39,9 +35,8 @@ object SportsOlympicEachMatchViewInfo extends BaseClass{
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
-          val playviewInput = s"$medusaDir/$date/matchdetail/"
 
-          sqlContext.read.parquet(playviewInput).select("event","userId","matchSid","match").repartition(8).
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.MATCHDETAIL,date).select("event","userId","matchSid","match").repartition(8).
             registerTempTable("log_data")
 
           val matchPlayInfoDF = sqlContext.sql("select matchSid,getLeagueId(matchSid),match,count(userId)," +

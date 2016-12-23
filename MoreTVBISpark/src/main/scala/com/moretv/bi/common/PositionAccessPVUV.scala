@@ -18,7 +18,7 @@ object PositionAccessPVUV extends BaseClass {
 
   def main(args: Array[String]) {
     config.setAppName("PositionAccessPVUV")
-    ModuleClass.executor(PositionAccessPVUV, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

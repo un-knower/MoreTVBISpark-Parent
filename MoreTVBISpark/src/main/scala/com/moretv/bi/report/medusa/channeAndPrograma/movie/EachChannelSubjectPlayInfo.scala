@@ -3,14 +3,11 @@ package com.moretv.bi.report.medusa.channeAndPrograma.movie
 import java.lang.{Long => JLong}
 import java.util.Calendar
 
-import com.moretv.bi.report.medusa.util.MedusaSubjectNameCodeUtil
-import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.report.medusa.util.MedusaSubjectNameCodeUtil
+import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
 import org.apache.spark.storage.StorageLevel
 
 /**
@@ -21,10 +18,7 @@ object EachChannelSubjectPlayInfo extends BaseClass{
   private val regex="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu)([0-9]+)""".r
 
   def main(args: Array[String]): Unit = {
-    config.set("spark.executor.memory", "5g").
-      set("spark.executor.cores", "5").
-      set("spark.cores.max", "100")
-    ModuleClass.executor(EachChannelSubjectPlayInfo,args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {
@@ -32,7 +26,6 @@ object EachChannelSubjectPlayInfo extends BaseClass{
       case Some(p) => {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val medusaDir = "/log/medusaAndMoretvMerger/"
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
         (0 until p.numOfDays).foreach(i=>{
@@ -40,12 +33,8 @@ object EachChannelSubjectPlayInfo extends BaseClass{
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
 
-          val playviewInput = s"$medusaDir/$date/playview/"
 
-          sqlContext.read.parquet(playviewInput).registerTempTable("log_data")
-
-
-          sqlContext.read.parquet(playviewInput).select("userId","launcherAreaFromPath","launcherAccessLocationFromPath",
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MERGER,LogTypes.PLAYVIEW,date).select("userId","launcherAreaFromPath","launcherAccessLocationFromPath",
             "pageDetailInfoFromPath","pathIdentificationFromPath","path","pathPropertyFromPath","flag","event")
             .registerTempTable("log_data")
 
@@ -66,7 +55,7 @@ object EachChannelSubjectPlayInfo extends BaseClass{
           })
 
           val moretvInfoRdd = formattedRdd.filter(_._8=="moretv").map(e=>(e._1,e._6)).flatMap(e=>
-            (SubjectUtils.getSubjectCodeAndPathWithId(e._2,e._1))).map(e=>(e._1._1,e._2)).filter(_._1!=null).map(e=>
+            SubjectUtils.getSubjectCodeAndPathWithId(e._2,e._1)).map(e=>(e._1._1,e._2)).filter(_._1!=null).map(e=>
             (getSubjectTypeFromSubjectCode(e._1,"moretv"),e._2))
 
           val mergerInfoRdd = medusaInfoRdd union moretvInfoRdd

@@ -18,7 +18,7 @@ object GetOutOfMyWay extends BaseClass {
 
   def main(args: Array[String]) {
 
-    ModuleClass.executor(GetOutOfMyWay, args)
+    ModuleClass.executor(this,args)
 
   }
 

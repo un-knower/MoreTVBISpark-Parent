@@ -18,7 +18,7 @@ import org.apache.spark.storage.StorageLevel
 object ProgramEvaluateList extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("ProgramEvaluateList")
-    ModuleClass.executor(ProgramEvaluateList,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

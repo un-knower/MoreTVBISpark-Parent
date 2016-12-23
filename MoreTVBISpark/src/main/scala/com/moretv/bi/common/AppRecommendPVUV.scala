@@ -13,7 +13,7 @@ object AppRecommendPVUV extends BaseClass {
 
   def main(args: Array[String]) {
     config.setAppName("AppRecommendPVUV")
-    ModuleClass.executor(AppRecommendPVUV, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

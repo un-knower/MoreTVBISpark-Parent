@@ -23,7 +23,7 @@ object KidsEachTabViewInfo extends BaseClass{
     "|1_kids_tags_yuer)-?").r
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(KidsEachTabViewInfo,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
@@ -31,7 +31,6 @@ object KidsEachTabViewInfo extends BaseClass{
 
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val medusaDir = "/log/medusaAndMoretvMerger"
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
 
@@ -40,10 +39,8 @@ object KidsEachTabViewInfo extends BaseClass{
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
-          val enterUserIdDate = DateFormatUtils.readFormat.format(calendar.getTime)
 
-          val playDir=s"$medusaDir/$date/detail"
-          sqlContext.read.parquet(playDir).registerTempTable("log")
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MERGER,LogTypes.DETAIL,date).registerTempTable("log")
           val rdd=sqlContext.sql("select flag,userId,path,pageDetailInfoFromPath from log where path like '%kids%' or " +
             "pathMain like '%kids%' and event='view'").map(e=>(e.getString(0),e.getString(1),e.getString
             (2),e.getString(3))).persist(StorageLevel.MEMORY_AND_DISK)

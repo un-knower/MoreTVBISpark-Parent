@@ -14,7 +14,7 @@ import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
  */
 object accumulateUser extends BaseClass {
   def main(args: Array[String]) {
-    ModuleClass.executor(accumulateUser, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

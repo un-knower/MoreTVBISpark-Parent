@@ -1,15 +1,9 @@
 package com.moretv.bi.UserTrend
 
-import java.text.SimpleDateFormat
-import java.util.Calendar
-
-import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
 import org.apache.spark.storage.StorageLevel
 
 /**
@@ -18,14 +12,13 @@ import org.apache.spark.storage.StorageLevel
 object User_use_duration extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("User_use_duration")
-    ModuleClass.executor(User_use_duration,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
 
-        val path = "/mbi/parquet/enter/"+p.startDate+"/part-*"
-        val df = sqlContext.read.load(path)
+        val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.ENTER,p.startDate)
         val resultRDD = df.select("datetime","userId").map(e =>(e.getString(0),e.getString(1))).
             map(e=>(getKeys(e._1),e._2)).persist(StorageLevel.MEMORY_AND_DISK)
         val userNum = resultRDD.distinct().countByKey()

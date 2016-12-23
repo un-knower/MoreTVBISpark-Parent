@@ -21,7 +21,7 @@ import org.apache.spark.rdd.JdbcRDD
 object AppVersionUser extends BaseClass{
 
   def main(args: Array[String]) {
-    ModuleClass.executor(AppVersionUser,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

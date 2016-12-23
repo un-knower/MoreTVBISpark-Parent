@@ -18,7 +18,7 @@ object DayRetentionRateEachProductModel extends BaseClass{
 
   def main(args: Array[String]) {
     config.setAppName("DayRetentionRateEachProductModel")
-    ModuleClass.executor(DayRetentionRateEachProductModel,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

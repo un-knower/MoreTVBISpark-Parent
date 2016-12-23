@@ -19,7 +19,7 @@ object HotRecommendTagPagePVUVVV extends BaseClass with DateUtil{
 
   def main(args: Array[String]) {
     config.setAppName("HotRecommendTagPagePVUVVV")
-    ModuleClass.executor(HotRecommendTagPagePVUVVV,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

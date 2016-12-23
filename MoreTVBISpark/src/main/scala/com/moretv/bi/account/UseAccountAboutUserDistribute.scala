@@ -23,7 +23,7 @@ object UseAccountAboutUserDistribute extends BaseClass with QueryMaxAndMinIDUtil
 
   def main(args: Array[String]) {
     config.setAppName("UseAccountAboutUserDistribute")
-    ModuleClass.executor(UseAccountAboutUserDistribute, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

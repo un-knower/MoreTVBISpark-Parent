@@ -33,7 +33,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 //object LiveStatisticsBasedChannelsid extends BaseClass {
 //
 //  def main(args: Array[String]) {
-//    ModuleClass.executor(LiveStatisticsBasedChannelsid, args)
+//    ModuleClass.executor(this,args)
 //  }
 //
 //  override def execute(args: Array[String]): Unit = {

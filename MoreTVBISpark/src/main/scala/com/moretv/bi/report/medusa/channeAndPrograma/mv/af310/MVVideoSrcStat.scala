@@ -29,8 +29,6 @@ import scala.collection.mutable.ListBuffer
 
 object MVVideoSrcStat extends BaseClass {
 
-  private val dataSource = "play"
-
   private val tableName = "mv_video_src_stat"
 
   private val fields = "day,entrance,video_sid,video_name,uv,pv,duration"
@@ -42,7 +40,7 @@ object MVVideoSrcStat extends BaseClass {
 
   def main(args: Array[String]) {
 
-    ModuleClass.executor(MVVideoSrcStat, args)
+    ModuleClass.executor(this,args)
 
   }
 
@@ -64,13 +62,9 @@ object MVVideoSrcStat extends BaseClass {
           cal.add(Calendar.DAY_OF_YEAR, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          //path
-          val loadPath = s"/log/medusa/parquet/$loadDate/$dataSource"
-          println(loadPath)
-
           //df
           val df =
-            sqlContext.read.parquet(loadPath)
+            DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.PLAY,loadDate)
               .select("pathMain", "videoSid", "videoName", "event", "userId", "duration", "contentType")
               .filter("contentType ='mv'")
               .filter("pathMain is not null")

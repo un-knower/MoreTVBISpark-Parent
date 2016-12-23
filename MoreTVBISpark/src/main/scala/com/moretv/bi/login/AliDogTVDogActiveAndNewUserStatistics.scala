@@ -23,7 +23,7 @@ import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
   */
 object AliDogTVDogActiveAndNewUserStatistics extends BaseClass {
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(AliDogTVDogActiveAndNewUserStatistics, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

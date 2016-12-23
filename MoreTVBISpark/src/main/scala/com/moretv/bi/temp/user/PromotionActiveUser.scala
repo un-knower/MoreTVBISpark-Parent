@@ -27,7 +27,7 @@ object PromotionActiveUser extends BaseClass {
 
   def main(args: Array[String])  {
 
-    ModuleClass.executor(PromotionActiveUser, args)
+    ModuleClass.executor(this,args)
 
   }
 

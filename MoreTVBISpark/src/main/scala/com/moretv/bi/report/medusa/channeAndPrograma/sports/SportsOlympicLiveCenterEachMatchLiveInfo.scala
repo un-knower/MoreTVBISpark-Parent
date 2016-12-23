@@ -19,17 +19,13 @@ import org.apache.spark.sql.SQLContext
 object SportsOlympicLiveCenterEachMatchLiveInfo extends BaseClass{
 
   def main(args: Array[String]): Unit = {
-    config.set("spark.executor.memory", "5g").
-      set("spark.executor.cores", "5").
-      set("spark.cores.max", "100")
-    ModuleClass.executor(SportsOlympicLiveCenterEachMatchLiveInfo,args)
+    ModuleClass.executor(this,args)
   }
   def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val medusaDir = "/log/medusa/parquet"
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
         (0 until p.numOfDays).foreach(i=>{
@@ -37,9 +33,8 @@ object SportsOlympicLiveCenterEachMatchLiveInfo extends BaseClass{
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
 
-          val playviewInput = s"$medusaDir/$date/live/"
 
-          sqlContext.read.parquet(playviewInput).select("userId","pathMain","event","liveType","duration","channelSid",
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.LIVE,date).select("userId","pathMain","event","liveType","duration","channelSid",
             "liveName")
             .registerTempTable("log_data")
 

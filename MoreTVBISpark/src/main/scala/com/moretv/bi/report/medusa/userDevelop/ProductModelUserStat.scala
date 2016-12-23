@@ -37,7 +37,7 @@ object ProductModelUserStat extends BaseClass {
 
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(ProductModelUserStat, args)
+    ModuleClass.executor(this,args)
   }
 
 

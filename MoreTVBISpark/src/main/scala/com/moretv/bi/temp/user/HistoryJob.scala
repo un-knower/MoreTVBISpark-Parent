@@ -12,7 +12,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 object HistoryJob extends BaseClass {
 
   def main(args: Array[String]) {
-    ModuleClass.executor(HistoryJob, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]): Unit = {

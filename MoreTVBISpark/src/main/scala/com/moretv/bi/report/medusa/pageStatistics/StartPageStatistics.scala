@@ -23,7 +23,7 @@ object StartPageStatistics extends  BaseClass{
 
   def main(args: Array[String]): Unit = {
  //   JobStatus.getConfig(appName)
-    ModuleClass.executor(StartPageStatistics,args)
+    ModuleClass.executor(this,args)
 
   }
   override def execute(args: Array[String]): Unit = {

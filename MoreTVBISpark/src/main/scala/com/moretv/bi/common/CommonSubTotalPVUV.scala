@@ -18,7 +18,7 @@ import org.apache.spark.storage.StorageLevel
 object CommonSubTotalPVUV extends BaseClass with DateUtil {
   def main(args: Array[String]) {
     config.setAppName("CommonSubTotalPVUV")
-    ModuleClass.executor(CommonSubTotalPVUV, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

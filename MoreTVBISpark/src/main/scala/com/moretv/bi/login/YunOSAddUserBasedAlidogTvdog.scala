@@ -20,7 +20,7 @@ import org.apache.spark.sql.SQLContext
   */
 object YunOSAddUserBasedAlidogTvdog extends BaseClass {
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(YunOSAddUserBasedAlidogTvdog, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]): Unit = {

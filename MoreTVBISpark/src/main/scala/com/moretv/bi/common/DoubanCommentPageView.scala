@@ -18,7 +18,7 @@ object DoubanCommentPageView extends BaseClass {
 
   def main(args: Array[String]) {
     config.setAppName("DoubanCommentPageView")
-    ModuleClass.executor(DoubanCommentPageView, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

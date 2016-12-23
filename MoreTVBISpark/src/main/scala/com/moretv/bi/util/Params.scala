@@ -33,12 +33,11 @@ case class Params (startDate:String ="yyyyMMdd", //起始日期,格式为yyyyMMd
 
   def get[T](key:String) = paramMap(key).asInstanceOf[T]
 
-  def getOrElse[T](key:String,default: => T) = {
+  def getOrElse[T](key:String,default: => T) =
     paramMap.get(key) match {
       case Some(value) => value.asInstanceOf[T]
       case None => default
     }
-  }
 
   def getString = get[String] _
   def getInt = get[Int] _

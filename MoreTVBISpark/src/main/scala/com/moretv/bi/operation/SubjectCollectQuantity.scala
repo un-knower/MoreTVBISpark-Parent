@@ -18,7 +18,7 @@ object SubjectCollectQuantity extends BaseClass with DateUtil{
 
   def main(args: Array[String]) {
     config.setAppName("SubjectCollectQuantity")
-    ModuleClass.executor(SubjectCollectQuantity,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

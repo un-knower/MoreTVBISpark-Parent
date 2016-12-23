@@ -22,7 +22,7 @@ object SportsOlympicEntranceTotalClickInfo extends BaseClass{
     config.set("spark.executor.memory", "5g").
       set("spark.executor.cores", "5").
       set("spark.cores.max", "100")
-    ModuleClass.executor(SportsOlympicEntranceTotalClickInfo,args)
+    ModuleClass.executor(this,args)
   }
 
   def execute(args: Array[String]) {
@@ -30,7 +30,6 @@ object SportsOlympicEntranceTotalClickInfo extends BaseClass{
       case Some(p) => {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val medusaDir = "/log/medusa/parquet"
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
         (0 until p.numOfDays).foreach(i=>{
@@ -38,11 +37,8 @@ object SportsOlympicEntranceTotalClickInfo extends BaseClass{
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
 
-          val launcherDir = s"$medusaDir/$date/homeaccess/"
-          val sportsDir = s"$medusaDir/$date/positionaccess"
-
-          sqlContext.read.parquet(launcherDir).registerTempTable("log_data1")
-          sqlContext.read.parquet(sportsDir).registerTempTable("log_data2")
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.HOMEACCESS,date).registerTempTable("log_data1")
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.POSITIONACCESS,date).registerTempTable("log_data2")
           val medusaNum = sqlContext.sql("select count(userId) from log_data1 where accessArea='recommendation' and " +
             "accessLocation='olympic' and event='click'").map(e=>e.getLong(0)).collect()(0)
           val moretvNum = sqlContext.sql("select count(userId) from log_data2 where accessArea='League' and " +

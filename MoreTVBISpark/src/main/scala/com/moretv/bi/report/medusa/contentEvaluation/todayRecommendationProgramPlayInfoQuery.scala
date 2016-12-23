@@ -18,7 +18,7 @@ object todayRecommendationProgramPlayInfoQuery extends BaseClass{
   private val programRedisObj=new ProgramRedisUtils()
 
   def main(args: Array[String]) {
-    ModuleClass.executor(todayRecommendationProgramPlayInfoQuery,args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {
@@ -26,14 +26,9 @@ object todayRecommendationProgramPlayInfoQuery extends BaseClass{
       case Some(p) => {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-
-
-        val medusaDir = "/log/medusaAndMoretvMerger/"
-
-
+        //val medusaDir = "/log/medusaAndMoretvMerger/"
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
-
 
         (0 until p.numOfDays).foreach(i=>{
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
@@ -41,10 +36,10 @@ object todayRecommendationProgramPlayInfoQuery extends BaseClass{
           calendar.add(Calendar.DAY_OF_MONTH,-1)
           val enterUserIdDate = DateFormatUtils.readFormat.format(calendar.getTime)
 
-          val medusaDailyActiveInput = s"$medusaDir/$date/playview/"
-
+         /* val medusaDailyActiveInput = s"$medusaDir/$date/playview/"
           val medusaDailyActivelog = sqlContext.read.parquet(medusaDailyActiveInput).registerTempTable("medusa_daily_active_log")
-
+*/
+          DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MERGER,LogTypes.PLAYVIEW,date).registerTempTable("medusa_daily_active_log")
 
           val playInfoRdd=sqlContext.sql("select userId,videoSid,pathMain,path from medusa_daily_active_log where " +
             "launcherAreaFromPath in ('hotrecommend','recommendation') and event in ('startplay','playview')").map(e=>(e

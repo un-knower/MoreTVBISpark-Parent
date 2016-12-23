@@ -22,7 +22,7 @@ import org.apache.spark.sql.SQLContext
   */
 object TotalUsersByAccount extends BaseClass with QueryMaxAndMinIDUtil {
   def main(args: Array[String]) {
-    ModuleClass.executor(TotalUsersByAccount, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

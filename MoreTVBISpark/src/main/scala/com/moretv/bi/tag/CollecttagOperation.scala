@@ -1,16 +1,11 @@
 package com.moretv.bi.tag
 
 import java.net.URLDecoder
-import java.text.SimpleDateFormat
-import java.util.Calendar
 
-import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
 import org.apache.spark.storage.StorageLevel
 
 /**
@@ -19,15 +14,14 @@ import org.apache.spark.storage.StorageLevel
 object CollecttagOperation extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("AddTagAndCommentOperation")
-    ModuleClass.executor(CollecttagOperation,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
 
-        val path = "/mbi/parquet/collect/"+p.startDate+"/part-*"
-        val df = sqlContext.read.load(path)
+        val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MORETV,LogTypes.COLLECT,p.startDate)
         val resultRDD = df.filter("collectType='tag'").select("date","event","collectContent","userId").map(e =>(e.getString(0),e.getString(1),e.getString(2),e.getString(3))).
                            map(e=>(getKeys(e._1,e._2,e._3),e._4)).persist(StorageLevel.MEMORY_AND_DISK)
         val userNum = resultRDD.distinct().countByKey()

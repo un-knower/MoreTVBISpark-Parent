@@ -19,16 +19,7 @@ import org.apache.spark.sql.SQLContext
 object SportsOlympicEachVideoPlayInfo extends BaseClass{
 
   def main(args: Array[String]): Unit = {
-    config.set("spark.executor.memory", "5g").
-      set("spark.executor.cores", "5").
-      set("spark.cores.max", "100")
-    ModuleClass.executor(SportsOlympicEachVideoPlayInfo,args)
-  }
-
-  override def init() = {
-    sc = new SparkContext(config)
-    sqlContext = SQLContext.getOrCreate(sc)
-    sqlContext.udf.register("getOlympicTabName",getOlympicTabName _)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {
@@ -36,17 +27,16 @@ object SportsOlympicEachVideoPlayInfo extends BaseClass{
       case Some(p) => {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        val medusaDir = "/log/medusa/parquet"
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
+        sqlContext.udf.register("getOlympicTabName",getOlympicTabName _)
         (0 until p.numOfDays).foreach(i=>{
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
 
-          val playviewInput = s"$medusaDir/$date/play/"
 
-          sqlContext.read.parquet(playviewInput).select("userId","videoSid","pathMain","event","duration","videoName")
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.PLAY,date).select("userId","videoSid","pathMain","event","duration","videoName")
             .registerTempTable("log_data")
 
           val playInfoDF = sqlContext.sql("select getOlympicTabName(pathMain),videoSid,videoName,count(userId),count" +

@@ -14,7 +14,7 @@ import org.apache.spark.SparkContext
 object EnterApplicationByProductStatistic extends BaseClass{
 
   def main (args: Array[String]) {
-    ModuleClass.executor(EnterApplicationByProductStatistic,args)
+    ModuleClass.executor(this,args)
   }
  override def execute(args: Array[String]) {
     val logType = MedusaLogInfoUtil.ENTER

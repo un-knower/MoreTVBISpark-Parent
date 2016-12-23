@@ -18,7 +18,7 @@ object MutilSeasionOperation extends BaseClass {
 
   def main(args: Array[String]) {
     config.setAppName("MutilSeasion")
-    ModuleClass.executor(MutilSeasionOperation, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

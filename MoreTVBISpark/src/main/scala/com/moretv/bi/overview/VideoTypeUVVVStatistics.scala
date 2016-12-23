@@ -13,7 +13,7 @@ import org.apache.spark.storage.StorageLevel
 object VideoTypeUVVVStatistics extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("VideoTypeUVVVStatistics")
-    ModuleClass.executor(VideoTypeUVVVStatistics,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

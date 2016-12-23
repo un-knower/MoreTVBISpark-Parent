@@ -19,7 +19,7 @@ object OtherWatchMap extends BaseClass with DateUtil{
 
   def main(args: Array[String]) {
     config.setAppName("OtherWatchMap")
-    ModuleClass.executor(OtherWatchMap,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
 

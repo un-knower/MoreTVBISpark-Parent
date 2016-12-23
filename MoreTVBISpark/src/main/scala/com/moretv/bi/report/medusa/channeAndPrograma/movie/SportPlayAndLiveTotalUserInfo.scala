@@ -19,17 +19,13 @@ import org.apache.spark.sql.SQLContext
 object SportPlayAndLiveTotalUserInfo extends BaseClass{
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(SportPlayAndLiveTotalUserInfo,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-
-
-        val medusaDir = "/log/medusa/parquet"
-
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
 
@@ -39,11 +35,9 @@ object SportPlayAndLiveTotalUserInfo extends BaseClass{
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
 
-          val playDir=s"$medusaDir/$date/play"
-          val liveDir=s"$medusaDir/$date/live"
 
-          sqlContext.read.parquet(playDir).registerTempTable("log")
-          sqlContext.read.parquet(liveDir).registerTempTable("log1")
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.PLAY,date).registerTempTable("log")
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.LIVE,date).registerTempTable("log1")
           val sportPlayUserRdd=sqlContext.sql("select distinct userId from log where contentType = 'sports'" +
             " and event ='startplay'").map(e=>e.getString(0))
           val sportLiveUserRdd=sqlContext.sql("select distinct userId from log1 where channelSid like '%sport%'").map(e=>e

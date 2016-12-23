@@ -18,7 +18,7 @@ import org.apache.spark.sql.SQLContext
 object YunOSLoginUser extends BaseClass {
 
   def main(args: Array[String]) {
-    ModuleClass.executor(YunOSLoginUser, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

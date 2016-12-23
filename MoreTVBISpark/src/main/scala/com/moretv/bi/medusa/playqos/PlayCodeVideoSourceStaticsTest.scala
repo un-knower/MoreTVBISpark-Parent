@@ -38,7 +38,7 @@ private val filterStr = "5iac8sru3fo8,5iv0l79xg64f,fhnoabs9g62c,4g9vh6t9fhgh,3f1
 //    "vxoqlmoq4545,xy12u9klm71b"
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(PlayCodeVideoSourceStaticsTest, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]): Unit = {

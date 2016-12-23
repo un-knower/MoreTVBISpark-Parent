@@ -16,7 +16,7 @@ object VodAndLiveUVMonth extends BaseClass{
 
 
   def main(args: Array[String]) {
-    ModuleClass.executor(VodAndLiveUVMonth,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {

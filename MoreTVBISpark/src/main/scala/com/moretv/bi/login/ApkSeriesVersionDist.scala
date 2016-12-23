@@ -17,7 +17,11 @@ object ApkSeriesVersionDist extends BaseClass {
   val regex = "^[\\w\\.]+$".r
 
   def main(args: Array[String]): Unit = {
+<<<<<<< HEAD
     ModuleClass.executor(ApkSeriesVersionDist, args)
+=======
+    ModuleClass.executor(this,args)
+>>>>>>> 2bcd4a3b120e0bbd26d9f2184a052e2d7b62aa30
   }
 
   override def execute(args: Array[String]) {

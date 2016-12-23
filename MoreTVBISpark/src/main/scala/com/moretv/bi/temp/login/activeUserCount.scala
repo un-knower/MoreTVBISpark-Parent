@@ -15,7 +15,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
   */
 object activeUserCount extends BaseClass{
   def main(args: Array[String]) {
-    ModuleClass.executor(activeUserCount,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {

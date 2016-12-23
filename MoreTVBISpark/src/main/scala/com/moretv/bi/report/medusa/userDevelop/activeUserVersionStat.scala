@@ -30,7 +30,7 @@ object activeUserVersionStat extends BaseClass {
   private val deleteSql = s"delete from $tableName where day = ? "
 
   def main(args: Array[String]) {
-    ModuleClass.executor(activeUserVersionStat, args)
+    ModuleClass.executor(this,args)
   }
 
 

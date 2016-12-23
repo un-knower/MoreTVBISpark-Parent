@@ -17,7 +17,7 @@ import com.moretv.bi.util._
 object PeoplealsolikePVUV extends BaseClass {
   def main(args: Array[String]) {
     config.setAppName("PeoplealsolikePVUV")
-    ModuleClass.executor(PeoplealsolikePVUV, args)
+    ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) {

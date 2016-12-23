@@ -26,8 +26,6 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
   */
 object MVOminibusStat extends BaseClass {
 
-  private val dataSource = "play"
-
   private val tableName = "mv_ominibus_stat"
 
   private val insertSql =
@@ -38,7 +36,7 @@ object MVOminibusStat extends BaseClass {
 
   def main(args: Array[String]) {
 
-    ModuleClass.executor(MVOminibusStat, args)
+    ModuleClass.executor(this,args)
 
   }
 
@@ -59,12 +57,20 @@ object MVOminibusStat extends BaseClass {
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          //path
-          val loadPath = s"/log/medusa/parquet/$loadDate/$dataSource"
+          sqlContext.udf.register("getSidFromPath", getSidFromPath _)
 
-          println(loadPath)
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.PLAY,loadDate)
+            .filter("pathMain is not null")
+            .filter("duration between 0 and 10800")
+            .registerTempTable("log_data")
 
-          val df = makeDataFrame(loadPath)
+          val df = sqlContext.sql(
+            """
+              |select case when omnibusSid is null then getSidFromPath(pathMain) else omnibusSid end as omnibusSid,videoSid,
+              |  userId, duration, event from log_data
+            """.stripMargin)
+            .filter("omnibusSid != videoSid")
+            .select("omnibusSid", "userId", "duration", "event")
 
           //rdd(omnibusSid,userId,duration,event)
           val rdd = df.map(e => (e.getString(0), e.getString(1), e.getLong(2), e.getString(3)))
@@ -85,7 +91,7 @@ object MVOminibusStat extends BaseClass {
 
           val nameRefs = scala.collection.mutable.HashMap.empty[String, String]
 
-          sqlContext.read.parquet(loadPath).registerTempTable("log_ref")
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.PLAY,loadDate).registerTempTable("log_ref")
           sqlContext.sql(
             """
               |select omnibusSid, omnibusName from log_ref
@@ -107,7 +113,7 @@ object MVOminibusStat extends BaseClass {
             if (nameRefs.contains(key)) {
               val ominibusSid = w._1
 
-              var ominibusName = nameRefs.getOrElse(ominibusSid, LiveCodeToNameUtils.getMVSubjectName(ominibusSid))
+              val ominibusName = nameRefs.getOrElse(ominibusSid, LiveCodeToNameUtils.getMVSubjectName(ominibusSid))
 
               val uv = new JLong(w._2)
 
@@ -133,31 +139,6 @@ object MVOminibusStat extends BaseClass {
     }
   }
 
-  /**
-    *
-    * @param loadPath
-    * @return dataFrame(omnibusid,userId,duration,event)
-    */
-  def makeDataFrame(loadPath: String): DataFrame = {
-
-    sqlContext.udf.register("getSidFromPath", getSidFromPath _)
-
-    sqlContext.read.parquet(loadPath)
-      .filter("pathMain is not null")
-      .filter("duration between 0 and 10800")
-      .registerTempTable("log_data")
-
-    val df = sqlContext.sql(
-      """
-        |select case when omnibusSid is null then getSidFromPath(pathMain) else omnibusSid end as omnibusSid,videoSid,
-        |  userId, duration, event from log_data
-      """.stripMargin)
-      .filter("omnibusSid != videoSid")
-      .select("omnibusSid", "userId", "duration", "event")
-
-    df
-
-  }
 
   def getSidFromPath(path: String) = {
     if (path != null && path.contains("*")) {

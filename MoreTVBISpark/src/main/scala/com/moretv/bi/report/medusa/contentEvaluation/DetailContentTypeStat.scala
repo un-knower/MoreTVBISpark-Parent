@@ -15,7 +15,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
   */
 object DetailContentTypeStat extends BaseClass {
 
-  private val dataSource = "detail"
+  //private val dataSource = "detail"
 
   private val tableName = "detail_contenttype_stat"
 
@@ -28,7 +28,7 @@ object DetailContentTypeStat extends BaseClass {
 
   def main(args: Array[String]) {
 
-    ModuleClass.executor(DetailContentTypeStat, args)
+    ModuleClass.executor(this,args)
 
   }
 
@@ -56,17 +56,19 @@ object DetailContentTypeStat extends BaseClass {
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
           //path
-          val loadPath2 = s"/log/medusaAndMoretvMerger/$loadDate/$dataSource"
+          /*val loadPath2 = s"/log/medusaAndMoretvMerger/$loadDate/$dataSource"
 
 
           val df2 = sqlContext.read.parquet(loadPath2)
             .select("userId", "contentType")
-            .filter("contentType is not null")
+            .filter("contentType is not null")*/
 
+          val df2=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MERGER,LogTypes.DETAIL,loadDate).select("userId", "contentType")
+            .filter("contentType is not null")
           df2.registerTempTable("log_data")
 
           val dfPlay =
-            sqlContext.sql(
+            df2.sqlContext.sql(
               "select en2Cn(contentType), count(userId) as pv, count(distinct userId) as uv from log_data" +
                 " group by  en2Cn(contentType) "
             )
@@ -76,12 +78,10 @@ object DetailContentTypeStat extends BaseClass {
           }
 
           dfPlay.collect.foreach(w => {
-
             val contentType = w.getString(0)
             val pv = w.getLong(1)
             val uv = w.getLong(2)
             util.insert(insert1Sql, sqlDate, contentType, new JLong(pv), new JLong(uv))
-
           })
 
         })
