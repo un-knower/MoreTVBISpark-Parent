@@ -16,10 +16,10 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 /**
   * Created by Will on 2016/2/16.
   */
-object ProvinceCityActiveMonth extends BaseClass{
+object ProvinceCityActiveMonth extends BaseClass {
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(ProvinceCityActiveMonth,args)
+    ModuleClass.executor(ProvinceCityActiveMonth, args)
   }
 
   override def execute(args: Array[String]) {
@@ -27,22 +27,29 @@ object ProvinceCityActiveMonth extends BaseClass{
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
-        val whichMonth = p.whichMonth
-        val inputPath = s"/log/moretvloginlog/parquet/$whichMonth*/loginlog"
+        val whichMonth = p.whichMonth + "*"
         val s = sqlContext
         import s.implicits._
 
-        val df = sqlContext.read.load(inputPath).select("ip","userId").
-          map(e => {
+        val df = DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG, whichMonth)
+          .select("ip", "userId")
+          .map(e => {
             val arr = IPUtils.getProvinceAndCityByIp(e.getString(0))
-            if(arr != null) {
-              val Array(province,city) = arr
-              (province,city,e.getString(1))
-            }else null
+            if (arr != null) {
+              val Array(province, city) = arr
+              (province, city, e.getString(1))
+            } else null
 
-          }).filter(_!=null).toDF("province","city","userId").cache()
+          })
+          .filter(_ != null)
+          .toDF("province", "city", "userId")
+          .cache()
+
         df.registerTempTable("log_data")
-        val result = sqlContext.sql("select province,city,count(distinct userId),count(userId) from log_data group by province,city").collectAsList()
+
+        val result = sqlContext.sql(
+          "select province,city,count(distinct userId),count(userId) from log_data group by province,city")
+          .collectAsList()
 
         val db = new DBOperationUtils(Database.BI)
         val sqlInsert = "insert into province_city_dist_month(month,province,city,user_num,login_num) values(?,?,?,?,?)"
@@ -51,12 +58,12 @@ object ProvinceCityActiveMonth extends BaseClass{
           val city = row.getString(1)
           val userNum = row.getLong(2)
           val loginNum = row.getLong(3)
-          db.insert(sqlInsert,whichMonth,province,city,new JLong(userNum),new JLong(loginNum))
+          db.insert(sqlInsert, p.whichMonth, province, city, new JLong(userNum), new JLong(loginNum))
 
         })
-        if(p.deleteOld){
+        if (p.deleteOld) {
           val sqlDelete = "delete from province_city_dist_month where month = ?"
-          db.delete(sqlDelete,whichMonth)
+          db.delete(sqlDelete, p.whichMonth)
         }
 
         db.destory()

@@ -30,9 +30,9 @@ object ProductBrandVV extends BaseClass {
 
         sqlContext.udf.register("getProductBrand", ProductModelUtils.getProductBrand _)
 
-        val path1 = "/log/moretvloginlog/parquet/201610*/loginlog"
+        val path1 = "/log/moretvloginlog/parquet/2016{11*,1201}/loginlog"
         sqlContext.read.parquet(path1)
-          .filter("day between '2016-10-01' and '2016-10-31'")
+          .filter("day between '2016-11-01' and '2016-11-30'")
           .select("productModel", "mac")
           .registerTempTable("log_data")
 
@@ -46,7 +46,7 @@ object ProductBrandVV extends BaseClass {
 
 
 
-        withCsvWriterOld("/tmp/productbrandvv1.csv") {
+        withCsvWriterOld("/tmp/productbrandvv11.csv") {
           out => {
             monthproducthuv.foreach(e => {
               out.print(e.getString(0), e.getLong(1))

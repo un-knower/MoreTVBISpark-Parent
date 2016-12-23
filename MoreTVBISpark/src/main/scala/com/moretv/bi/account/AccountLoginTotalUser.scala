@@ -30,7 +30,8 @@ object AccountLoginTotalUser extends BaseClass with DateUtil {
           .select("date", "userId", "path")
           .map(e => (e.getString(0), e.getString(1), e.getString(2)))
           .filter(e => (e._3 == "setting" || e._3 == "history" || e._3 == "addtag" || e._3 == "comment"))
-          .map(e => (getKeys(e._1), e._2)).persist(StorageLevel.MEMORY_AND_DISK)
+          .map(e => (getKeys(e._1), e._2))
+          .persist(StorageLevel.MEMORY_AND_DISK)
 
         val userNum = resultRDD.distinct().countByKey()
         val accessNum = resultRDD.countByKey()

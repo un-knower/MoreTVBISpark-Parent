@@ -18,10 +18,10 @@ import scala.collection.JavaConversions._
 /**
   * Created by Will on 2016/2/16.
   */
-object ProvinceCityTotal extends BaseClass{
+object ProvinceCityTotal extends BaseClass {
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(ProvinceCityTotal,args)
+    ModuleClass.executor(ProvinceCityTotal, args)
   }
 
   override def execute(args: Array[String]) {
@@ -34,9 +34,9 @@ object ProvinceCityTotal extends BaseClass{
         import s.implicits._
         val util = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
         val sqlSelect = "select min(id),max(id) from mtv_account where left(openTime,7) <= ?"
-        val ids = util.selectOne(sqlSelect,whichMonth)
+        val ids = util.selectOne(sqlSelect, whichMonth)
 
-        val df = new JdbcRDD(sc, ()=>{
+        val df = new JdbcRDD(sc, () => {
           Class.forName("com.mysql.jdbc.Driver")
           DriverManager.getConnection("jdbc:mysql://10.10.2.15:3306/tvservice?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
             "bi", "mlw321@moretv")
@@ -45,15 +45,15 @@ object ProvinceCityTotal extends BaseClass{
           ids(0).toString.toLong,
           ids(1).toString.toLong,
           300,
-          r=>(r.getString(1),r.getString(2))).distinct().
+          r => (r.getString(1), r.getString(2))).distinct().
           map(t => {
             val arr = IPUtils.getProvinceAndCityByIp(t._1)
-            if(arr != null) {
-              val Array(province,city) = arr
-              (province,city,t._2)
-            }else null
-          }).
-          filter(_ != null).toDF("province","city","userId").cache()
+            if (arr != null) {
+              val Array(province, city) = arr
+              (province, city, t._2)
+            } else null
+          })
+          .filter(_ != null).toDF("province", "city", "userId").cache()
 
         df.registerTempTable("log_data")
         val result = sqlContext.sql("select province,city,count(userId) from log_data group by province,city").collectAsList()
@@ -64,12 +64,12 @@ object ProvinceCityTotal extends BaseClass{
           val province = row.getString(0)
           val city = row.getString(1)
           val userNum = row.getLong(2)
-          db.insert(sqlInsert,whichMonth,province,city,new JLong(userNum))
+          db.insert(sqlInsert, whichMonth, province, city, new JLong(userNum))
 
         })
-        if(p.deleteOld){
+        if (p.deleteOld) {
           val sqlDelete = "delete from province_city_total where month = ?"
-          db.delete(sqlDelete,whichMonth)
+          db.delete(sqlDelete, whichMonth)
         }
 
         db.destory()

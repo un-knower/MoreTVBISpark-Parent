@@ -1,4 +1,5 @@
 package com.moretv.bi.login
+
 import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
@@ -17,13 +18,14 @@ import org.apache.spark.sql.SQLContext
   * Params : startDate, numOfDays(default = 1);
   *
   */
-object YunOSActiveUserBasedAlidogTvdog extends BaseClass{
+object YunOSActiveUserBasedAlidogTvdog extends BaseClass {
 
   def main(args: Array[String]) {
-    ModuleClass.executor(YunOSActiveUserBasedAlidogTvdog,args)
+    ModuleClass.executor(YunOSActiveUserBasedAlidogTvdog, args)
   }
-  override def  execute(args:Array[String]): Unit ={
-    ParamsParseUtil.parse(args) match{
+
+  override def execute(args: Array[String]): Unit = {
+    ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
         val util = DataIO.getMySqlOps("moretv_medusa_mysql")
@@ -34,55 +36,58 @@ object YunOSActiveUserBasedAlidogTvdog extends BaseClass{
 
         (0 until p.numOfDays).foreach(i => {
           val logdate = DateFormatUtils.readFormat.format(cal.getTime)
-          val logpath = s"/log/moretvloginlog/parquet/$logdate/loginlog"
-          val timeday = DateFormatUtils.toDateCN(logdate,-1)
+          val timeday = DateFormatUtils.toDateCN(logdate, -1)
 
-          sqlContext.read.load(logpath).
-            select("version","mac").registerTempTable("log_data")
+          DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG, logdate)
+            .select("version", "mac")
+            .registerTempTable("log_data")
 
-          val allActiveNum = sqlContext.sql("select distinct mac from log_data " +
-            "where version like '%YunOS%' or version like '%Alibaba%'").count()
+          val allActiveNum = sqlContext.sql(
+            """
+              | select distinct(mac)
+              | from log_data
+              | where version like '%YunOS%' or version like '%Alibaba%'
+            """.stripMargin)
+            .count
 
-          val aliDogActiveNum = sqlContext.sql("select mac,version from log_data").
-            map(row => {
-              val mac = row.getString(0)
-              val version = row.getString(1)
-              if(version != null && version.contains("_YunOS_")) mac else null
-            }).
-            filter(_ != null).
-            distinct().count()
+          val aliDogActiveNum = sqlContext.sql(
+            """
+              |select distinct(mac)
+              |from log_data
+              |where version like '%_YunOS_%'
+            """.stripMargin)
+            .count
 
-          val tvDogActiveNum = sqlContext.sql("select mac,version from log_data").
-            map(row => {
-              val mac = row.getString(0)
-              val version = row.getString(1)
-              if(version != null && version.contains("_YunOS2")) mac else null
-            }).
-            filter(_ != null).
-            distinct().count()
+          val tvDogActiveNum = sqlContext.sql(
+            """
+              |select distinct(mac)
+              |from log_data
+              |where version like '%_YunOS2%'
+            """.stripMargin)
+            .count
 
           val alibabaActiveNum = allActiveNum - aliDogActiveNum - tvDogActiveNum
 
 
-
-          if(p.deleteOld){
-            val deleteSql = "delete from medusa_yunos_activeuser_based_alidogtvdog " +
-              "where day = ?"
+          if (p.deleteOld) {
+            val deleteSql = "delete from medusa_yunos_activeuser_based_alidogtvdog where day = ?"
             util.delete(deleteSql, timeday)
           }
 
           val insertSql = "insert into medusa_yunos_activeuser_based_alidogtvdog(day,version_type,active_num) " +
             "values(?,?,?)"
-          util.insert(insertSql,timeday,"ALL",allActiveNum)
-          util.insert(insertSql,timeday,"阿里狗",aliDogActiveNum)
-          util.insert(insertSql,timeday,"电视狗",tvDogActiveNum)
-          util.insert(insertSql,timeday,"阿里巴巴",alibabaActiveNum)
+          util.insert(insertSql, timeday, "ALL", allActiveNum)
+          util.insert(insertSql, timeday, "阿里狗", aliDogActiveNum)
+          util.insert(insertSql, timeday, "电视狗", tvDogActiveNum)
+          util.insert(insertSql, timeday, "阿里巴巴", alibabaActiveNum)
 
-          cal.add(Calendar.DAY_OF_MONTH,-1)
+          cal.add(Calendar.DAY_OF_MONTH, -1)
         })
 
       }
-      case None => {throw new RuntimeException("At least needs one param: startDate!")}
+      case None => {
+        throw new RuntimeException("At least needs one param: startDate!")
+      }
     }
   }
 }

@@ -14,5 +14,7 @@ trait LogConfig {
   val WHALEY = "whaley"
   val VR = "vr"
   val EAGLE = "eagle"
+  val MTVKIDSLOGIN = "mtvkidsloginlog"
+  val ACTIVITY = "activity"
 
 }

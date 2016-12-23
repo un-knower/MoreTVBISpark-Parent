@@ -11,10 +11,11 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.Row
 
-object HistoryAndCollectPageStatistics extends BaseClass{
+object HistoryAndCollectPageStatistics extends BaseClass {
   def main(args: Array[String]) {
-    ModuleClass.executor(HistoryAndCollectPageStatistics,args)
+    ModuleClass.executor(HistoryAndCollectPageStatistics, args)
   }
+
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
@@ -24,13 +25,19 @@ object HistoryAndCollectPageStatistics extends BaseClass{
 
         (0 until p.numOfDays).foreach(i => {
           val date = DateFormatUtils.readFormat.format(cal.getTime)
-          val day = DateFormatUtils.toDateCN(date,-1)
-          val pathDetail = "/mbi/parquet/detail/"+date+"/*"
-          val pathPlayview = "/mbi/parquet/playview/"+date+"/*"
+          val day = DateFormatUtils.toDateCN(date, -1)
           val s = sqlContext
+
           import s.implicits._
-          val dfDetail = sqlContext.read.parquet(pathDetail).filter($"path".startsWith("home-history-")).select("userId","path").cache()
-          val dfPlayview = sqlContext.read.parquet(pathPlayview).filter($"path".startsWith("home-history-")).select("userId","path").cache()
+          val dfDetail = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MORETV, LogTypes.DETAIL)
+            .filter($"path".startsWith("home-history-"))
+            .select("userId", "path")
+            .cache()
+          val dfPlayview = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MORETV, LogTypes.PLAYVIEW)
+            .filter($"path".startsWith("home-history-"))
+            .select("userId", "path")
+            .cache()
+
           val detail_pv = rowArray2Map(dfDetail.groupBy("path").count().collect())
           val detail_uv = rowArray2Map(dfDetail.distinct().groupBy("path").count().collect())
           val playview_vv = rowArray2Map(dfPlayview.groupBy("path").count().collect())
@@ -53,15 +60,15 @@ object HistoryAndCollectPageStatistics extends BaseClass{
                   case None => 0
                 }
               (pathCH, uv, pv, userPlay_num, vv)
-              }
-            else null
             }
-          ).filter(_!=null).toList
-          val res = sc.parallelize(res_df).map(x => (x._1,(x._2, x._3, x._4, x._5))).reduceByKey((x, y) => (x._1+y._1, x._2+y._2, x._3+y._3, x._4+y._4)).collect()
+            else null
+          }
+          ).filter(_ != null).toList
+          val res = sc.parallelize(res_df).map(x => (x._1, (x._2, x._3, x._4, x._5))).reduceByKey((x, y) => (x._1 + y._1, x._2 + y._2, x._3 + y._3, x._4 + y._4)).collect()
 
-          if(p.deleteOld){
+          if (p.deleteOld) {
             val sqlDelete = "DELETE FROM HistoryAndCollectPageStatistics WHERE day = ?"
-            util.delete(sqlDelete,day)
+            util.delete(sqlDelete, day)
           }
 
           val sqlInsert = "INSERT INTO HistoryAndCollectPageStatistics(day, page, user_num, access_num, userPlay_num, play_num) VALUES(?,?,?,?,?,?)"
@@ -82,19 +89,20 @@ object HistoryAndCollectPageStatistics extends BaseClass{
     }
   }
 
-  def path2CH(path:String) : String = {
+  def path2CH(path: String): String = {
     path match {
       case "home-history-history" => "观看历史"
       case "home-history-collect" => "收藏追剧"
       case "home-history-reservation" => "节目预约"
-      case _ if(path.startsWith("home-history-mytag-tag") && !(path.contains("-peoplealsolike")||path.contains("-similar")||path.contains("-actor")||
-        path.contains("-tag-tag-")||path.contains("-mytag-mytag-")||path.contains("-mytag-collect")||path.contains("-mytag-history"))) => "标签订阅"
-      case _ if(path.startsWith("home-history-subjectcollect-subject") && !(path.contains("-peoplealsolike")||path.contains("-similar")||path.contains("-tag")||
+      case _ if (path.startsWith("home-history-mytag-tag") && !(path.contains("-peoplealsolike") || path.contains("-similar") || path.contains("-actor") ||
+        path.contains("-tag-tag-") || path.contains("-mytag-mytag-") || path.contains("-mytag-collect") || path.contains("-mytag-history"))) => "标签订阅"
+      case _ if (path.startsWith("home-history-subjectcollect-subject") && !(path.contains("-peoplealsolike") || path.contains("-similar") || path.contains("-tag") ||
         path.contains("-actor"))) => "专题收藏"
-      case _  => ""
+      case _ => ""
     }
   }
-  def rowArray2Map(array:Array[Row]) = {
-    array.map(row => (row.getString(0),row.getLong(1))).toMap
+
+  def rowArray2Map(array: Array[Row]) = {
+    array.map(row => (row.getString(0), row.getLong(1))).toMap
   }
 }
