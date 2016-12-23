@@ -39,7 +39,7 @@ object AliDogTVDogActiveAndNewUserStatistics extends BaseClass {
           val date = DateFormatUtils.readFormat.format(cal.getTime)
           val day = DateFormatUtils.toDateCN(date, -1)
           val sourceRdd = DataIO.getDataFrameOps
-            .getDF(sc, p.paramMap, MORETV, LogTypes.LOGINLOG)
+            .getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG)
             .select("version", "mac").cache()
           val aliDogActiveUserNum = sourceRdd.filter("version like 'MoreTV_TVApp2.0_Android_YunOS2_%'")
             .select("mac").distinct().count()

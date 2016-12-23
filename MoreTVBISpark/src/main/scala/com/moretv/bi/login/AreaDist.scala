@@ -23,7 +23,7 @@ import scala.collection.JavaConversions._
 object AreaDist extends BaseClass {
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(this,args)
+    ModuleClass.executor(this, args)
   }
 
   override def execute(args: Array[String]) {
@@ -35,7 +35,7 @@ object AreaDist extends BaseClass {
         val inputDate = p.startDate
         val day = DateFormatUtils.toDateCN(inputDate, -1)
 
-        val logRdd = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MORETV, LogTypes.LOGINLOG)
+        val logRdd = DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG)
           .select("ip", "userId")
           .map(e => (ProvinceUtil.getChinaProvince(IPUtils.getProvinceByIp(e.getString(0))), e.getString(1)))
           .toDF("ip", "userId")

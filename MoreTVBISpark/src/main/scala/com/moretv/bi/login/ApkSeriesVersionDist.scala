@@ -17,11 +17,7 @@ object ApkSeriesVersionDist extends BaseClass {
   val regex = "^[\\w\\.]+$".r
 
   def main(args: Array[String]): Unit = {
-<<<<<<< HEAD
-    ModuleClass.executor(ApkSeriesVersionDist, args)
-=======
-    ModuleClass.executor(this,args)
->>>>>>> 2bcd4a3b120e0bbd26d9f2184a052e2d7b62aa30
+    ModuleClass.executor(this, args)
   }
 
   override def execute(args: Array[String]) {
@@ -30,11 +26,11 @@ object ApkSeriesVersionDist extends BaseClass {
       case Some(p) => {
         val inputDate = p.startDate
 
-        val logRdd = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MORETV, LogTypes.LOGINLOG)
+        val logRdd = DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG)
           .select("version", "mac")
           .map(row =>
             if (row.getString(0) == null)
-            ("null", row.getString(1))
+              ("null", row.getString(1))
             else (row.getString(0), row.getString(1)))
           .cache()
 
