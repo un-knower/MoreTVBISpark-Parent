@@ -10,6 +10,7 @@ trait LogConfig {
   val MEDUSA = "medusa"
   val MERGER = "merger"
   val LOGINLOG = "loginlog"
+  val DANMU = "danmu"
   val DBSNAPSHOT = "dbsnapshot"
   val WHALEY = "whaley"
   val VR = "vr"
