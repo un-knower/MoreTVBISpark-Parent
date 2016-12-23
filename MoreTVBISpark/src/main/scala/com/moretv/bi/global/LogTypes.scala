@@ -61,7 +61,7 @@ object LogTypes {
   val SET = "set"
   val MORETV_MTV_ACCOUNT = "moretv_mtv_account"
   val LOGINLOG = "loginlog"
-<<<<<<< HEAD
+
   val APP_RECOMMEND = "apprecommend"
   val CLICK_ENTRANCE = "clickEntrance"
   val CLICK_RESULT = "clickResult"
@@ -74,17 +74,4 @@ object LogTypes {
   val DETAIL_SUBJECT = "detail-subject"
   val SUBJECT_INTERVIEW = "subject-interview"
   val OPERATION_ACW = "operation-acw"
-=======
-  val APP_RECOMMEND="apprecommend"
-  val CLICK_ENTRANCE="clickEntrance"
-  val CLICK_RESULT="clickResult"
-  val OPERATION_E="operation-e"
-  val OPERATION_ST="operation-st"
-  val PLAY_VIEW_2_FILTER="playview2filter"
-  val PLAY_VIEW_2=  "playview2"
-  val DETAIL_SUBJECT= "detail-subject"
-  val SUBJECT_INTERVIEW="subject-interview"
-  val OPERATION_ACW="operation-acw"
-  val OPERATION_MM="operation-mm"
->>>>>>> 2bcd4a3b120e0bbd26d9f2184a052e2d7b62aa30
 }
