@@ -10,6 +10,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 
+@Deprecated
 object KongfuPanda extends BaseClass{
 
   def main(args: Array[String]) {

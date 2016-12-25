@@ -10,6 +10,7 @@ import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
 import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.constant.Tables
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.JdbcRDD
@@ -29,21 +30,32 @@ object UseAccountAboutUserDistribute extends BaseClass with QueryMaxAndMinIDUtil
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         val yesterdayCN = DateFormatUtils.toDateCN(p.startDate, -1)
-        val id = queryID("id", "accountidAndUserid", "jdbc:mysql://10.10.2.15:3306/bi?useUnicode=true&characterEncoding=utf-8&autoReconnect=true");
 
         //处理日志取出accountId和userId
         val programMap = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MORETV, LogTypes.MTVACCOUNT)
-          .filter("event = 'login' and accountId != 0").select("userId", "accountId")
-          .map(e => (e.getString(0), e.getInt(1) + "")).distinct()
+          .filter("event = 'login' and accountId != 0")
+          .select("userId", "accountId")
+          .map(e => (e.getString(0), e.getInt(1) + ""))
+          .distinct()
 
-        //取出已有的数据
-        val userIdRDD = new JdbcRDD(sc, () => {
-          Class.forName("com.mysql.jdbc.Driver")
-          DriverManager.getConnection("jdbc:mysql://10.10.2.15:3306/bi?useUnicode=true&characterEncoding=utf-8&autoReconnect=true", "bi", "mlw321@moretv")
-        },
-          "SELECT userid,accountid FROM `accountidAndUserid` WHERE ID >= ? AND ID <= ?",
-          id(1), id(0), 10,
-          r => r.getString(1) + " " + r.getString(2)).map(x => splitsLog(x)).filter(_ != null).distinct()
+        val db = DataIO.getMySqlOps("moretv_bi_mysql")
+        val url = db.prop.getProperty("url")
+        val driver = db.prop.getProperty("driver")
+        val user = db.prop.getProperty("user")
+        val password = db.prop.getProperty("password")
+        val sqlInfo = "SELECT userid,accountid FROM `accountidAndUserid` WHERE ID >= ? AND ID <= ?"
+
+        val (min, max) = db.queryMaxMinID(Tables.USERIDUSINGACCOUNT, "id")
+
+
+        val userIdRDD = MySqlOps.getJdbcRDD(sc, sqlInfo, Tables.USERIDUSINGACCOUNT,
+          r => r.getString(1) + " " + r.getString(2), driver, url, user, password, (min, max), 300
+        )
+          .map(x => splitsLog(x))
+          .filter(_ != null)
+          .distinct
+
+
         val resultRDD = programMap.subtract(userIdRDD)
 
         val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
@@ -63,14 +75,15 @@ object UseAccountAboutUserDistribute extends BaseClass with QueryMaxAndMinIDUtil
           index = index + 1
         })
 
+        val sqlInfo1 = "SELECT userid,count(accountid) FROM `accountidAndUserid` WHERE ID >= ? AND ID <= ? group by userid"
+
         //取出一个usrid对应几个account
-        val userIdtoaccountidRDD = new JdbcRDD(sc, () => {
-          Class.forName("com.mysql.jdbc.Driver")
-          DriverManager.getConnection("jdbc:mysql://10.10.2.15:3306/bi?useUnicode=true&characterEncoding=utf-8&autoReconnect=true", "bi", "mlw321@moretv")
-        },
-          "SELECT userid,count(accountid) FROM `accountidAndUserid` WHERE ID >= ? AND ID <= ? group by userid",
-          id(1), id(0) + index, 10,
-          r => r.getString(1) + " " + r.getInt(2)).map(x => splitsLog(x)).filter(_ != null).map(x => (x._2, x._1)).countByKey()
+        val userIdtoaccountidRDD = MySqlOps.getJdbcRDD(sc, sqlInfo1, Tables.USERIDUSINGACCOUNT,
+          r => r.getString(1) + " " + r.getString(2), driver, url, user, password, (min, max), 300
+        )
+          .map(x => splitsLog(x))
+          .filter(_ != null)
+          .map(x => (x._2, x._1)).countByKey()
 
         //保存累计账户数
         val resultsql = "INSERT INTO bi.accountNumsToUserNum(day,account_num,user_num) values(?,?,?)"

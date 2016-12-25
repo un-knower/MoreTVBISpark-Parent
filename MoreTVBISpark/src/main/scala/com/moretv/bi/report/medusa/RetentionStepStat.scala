@@ -7,6 +7,7 @@ import java.util.Calendar
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
 import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.account.AccountAccess._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 import org.apache.spark.sql.DataFrame
@@ -56,7 +57,7 @@ object RetentionStepStat extends BaseClass {
 
         (0 until p.numOfDays).foreach(w => {
 
-          val ref = getSomeNewUser(cal) // 新增用户
+          val ref = getSomeNewUser(p.paramMap, cal) // 新增用户
 
           val loadDatePaths = getLoadPaths(cal) // 加载路径
 
@@ -89,7 +90,6 @@ object RetentionStepStat extends BaseClass {
   }
 
 
-
   def save2Db(cal: Calendar, resArray: Array[(Int, Double, Long)]) = {
 
     resArray.foreach(println)
@@ -111,6 +111,7 @@ object RetentionStepStat extends BaseClass {
 
   /**
     * 拿到数据源路径
+    *
     * @param cal 基准日期, 也是当前日期
     * @return 与基准日期相差指定时段（days）的路径数组
     */
@@ -148,7 +149,7 @@ object RetentionStepStat extends BaseClass {
     * @param cal
     * @return
     */
-  def getSomeNewUser(cal: Calendar): (DataFrame, scala.collection.Map[Int, Long]) = {
+  def getSomeNewUser(paramMap: Map[String, String], cal: Calendar): (DataFrame, scala.collection.Map[Int, Long]) = {
 
     val calCopy = Calendar.getInstance
     calCopy.setTime(cal.getTime)
@@ -156,9 +157,8 @@ object RetentionStepStat extends BaseClass {
 
     val loadDate = readFormat.format(calCopy.getTime)
     val sqlDate = sqlFormat.format(calCopy.getTime) //昨天日期
-    val loadPath = s"/log/dbsnapshot/parquet/$loadDate/moretv_mtv_account"
 
-    val dfRaw = sqlContext.read.parquet(loadPath)
+    val dfRaw = DataIO.getDataFrameOps.getDF(sc, paramMap, DBSNAPSHOT, LogTypes.MTVACCOUNT, loadDate)
       .selectExpr(s"datediff('$sqlDate',openTime) as duration", "mac")
       .filter(s"duration in (${days.mkString(",")})")
       .distinct

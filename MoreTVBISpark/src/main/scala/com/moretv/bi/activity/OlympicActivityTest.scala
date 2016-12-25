@@ -10,15 +10,18 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 
 /**
- * Created by zhangyu on 16/8/6.
- *  专用于统计活动的相关数据,每次需修改活动的上线时间onLineDay
- */
-object OlympicActivityTest extends BaseClass{
+  * Created by zhangyu on 16/8/6.
+  * 专用于统计活动的相关数据,每次需修改活动的上线时间onLineDay
+  */
+
+@deprecated
+object OlympicActivityTest extends BaseClass {
 
   def main(args: Array[String]) {
     ModuleClass.executor(this,args)
   }
-  override def execute(args:Array[String]): Unit = {
+
+  override def execute(args: Array[String]): Unit = {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         val util = DataIO.getMySqlOps("moretv_medusa_mysql")
@@ -31,17 +34,17 @@ object OlympicActivityTest extends BaseClass{
         //本次活动9月8日上线
         val onLineDay = "20160909"
 
-        (0 until p.numOfDays).foreach(i=>{
+        (0 until p.numOfDays).foreach(i => {
           val logDay = DateFormatUtils.readFormat.format(calendar.getTime)
-          val sqlDay = DateFormatUtils.toDateCN(logDay,-1)
+          val sqlDay = DateFormatUtils.toDateCN(logDay, -1)
 
           //构造日期集合
           var logDaySet = logDay
           var activeDay = logDay
           val calendarTemp = Calendar.getInstance()
           calendarTemp.setTime(DateFormatUtils.readFormat.parse(logDay))
-          while(activeDay != onLineDay){
-            calendarTemp.add(Calendar.DAY_OF_MONTH,-1)
+          while (activeDay != onLineDay) {
+            calendarTemp.add(Calendar.DAY_OF_MONTH, -1)
             activeDay = DateFormatUtils.readFormat.format(calendarTemp.getTime)
             logDaySet += s",${activeDay}"
           }
@@ -55,24 +58,24 @@ object OlympicActivityTest extends BaseClass{
 
           val pageViewSingleDay = sqlContext.sql("select activityId,logType,page,`from`,count(distinct userId), " +
             "count(userId) from log_data_pageview where event = 'view' " +
-            "group by activityId, logType, page, `from`").map(e=>{
+            "group by activityId, logType, page, `from`").map(e => {
             val pageViewId = fromEngToChi(e.getString(0))
             val pageViewLogtype = fromEngToChi(e.getString(1))
             val pageViewPage = fromEngToChi(e.getString(2))
             val pageViewSource = fromEngToChi(e.getString(3))
             val pageViewUserNum = e.getLong(4)
             val pageViewAccessNum = e.getLong(5)
-            (pageViewId,pageViewLogtype,pageViewPage,pageViewSource,pageViewUserNum,pageViewAccessNum)
+            (pageViewId, pageViewLogtype, pageViewPage, pageViewSource, pageViewUserNum, pageViewAccessNum)
           })
 
-          if(p.deleteOld) {
+          if (p.deleteOld) {
             val pageViewSingleDayDel = "delete from activity_pageview_singleday where day = ?"
             util.delete(pageViewSingleDayDel, sqlDay)
           }
 
           val pageViewSingleDayInsert = "insert into activity_pageview_singleday(day,activityId,logtype,page,source,user_num,access_num) values(?,?,?,?,?,?,?)"
-          pageViewSingleDay.collect().foreach(e=>{
-            util.insert(pageViewSingleDayInsert,sqlDay,e._1,e._2,e._3,e._4,e._5,e._6)
+          pageViewSingleDay.collect().foreach(e => {
+            util.insert(pageViewSingleDayInsert, sqlDay, e._1, e._2, e._3, e._4, e._5, e._6)
           })
 
 
@@ -85,24 +88,24 @@ object OlympicActivityTest extends BaseClass{
 
           val pageViewSetDay = sqlContext.sql("select activityId,logType,page,`from`,count(distinct userId), " +
             "count(userId) from log_dataset_pageview where event = 'view' " +
-            "group by activityId, logType, page, `from`").map(e=>{
+            "group by activityId, logType, page, `from`").map(e => {
             val pageViewSetId = fromEngToChi(e.getString(0))
             val pageViewSetLogType = fromEngToChi(e.getString(1))
             val pageViewSetPage = fromEngToChi(e.getString(2))
             val pageViewSetSource = fromEngToChi(e.getString(3))
             val pageViewSetUserNum = e.getLong(4)
             val pageViewSetAccessNum = e.getLong(5)
-            (pageViewSetId,pageViewSetLogType,pageViewSetPage,pageViewSetSource,pageViewSetUserNum,pageViewSetAccessNum)
+            (pageViewSetId, pageViewSetLogType, pageViewSetPage, pageViewSetSource, pageViewSetUserNum, pageViewSetAccessNum)
           })
 
-          if(p.deleteOld) {
+          if (p.deleteOld) {
             val pageViewSetDayDel = "delete from activity_pageview_dataset where day = ?"
             util.delete(pageViewSetDayDel, sqlDay)
           }
 
           val pageViewSetDayInsert = "insert into activity_pageview_dataset(day,activityId,logtype,page,source,user_num,access_num) values(?,?,?,?,?,?,?)"
-          pageViewSetDay.collect.foreach(e=>{
-            util.insert(pageViewSetDayInsert,sqlDay,e._1,e._2,e._3,e._4,e._5,e._6)
+          pageViewSetDay.collect.foreach(e => {
+            util.insert(pageViewSetDayInsert, sqlDay, e._1, e._2, e._3, e._4, e._5, e._6)
           })
 
           //各页面的其他行为人数/次数(不区分页面来源)(event != view,group by activityId,logtype,page,event)
@@ -113,24 +116,24 @@ object OlympicActivityTest extends BaseClass{
 
           val operationSingleDay = sqlContext.sql("select activityId,logType,page,event,count(distinct userId), " +
             "count(userId) from log_data_operation where event != 'view' " +
-            "group by activityId, logType, page, event").map(e=>{
+            "group by activityId, logType, page, event").map(e => {
             val operationId = fromEngToChi(e.getString(0))
             val operationLogType = fromEngToChi(e.getString(1))
             val operationPage = fromEngToChi(e.getString(2))
             val operationEvent = fromEngToChi(e.getString(3))
             val operationUserNum = e.getLong(4)
             val operationAccessNum = e.getLong(5)
-            (operationId,operationLogType,operationPage,operationEvent,operationUserNum,operationAccessNum)
+            (operationId, operationLogType, operationPage, operationEvent, operationUserNum, operationAccessNum)
           })
 
-          if(p.deleteOld) {
+          if (p.deleteOld) {
             val operationSingleDayDel = "delete from activity_operation_singleday where day = ?"
-            util.delete(operationSingleDayDel,sqlDay)
+            util.delete(operationSingleDayDel, sqlDay)
           }
 
-          operationSingleDay.collect.foreach(e=>{
+          operationSingleDay.collect.foreach(e => {
             val operationSingleDayInsert = "insert into activity_operation_singleday(day,activityId,logtype,page,event,user_num,access_num) values(?,?,?,?,?,?,?)"
-            util.insert(operationSingleDayInsert,sqlDay,e._1,e._2,e._3,e._4,e._5,e._6)
+            util.insert(operationSingleDayInsert, sqlDay, e._1, e._2, e._3, e._4, e._5, e._6)
           })
 
 
@@ -143,56 +146,56 @@ object OlympicActivityTest extends BaseClass{
 
           val operationSetDay = sqlContext.sql("select activityId,logType,page,event,count(distinct userId), " +
             "count(userId) from log_dataset_operation where event != 'view' " +
-            "group by activityId, logType, page, event").map(e=>{
+            "group by activityId, logType, page, event").map(e => {
             val operationSetId = fromEngToChi(e.getString(0))
             val operationSetLogType = fromEngToChi(e.getString(1))
             val operationSetPage = fromEngToChi(e.getString(2))
             val operationSetEvent = fromEngToChi(e.getString(3))
             val operationSetUserNum = e.getLong(4)
             val operationSetAccessNum = e.getLong(5)
-            (operationSetId,operationSetLogType,operationSetPage,operationSetEvent,operationSetUserNum,operationSetAccessNum)
+            (operationSetId, operationSetLogType, operationSetPage, operationSetEvent, operationSetUserNum, operationSetAccessNum)
           })
 
-          if(p.deleteOld) {
+          if (p.deleteOld) {
             val operationSetDayDel = "delete from activity_operation_dataset where day = ?"
-            util.delete(operationSetDayDel,sqlDay)
+            util.delete(operationSetDayDel, sqlDay)
           }
 
-          operationSetDay.collect.foreach(e=>{
+          operationSetDay.collect.foreach(e => {
             val operationSetDayInsert = "insert into activity_operation_dataset(day,activityId,logtype,page,event,user_num,access_num) values(?,?,?,?,?,?,?)"
-            util.insert(operationSetDayInsert,sqlDay,e._1,e._2,e._3,e._4,e._5,e._6)
+            util.insert(operationSetDayInsert, sqlDay, e._1, e._2, e._3, e._4, e._5, e._6)
           })
 
-//          //活动停留时长统计(表格里给出每个人每天的活动时长)
-//          //activity_duration(day,activityId,userId,total_time)
-//
-//          val logPathDuration = s"/log/activity/parquet/$logDay/operation"
-//          sqlContext.read.load(logPathDuration).registerTempTable("log_data_duration")
-//
-//          val duration = sqlContext.sql("select activityId,userId,sum(time) from log_data_duration " +
-//            "where logType = 'operation' and page = 'home' and event = 'back' " +
-//            "group by activityId, userId").map(e=>{
-//            val durationId = fromEngToChi(e.getString(0))
-//            var durationUserId = e.getString(1)
-//            if(durationUserId == "" || durationUserId.length() < 32){
-//              durationUserId = "未知"
-//            }
-//            val durationTotalTime = e.getDouble(2)
-//            (durationId,durationUserId,durationTotalTime)
-//          })
-//
-//          if(p.deleteOld) {
-//            val durationDel = "delete from activity_duration where day = ?"
-//            util.delete(durationDel,sqlDay)
-//          }
-//
-//          duration.collect.foreach(e=>{
-//            val durationInsert = "insert into activity_duration(day,activityId,userId,total_time) values(?,?,?,?)"
-//            util.insert(durationInsert,sqlDay,e._1,e._2,e._3)
-//          })
+          //          //活动停留时长统计(表格里给出每个人每天的活动时长)
+          //          //activity_duration(day,activityId,userId,total_time)
+          //
+          //          val logPathDuration = s"/log/activity/parquet/$logDay/operation"
+          //          sqlContext.read.load(logPathDuration).registerTempTable("log_data_duration")
+          //
+          //          val duration = sqlContext.sql("select activityId,userId,sum(time) from log_data_duration " +
+          //            "where logType = 'operation' and page = 'home' and event = 'back' " +
+          //            "group by activityId, userId").map(e=>{
+          //            val durationId = fromEngToChi(e.getString(0))
+          //            var durationUserId = e.getString(1)
+          //            if(durationUserId == "" || durationUserId.length() < 32){
+          //              durationUserId = "未知"
+          //            }
+          //            val durationTotalTime = e.getDouble(2)
+          //            (durationId,durationUserId,durationTotalTime)
+          //          })
+          //
+          //          if(p.deleteOld) {
+          //            val durationDel = "delete from activity_duration where day = ?"
+          //            util.delete(durationDel,sqlDay)
+          //          }
+          //
+          //          duration.collect.foreach(e=>{
+          //            val durationInsert = "insert into activity_duration(day,activityId,userId,total_time) values(?,?,?,?)"
+          //            util.insert(durationInsert,sqlDay,e._1,e._2,e._3)
+          //          })
 
 
-          calendar.add(Calendar.DAY_OF_MONTH,-1)
+          calendar.add(Calendar.DAY_OF_MONTH, -1)
 
         })
       }
@@ -203,8 +206,8 @@ object OlympicActivityTest extends BaseClass{
   }
 
 
-  def fromEngToChi(str:String):String = {
-    if(str != ""){
+  def fromEngToChi(str: String): String = {
+    if (str != "") {
       str match {
         //活动Id
         case "6jkl3erupr7o" => "微鲸*用户招募活动"
@@ -228,7 +231,7 @@ object OlympicActivityTest extends BaseClass{
         case "unknow" => "未知"
         case _ => "未知"
       }
-    }else "未知"
+    } else "未知"
 
   }
 }

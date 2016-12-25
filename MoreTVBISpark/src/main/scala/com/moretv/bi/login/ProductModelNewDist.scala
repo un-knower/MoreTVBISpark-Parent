@@ -21,41 +21,43 @@ import org.apache.spark.sql.SQLContext
   * 输入数据为：数据库快照，输出到mysql
   *
   */
-object ProductModelNewDist extends BaseClass{
+object ProductModelNewDist extends BaseClass {
 
   def main(args: Array[String]): Unit = {
     ModuleClass.executor(this,args)
   }
+
   override def execute(args: Array[String]) {
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
-        val inputDate = DateFormatUtils.enDateAdd(p.startDate,-1)
-        val inputPath = s"/log/dbsnapshot/parquet/$inputDate/moretv_mtv_account"
+        val inputDate = DateFormatUtils.enDateAdd(p.startDate, -1)
         val day = DateFormatUtils.toDateCN(p.startDate, -1)
 
-        sqlContext.read.load(inputPath).registerTempTable("log_data")
+        DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MTVACCOUNT)
+          .registerTempTable("log_data")
 
         val result = sqlContext.sql("select product_model,count(distinct mac) from log_data " +
-          s"where openTime between '$day 00:00:00' and '$day 23:59:59' group by product_model").collectAsList()
+          s"where openTime between '$day 00:00:00' and '$day 23:59:59' group by product_model")
+          .collectAsList()
 
         val db = DataIO.getMySqlOps("moretv_eagletv_mysql")
-        if(p.deleteOld){
+        if (p.deleteOld) {
           val sqlDelete = "delete from Device_Terminal_added where day = ?"
-          db.delete(sqlDelete,day)
+          db.delete(sqlDelete, day)
         }
 
         val sqlInsert = "insert into Device_Terminal_added(day,product_model,user_num) values(?,?,?)"
         result.foreach(row => {
           try {
-            db.insert(sqlInsert,day,row.get(0),row.get(1))
+            db.insert(sqlInsert, day, row.get(0), row.get(1))
           } catch {
-            case e:SQLException =>
-              if(e.getMessage.contains("Data too long"))
+            case e: SQLException =>
+              if (e.getMessage.contains("Data too long"))
                 println(e.getMessage)
               else throw new RuntimeException(e)
-            case e:Exception => throw new RuntimeException(e)
+            case e: Exception => throw new RuntimeException(e)
           }
         })
         db.destory()

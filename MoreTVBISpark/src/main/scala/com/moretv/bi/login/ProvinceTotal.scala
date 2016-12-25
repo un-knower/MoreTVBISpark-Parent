@@ -22,9 +22,12 @@ object ProvinceTotal extends BaseClass{
       case Some(p) => {
 
         val inputDate = p.startDate
-//        val df = sqlContext.read.load(s"/log/dbsnapshot/parquet/$inputDate/moretv_mtv_account").
-        val df = sqlContext.read.load(s"/log/dbsnapshot/parquet/$inputDate/helios_mtv_terminal").
-          select("ip","serial_number").filter("serial_number is not null and ip is not null").distinct()
+
+        val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,DBSNAPSHOT,LogTypes.HELIOS_MTVACCOUNT)
+          .select("ip","serial_number")
+          .filter("serial_number is not null and ip is not null")
+          .distinct()
+
         val result = df.map(row => {
               val province = IPUtils.getProvinceByIp(row.getString(0))
               if(province != null) {

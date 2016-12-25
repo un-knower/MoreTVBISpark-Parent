@@ -2,7 +2,7 @@ package com.moretv.bi.activity
 
 import java.util.Calendar
 
-import cn.whaley.sdk.dataexchangeio.DataIO
+import org.apache.spark.sql.functions._
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
 import cn.whaley.sdk.dataOps.MySqlOps
@@ -13,15 +13,29 @@ import org.apache.spark.sql.SQLContext
 
 /**
   * Created by czw on 16/9/12.
-  *  专用于统计活动的相关数据,每次需修改活动的上线时间onLineDay
+  * 专用于统计活动的相关数据,每次需修改活动的上线时间onLineDay
   */
-object MidAutumnActivityTest extends BaseClass{
+object MidAutumnActivityTest extends BaseClass {
+
+
+  private val pageViewSingleDayInsert =
+    "insert into midautumn_activity_pageview_singleday(day,activityId,page,source,access_num,user_num) values(?,?,?,?,?,?)"
+
+  private val pageViewSetDayInsert =
+    "insert into midautumn_activity_pageview_dataset (day,activityId,page,source,access_num,user_num) values(?,?,?,?,?,?)"
+
+  private val operationSingleDayInsert =
+    "insert into midautumn_activity_operation_singleday (day,activityId,page,source,event,access_num,user_num) values(?,?,?,?,?,?,?)"
+
+  private val operationSetDayInsert =
+    "insert into midautumn_activity_operation_dataset (day,activityId,page,source,event,access_num,user_num) values(?,?,?,?,?,?,?)"
 
   def main(args: Array[String]) {
+    ModuleClass.executor(MidAutumnActivityTest, args)
     ModuleClass.executor(this,args)
   }
 
-  override def execute(args:Array[String]): Unit = {
+  override def execute(args: Array[String]): Unit = {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         val util = DataIO.getMySqlOps("moretv_medusa_mysql")
@@ -33,134 +47,85 @@ object MidAutumnActivityTest extends BaseClass{
         //活动上线时间,用于构造日期集合,保证其时间比当天早
         val onLineDay = "20160916"
 
-        (0 until p.numOfDays).foreach(i=>{
+        (0 until p.numOfDays).foreach(i => {
           val logDay = DateFormatUtils.readFormat.format(calendar.getTime)
-          val sqlDay = DateFormatUtils.toDateCN(logDay,-1)
+          val sqlDay = DateFormatUtils.toDateCN(logDay, -1)
 
           //构造日期集合
           var logDaySet = logDay
           var activeDay = logDay
           val calendarTemp = Calendar.getInstance()
           calendarTemp.setTime(DateFormatUtils.readFormat.parse(logDay))
-          while(activeDay != onLineDay){
-            calendarTemp.add(Calendar.DAY_OF_MONTH,-1)
+          while (activeDay != onLineDay) {
+            calendarTemp.add(Calendar.DAY_OF_MONTH, -1)
             activeDay = DateFormatUtils.readFormat.format(calendarTemp.getTime)
             logDaySet += s",${activeDay}"
           }
 
-          //各页面的浏览人数/次数(区分页面来源)(event = view,group by activityId,page,source)
-          //tablename: activity_pageview_singleday(day,activityId,page,source,user_num,access_num)
 
-          val logPathPageview = s"/log/activity/parquet/$logDay/pageview"
-          sqlContext.read.load(logPathPageview).registerTempTable("log_data_pageview")
-
-          val pageViewSingleDay = sqlContext.sql("select activityId,page,source,count(distinct userId), " +
-            "count(userId) from log_data_pageview where event = 'view'" +
-            "group by activityId,page,source").map(e=>{
-            val pageViewId = fromEngToChi(e.getString(0))
-            val pageViewPage = fromEngToChi(e.getString(1))
-            val pageViewSource=fromEngToChi(e.getString(2))
-            val pageViewUserNum = e.getLong(3)
-            val pageViewAccessNum = e.getLong(4)
-            (pageViewId,pageViewPage,pageViewSource,pageViewUserNum,pageViewAccessNum)
-          })
-
-          if(p.deleteOld) {
+          //单天
+          if (p.deleteOld) {
             val pageViewSingleDayDel = "delete from midautumn_activity_pageview_singleday where day = ?"
             util.delete(pageViewSingleDayDel, sqlDay)
           }
-
-          val pageViewSingleDayInsert = "insert into midautumn_activity_pageview_singleday(day,activityId,page,source,user_num,access_num) values(?,?,?,?,?,?)"
-          pageViewSingleDay.collect().foreach(e=>{
-            util.insert(pageViewSingleDayInsert,sqlDay,e._1,e._2,e._3,e._4,e._5)
+          DataIO.getDataFrameOps.getDF(sc, p.paramMap, ACTIVITY, LogTypes.PAGEVIEW, logDay)
+            .filter("event = 'view'")
+            .groupBy("activityId", "page", "source")
+            .agg(count("userId"), countDistinct("userId"))
+            .collect.foreach(e => {
+            util.insert(pageViewSingleDayInsert, sqlDay,
+              fromEngToChi(e.getString(0)), fromEngToChi(e.getString(1)), fromEngToChi(e.getString(2)),
+              e.getLong(3), e.getLong(4)
+            )
           })
 
-
-          //各页面的浏览总人数/总次数(区分页面来源)
-          //table_name:activity_pageview_dataset
-
-          val logSetPathPageView = s"/log/activity/parquet/{$logDaySet}/pageview"
-          println(logSetPathPageView)
-          sqlContext.read.load(logSetPathPageView).registerTempTable("log_dataset_pageview")
-
-          val pageViewSetDay = sqlContext.sql("select activityId,page,source,count(distinct userId), " +
-            "count(userId) from log_dataset_pageview where event = 'view'" +
-            "group by activityId,page").map(e=>{
-            val pageViewSetId = fromEngToChi(e.getString(0))
-            val pageViewSetPage = fromEngToChi(e.getString(1))
-            val pageViewSetSource=fromEngToChi(e.getString(2))
-            val pageViewSetUserNum = e.getLong(3)
-            val pageViewSetAccessNum = e.getLong(4)
-            (pageViewSetId,pageViewSetPage,pageViewSetSource,pageViewSetUserNum,pageViewSetAccessNum)
-          })
-
-          if(p.deleteOld) {
+          //一定天数
+          if (p.deleteOld) {
             val pageViewSetDayDel = "delete from midautumn_activity_pageview_dataset where day = ?"
             util.delete(pageViewSetDayDel, sqlDay)
           }
 
-          val pageViewSetDayInsert = "insert into midautumn_activity_pageview_dataset (day,activityId,page,source,user_num,access_num) values(?,?,?,?,?,?)"
-          pageViewSetDay.collect.foreach(e=>{
-            util.insert(pageViewSetDayInsert,sqlDay,e._1,e._2,e._3,e._4,e._5)
+          DataIO.getDataFrameOps.getDF(sc, p.paramMap, ACTIVITY, LogTypes.PAGEVIEW, logDaySet)
+            .filter("event = 'view'")
+            .groupBy("activityId", "page", "source")
+            .agg(count("userId"), countDistinct("userId"))
+            .collect.foreach(e => {
+            util.insert(pageViewSetDayInsert, sqlDay,
+              fromEngToChi(e.getString(0)), fromEngToChi(e.getString(1)), fromEngToChi(e.getString(2)),
+              e.getLong(3), e.getLong(4))
           })
 
-
-          //各页面的其他行为人数/次数(区分页面来源)(event != view,group by activityId,page,source,event)
-          //activity_operation_singleday(day,activityId,page,source,event,user_num,access_num)
-
-          val logPathOperation = s"/log/activity/parquet/$logDay/operation"
-          sqlContext.read.load(logPathOperation).registerTempTable("log_data_operation")
-
-          val operationSingleDay = sqlContext.sql("select activityId,page,source,event,count(distinct userId), " +
-            "count(userId) from log_data_operation where event != 'view' " +
-            "group by activityId,page,source,event").map(e=>{
-            val operationId = fromEngToChi(e.getString(0))
-            val operationPage = fromEngToChi(e.getString(1))
-            val operationSource=fromEngToChi(e.getString(2))
-            val operationEvent = fromEngToChi(e.getString(3))
-            val operationUserNum = e.getLong(4)
-            val operationAccessNum = e.getLong(5)
-            (operationId,operationPage,operationSource,operationEvent,operationUserNum,operationAccessNum)
-          })
-
-          if(p.deleteOld) {
+          //各页面的其他行为人数/次数(区分页面来源)
+          if (p.deleteOld) {
             val operationSingleDayDel = "delete from midautumn_activity_operation_singleday where day = ?"
-            util.delete(operationSingleDayDel,sqlDay)
+            util.delete(operationSingleDayDel, sqlDay)
           }
 
-          operationSingleDay.collect.foreach(e=>{
-            val operationSingleDayInsert = "insert into midautumn_activity_operation_singleday (day,activityId,page,source,event,user_num,access_num) values(?,?,?,?,?,?,?)"
-            util.insert(operationSingleDayInsert,sqlDay,e._1,e._2,e._3,e._4,e._5,e._6)
+          DataIO.getDataFrameOps.getDF(sc, p.paramMap, ACTIVITY, LogTypes.OPERATION, logDay)
+            .filter("event != 'view'")
+            .groupBy("activityId", "page", "source", "event")
+            .agg(count("userId"), countDistinct("userId"))
+            .collect.foreach(e => {
+            util.insert(operationSingleDayInsert, sqlDay,
+              fromEngToChi(e.getString(0)), fromEngToChi(e.getString(1)), fromEngToChi(e.getString(2)), fromEngToChi(e.getString(3)),
+              e.getLong(4), e.getLong(5)
+            )
           })
 
-
-          //各页面的其他行为总人数/次数(区分页面来源)(event != view,group by activityId,page,source,event)
-          //activity_operation_dataset(day,activityId,page,source,event,user_num,access_num)
-
-
-          val logSetPathOperation = s"/log/activity/parquet/{$logDaySet}/operation"
-          sqlContext.read.load(logSetPathOperation).registerTempTable("log_dataset_operation")
-
-          val operationSetDay = sqlContext.sql("select activityId,page,source,event,count(distinct userId), " +
-            "count(userId) from log_dataset_operation where event != 'view' " +
-            "group by activityId,page,source,event").map(e=>{
-            val operationSetId = fromEngToChi(e.getString(0))
-            val operationSetPage = fromEngToChi(e.getString(1))
-            val operationSetSource=fromEngToChi(e.getString(2))
-            val operationSetEvent = fromEngToChi(e.getString(3))
-            val operationSetUserNum = e.getLong(4)
-            val operationSetAccessNum = e.getLong(5)
-            (operationSetId,operationSetPage,operationSetSource,operationSetEvent,operationSetUserNum,operationSetAccessNum)
-          })
-
-          if(p.deleteOld) {
+          //各页面的其他行为总人数/次数(区分页面来源)
+          if (p.deleteOld) {
             val operationSetDayDel = "delete from midautumn_activity_operation_dataset where day = ?"
-            util.delete(operationSetDayDel,sqlDay)
+            util.delete(operationSetDayDel, sqlDay)
           }
+          DataIO.getDataFrameOps.getDF(sc, p.paramMap, ACTIVITY, LogTypes.OPERATION, logDaySet)
+            .filter("event ! = 'view'")
+            .groupBy("activityId", "page", "source", "event")
+            .agg(count("userId"), countDistinct("userId"))
+            .collect.foreach(e => {
 
-          operationSetDay.collect.foreach(e=>{
-            val operationSetDayInsert = "insert into midautumn_activity_operation_dataset (day,activityId,page,source,event,user_num,access_num) values(?,?,?,?,?,?,?)"
-            util.insert(operationSetDayInsert,sqlDay,e._1,e._2,e._3,e._4,e._5,e._6)
+            util.insert(operationSetDayInsert, sqlDay,
+              fromEngToChi(e.getString(0)), fromEngToChi(e.getString(1)), fromEngToChi(e.getString(2)), fromEngToChi(e.getString(3)),
+              e.getLong(4), e.getLong(5))
           })
 
           /*
@@ -193,7 +158,7 @@ object MidAutumnActivityTest extends BaseClass{
           })
         */
 
-          calendar.add(Calendar.DAY_OF_MONTH,-1)
+          calendar.add(Calendar.DAY_OF_MONTH, -1)
 
         })
       }
@@ -204,8 +169,8 @@ object MidAutumnActivityTest extends BaseClass{
   }
 
 
-  def fromEngToChi(str:String):String = {
-    if(str != ""){
+  def fromEngToChi(str: String): String = {
+    if (str != "") {
       str match {
         //活动Id
         case "6j6jbdcd4f5i" => "电视猫中秋活动"
@@ -231,12 +196,12 @@ object MidAutumnActivityTest extends BaseClass{
         case "question_8" => "第八题"
         case "question_9" => "第九题"
         case "question_10" => "第十题"
-        case "share"=>"分享"
+        case "share" => "分享"
         //未知定义
         case "undesigned" => "未知"
         case _ => "未知"
       }
-    }else "未知"
+    } else "未知"
 
   }
 }

@@ -9,6 +9,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{GroupedData, DataFrame, SQLContext,Row}
 
+@Deprecated
 object annualReviewReport extends BaseClass{
 
   def main(args: Array[String]) {

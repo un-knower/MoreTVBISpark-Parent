@@ -13,29 +13,38 @@ import org.apache.spark.sql.SQLContext
 import org.apache.spark.storage.StorageLevel
 
 /**
- * Created by laishun on 15/10/9.
- */
-object HotRecommendSanjiPagePVUVVV extends BaseClass with DateUtil{
+  * Created by laishun on 15/10/9.
+  */
+object HotRecommendSanjiPagePVUVVV extends BaseClass with DateUtil {
 
   def main(args: Array[String]) {
     config.setAppName("HotRecommendSanjiPagePVUVVV")
-    ModuleClass.executor(this,args)
+    ModuleClass.executor(this, args)
   }
+
   override def execute(args: Array[String]) {
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
         //calculate log whose type is play
-        val path = "/mbi/parquet/{playview,detail}/" + p.startDate + "/part-*"
-        val df = sqlContext.read.load(path).persist(StorageLevel.MEMORY_AND_DISK)
-        val playRDD = df.filter("logType='playview'").select("date","path","userId").map(e => (e.getString(0), e.getString(1), e.getString(2))).
-            filter(e =>judgePath(e._2)).map(e => (getKeys(e._1, e._2), e._3)).persist(StorageLevel.MEMORY_AND_DISK)
+
+        val playRDD = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MORETV, LogTypes.PLAYVIEW)
+          .select("date", "path", "userId")
+          .map(e => (e.getString(0), e.getString(1), e.getString(2)))
+          .filter(e => judgePath(e._2)).map(e => (getKeys(e._1, e._2), e._3))
+          .persist(StorageLevel.MEMORY_AND_DISK)
+
         val userNum_play = playRDD.distinct().countByKey()
         val accessNum_play = playRDD.countByKey()
 
-        val detailRDD = df.filter("logType='detail'").select("date", "path", "userId").map(e => (e.getString(0), e.getString(1), e.getString(2))).
-            filter(e =>judgePath(e._2)).map(e => (getKeys(e._1, e._2, "detail"), e._3)).persist(StorageLevel.MEMORY_AND_DISK)
+        val detailRDD = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MORETV, LogTypes.DETAIL)
+          .select("date", "path", "userId")
+          .map(e => (e.getString(0), e.getString(1), e.getString(2)))
+          .filter(e => judgePath(e._2))
+          .map(e => (getKeys(e._1, e._2, "detail"), e._3))
+          .persist(StorageLevel.MEMORY_AND_DISK)
+
         val userNum_detail = detailRDD.distinct().countByKey()
         val accessNum_detail = detailRDD.countByKey()
 
@@ -49,26 +58,26 @@ object HotRecommendSanjiPagePVUVVV extends BaseClass with DateUtil{
         }
         //insert new data
         val sql = "INSERT INTO hotrecommendSanjiPagePVUVVV(year,month,day,type,secondPath,thirdPathCode,thirdpathName,user_num,access_num) VALUES(?,?,?,?,?,?,?,?,?)"
-        userNum_play.foreach(x =>{
-          util.insert(sql,new Integer(x._1._1),new Integer(x._1._2),x._1._3,x._1._4,x._1._5,x._1._6,CodeToNameUtils.getThirdPathName(x._1._6),new Integer(x._2.toInt),new Integer(accessNum_play(x._1).toInt))
+        userNum_play.foreach(x => {
+          util.insert(sql, new Integer(x._1._1), new Integer(x._1._2), x._1._3, x._1._4, x._1._5, x._1._6, CodeToNameUtils.getThirdPathName(x._1._6), new Integer(x._2.toInt), new Integer(accessNum_play(x._1).toInt))
         })
 
-        userNum_detail.foreach(x =>{
-          util.insert(sql,new Integer(x._1._1),new Integer(x._1._2),x._1._3,x._1._4,x._1._5,x._1._6,CodeToNameUtils.getThirdPathName(x._1._6),new Integer(x._2.toInt),new Integer(accessNum_detail(x._1).toInt))
+        userNum_detail.foreach(x => {
+          util.insert(sql, new Integer(x._1._1), new Integer(x._1._2), x._1._3, x._1._4, x._1._5, x._1._6, CodeToNameUtils.getThirdPathName(x._1._6), new Integer(x._2.toInt), new Integer(accessNum_detail(x._1).toInt))
         })
 
         playRDD.unpersist()
         detailRDD.unpersist()
         df.unpersist()
       }
-      case None =>{
+      case None => {
         throw new RuntimeException("At least need param --excuteDate.")
       }
     }
 
   }
 
-  def judgePath(path:String) = {
+  def judgePath(path: String) = {
     val reg = "home-hotrecommend(-\\d+-\\d+)?-(movie|tv|zongyi|kids|comic|mv|jilu|xiqu|hot|sports)-(\\w+)".r
     val pattern = reg findFirstMatchIn path
     val res = pattern match {
@@ -78,15 +87,15 @@ object HotRecommendSanjiPagePVUVVV extends BaseClass with DateUtil{
     res
   }
 
-  def getKeys(date:String, path:String, logType:String = "play")={
+  def getKeys(date: String, path: String, logType: String = "play") = {
     //obtain time
-    val year = date.substring(0,4)
-    val month = date.substring(5,7).toInt
+    val year = date.substring(0, 4)
+    val month = date.substring(5, 7).toInt
 
     val array = path.split("-")
-    val secondPath = array(array.length-2)
-    val thirdPath = array(array.length-1)
+    val secondPath = array(array.length - 2)
+    val thirdPath = array(array.length - 1)
 
-    (year,month,date,logType,secondPath,thirdPath)
+    (year, month, date, logType, secondPath, thirdPath)
   }
 }

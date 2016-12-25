@@ -26,8 +26,12 @@ object AccountLogin extends BaseClass with DateUtil {
       case Some(p) => {
 
         val df = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MORETV, LogTypes.MTVACCOUNT)
-        val resultRDD = df.filter("event='login'").select("date", "userId", "path").map(e => (e.getString(0), e.getString(1), e.getString(2))).
-          map(e => (getKeys(e._1, e._3), e._2)).persist(StorageLevel.MEMORY_AND_DISK)
+        val resultRDD = df
+          .filter("event='login'")
+          .select("date", "userId", "path")
+          .map(e => (e.getString(0), e.getString(1), e.getString(2)))
+          .map(e => (getKeys(e._1, e._3), e._2)).persist(StorageLevel.MEMORY_AND_DISK)
+
         val userNum = resultRDD.distinct().countByKey()
         val accessNum = resultRDD.countByKey()
 

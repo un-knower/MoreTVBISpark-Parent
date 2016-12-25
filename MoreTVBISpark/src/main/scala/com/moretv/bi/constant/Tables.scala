@@ -7,5 +7,5 @@ object Tables {
 
   val MTV_ACCOUNT = "mtv_account"
   val BBS_UCENTER_MEMBERFIELDS = "bbs_ucenter_memberfields"
-
+  val USERIDUSINGACCOUNT =  "useridByUsingAccount"
 }
