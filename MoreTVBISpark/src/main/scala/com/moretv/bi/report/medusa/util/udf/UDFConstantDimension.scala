@@ -56,10 +56,10 @@ object UDFConstantDimension {
 
 
   //筛选维度【排序方式：最新、最热、得分；标签；地区；年代】
-  val FILTER_CATEGORY_1="filter_c1"
-  val FILTER_CATEGORY_2="filter_c2"
-  val FILTER_CATEGORY_3="filter_c3"
-  val FILTER_CATEGORY_4="filter_c4"
+  val FILTER_CATEGORY_1="filterOne"
+  val FILTER_CATEGORY_2="filterTwo"
+  val FILTER_CATEGORY_3="filterThree"
+  val FILTER_CATEGORY_4="filterFour"
 
   //用来获取列表页使用
   val HOME_CLASSIFICATION = "home*classification"

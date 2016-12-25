@@ -53,34 +53,35 @@ object PathParserDimension {
   private val regex_medusa_list_category_other = (s"home\\*(classification|my_tv)\\*($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)\\*($MEDUSA_LIST_PAGE_LEVEL_2_REGEX)").r
 
 
-  private val regex_moretv_filter = (".*multi_search-(hot|new|score)-([\\S]+)-([\\S]+)-(all|[0-9]+-[0-9]+)").r
-  private val regex_medusa_filter = (".*retrieval\\*(hot|new|score)\\*([\\S]+)\\*([\\S]+)\\*(all|[0-9]+\\*[0-9]+)").r
+  private val regex_moretv_filter = (".*multi_search-(hot|new|score)-([\\S]+?)-([\\S]+?)-(all|qita|[0-9]+[-0-9]*)").r
+  //private val regex_moretv_filter = (".*multi_search-(hot|new|score)-([\\S]+?)-([\\S]+?)-(.*)").r
+  private val regex_medusa_filter = (".*retrieval\\*(hot|new|score)\\*([\\S]+?)\\*([\\S]+?)\\*(all|qita|[0-9]+[\\*0-9]*)").r
 
   //获取筛选维度【排序方式：最新、最热、得分；标签；地区；年代】
   def getFilterCategory(path: String,come_from: String,index:Int): String = {
     var result: String = null
-    if(index>4){
-      //CHECK INDEX IF OUT OF BOUND
-      result
+   if(null==path){
+      result=null
+    }else if(index>4){
+      result=null
     }else{
-    if(come_from.equalsIgnoreCase(UDFConstantDimension.RETRIEVAL_DIMENSION)) {
-      regex_medusa_filter findFirstMatchIn  path match {
-        case Some(p) =>  {
-          result=p.group(index)
+      if(come_from.equalsIgnoreCase(UDFConstantDimension.RETRIEVAL_DIMENSION)) {
+        regex_medusa_filter findFirstMatchIn  path match {
+          case Some(p) =>  {
+            result=p.group(index)
+          }
+          case None => null
         }
-        case None => null
-      }
-      result = null
-    } else if (come_from.equalsIgnoreCase(UDFConstantDimension.MULTI_SEARCH)) {
-      regex_moretv_filter findFirstMatchIn  path match {
-        case Some(p) =>  {
-          result=p.group(index)
+      } else if (come_from.equalsIgnoreCase(UDFConstantDimension.MULTI_SEARCH)) {
+        regex_moretv_filter findFirstMatchIn  path match {
+          case Some(p) =>  {
+            result=p.group(index)
+          }
+          case None => null
         }
-        case None => null
       }
     }
-    result
-  }
+  result
   }
 
       /*获取列表页入口信息
@@ -90,7 +91,9 @@ object PathParserDimension {
   def getListCategoryMedusa(path: String,index_input:Int): String = {
     val index=index_input+1
     var result:String = null
-    if(path.contains(UDFConstantDimension.SEARCH_DIMENSION)||path.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)){
+    if(null==path){
+      result=null
+    }else if(path.contains(UDFConstantDimension.SEARCH_DIMENSION)||path.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)){
       result=null
     }else if(path.contains(UDFConstantDimension.HOME_CLASSIFICATION)||path.contains(UDFConstantDimension.HOME_MY_TV)){
       /*少儿
@@ -175,10 +178,10 @@ object PathParserDimension {
             outputType match {
               //获取筛选维度【排序方式：最新、最热、得分；标签；地区；年代】
               case UDFConstantDimension.FILTER_CATEGORY_1 => {
-                result=getFilterCategory(path,UDFConstantDimension.RETRIEVAL_DIMENSION,1)
+                result= getFilterCategory(path,UDFConstantDimension.RETRIEVAL_DIMENSION,1)
               }
               case UDFConstantDimension.FILTER_CATEGORY_2 => {
-                result=getFilterCategory(path,UDFConstantDimension.RETRIEVAL_DIMENSION,2)
+                result= getFilterCategory(path,UDFConstantDimension.RETRIEVAL_DIMENSION,2)
               }
               case UDFConstantDimension.FILTER_CATEGORY_3 => {
                 result=getFilterCategory(path,UDFConstantDimension.RETRIEVAL_DIMENSION,3)
