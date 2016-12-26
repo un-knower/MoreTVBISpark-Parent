@@ -52,6 +52,13 @@ object UDFConstantDimension {
   val MAIN_CATEGORY = "main_category"      // For medusa,从pathMain中获取;For moretv,从path中获取
   val SUB_CATEGORY = "sub_category"        // For medusa,从pathMain中获取;For moretv,从path中获取
 
+  //used for 列表页过滤
+  val HORIZONTAL="horizontal"
+  val MV_RECOMMEND_HOME_PAGE="mvRecommendHomePage"
+  val MV_TOP_HOME_PAGE="mvTopHomePage"
+
+  val UNIQUE_KEY ="md"
+
 
 
 

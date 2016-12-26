@@ -93,7 +93,9 @@ object PathParserDimension {
     var result:String = null
     if(null==path){
       result=null
-    }else if(path.contains(UDFConstantDimension.SEARCH_DIMENSION)||path.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)){
+    }else if(path.contains(UDFConstantDimension.HORIZONTAL)||path.contains(UDFConstantDimension.MV_RECOMMEND_HOME_PAGE)||
+      path.contains(UDFConstantDimension.MV_TOP_HOME_PAGE)||path.contains(UDFConstantDimension.SEARCH_DIMENSION)||
+      path.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)){
       result=null
     }else if(path.contains(UDFConstantDimension.HOME_CLASSIFICATION)||path.contains(UDFConstantDimension.HOME_MY_TV)){
       /*少儿
