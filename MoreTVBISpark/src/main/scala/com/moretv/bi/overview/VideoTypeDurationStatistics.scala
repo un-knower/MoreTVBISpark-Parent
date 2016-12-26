@@ -48,7 +48,8 @@ object VideoTypeDurationStatistics extends BaseClass with DateUtil {
         val liveRDD = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MORETV, LogTypes.LIVE)
           .filter("duration < 3600 and duration > 0 ")
           .select("date", "path", "duration").map(e => (e.getString(0), e.getString(1), e.getInt(2)))
-          .filter(e => judgePath(e._2, "live")).map(e => (getKeys(e._1, e._2), e._3)).persist(StorageLevel.MEMORY_AND_DISK)
+          .filter(e => judgePath(e._2, "live")).map(e => (getKeys(e._1, e._2), e._3))
+          .persist(StorageLevel.MEMORY_AND_DISK)
 
         val liveDurationRDD = liveRDD.map(e => ((e._1._1, e._1._2, e._1._3, "total", e._1._5), e._2))
           .union(liveRDD)
@@ -87,7 +88,6 @@ object VideoTypeDurationStatistics extends BaseClass with DateUtil {
         playRDD.unpersist()
         liveRDD.unpersist()
         pastRDD.unpersist()
-        df.unpersist()
       }
       case None => {
         throw new RuntimeException("At least need param --excuteDate.")

@@ -66,7 +66,6 @@ object HotRecommendTagPagePVUVVV extends BaseClass with DateUtil {
 
         playRDD.unpersist()
         detailRDD.unpersist()
-        df.unpersist()
       }
       case None => {
         throw new RuntimeException("At least need param --excuteDate.")
