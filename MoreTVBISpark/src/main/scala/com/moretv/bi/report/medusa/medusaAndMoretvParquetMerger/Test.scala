@@ -114,6 +114,38 @@ object Test  {
   }
 
 
+  def test_shaixuan_v2: Unit ={
+    val retrieval_list=List("home*classification*tv-tv-retrieval*hot*dushi*hanguo*all",
+      "home*classification*tv-tv-retrieval*hot*dushi*hanguo*2000*2009","home*my_tv*movie-movie-retrieval*hot*kongbu*neidi*2016",
+    "home*classification*movie-movie-retrieval*hot*all*all*qita")
+    for (path <- retrieval_list){
+      println(path)
+      for( i <- 1 to 4){
+        val result=PathParserDimension.getFilterCategory(path,UDFConstantDimension.RETRIEVAL_DIMENSION,i)
+        println("index:"+i+",result:"+result)
+    }
+  }
+  }
+
+
+  def test_shaixuan_v3: Unit ={
+    val multi_search_list=List("home-movie-multi_search-hot-kongbu-meiguo-all-peoplealsolike",
+      "home-movie-multi_search-hot-kongbu-ouzhou-all-similar","home-movie-multi_search-hot-lishi-hanguo-all",
+      "home-movie-multi_search-hot-kehuan-meiguo-2015",
+      "home-movie-multi_search-hot-juqing-meiguo-2000-2009",
+      "home-movie-multi_search-hot-xiju-neidi-qita",
+      "home-mv-multi_search-hot-liuxing-neidi-2016","home-movie-multi_search-hot-kongbu-hanguo-2016"
+    )
+     for (path <- multi_search_list){
+      println(path)
+      for( i <- 1 to 4){
+        val result=PathParserDimension.getFilterCategory(path,UDFConstantDimension.MULTI_SEARCH,i)
+        println("index:"+i+",result:"+result)
+      }
+    }
+  }
+
+
   //测试筛选功能
   def test_shaixuan: Unit ={
     //测试medusa
@@ -142,7 +174,10 @@ home-movie-multi_search-hot-juqing-meiguo-2000-2009      最后年代是日期�
     val multi_search_list=List("home-movie-multi_search-hot-kongbu-meiguo-all-peoplealsolike",
       "home-movie-multi_search-hot-kongbu-ouzhou-all-similar","home-movie-multi_search-hot-lishi-hanguo-all",
       "home-movie-multi_search-hot-kehuan-meiguo-2015",
-    "home-movie-multi_search-hot-juqing-meiguo-2000-2009")
+    "home-movie-multi_search-hot-juqing-meiguo-2000-2009",
+    "home-movie-multi_search-hot-xiju-neidi-qita",
+    "home-mv-multi_search-hot-liuxing-neidi-2016","home-movie-multi_search-hot-kongbu-hanguo-2016"
+    )
     for (path <- multi_search_list){
       regex_moretv_filter findFirstMatchIn path match {
         case Some(p) => {
@@ -163,22 +198,12 @@ home-movie-multi_search-hot-juqing-meiguo-2000-2009      最后年代是日期�
 
 
   def main(args: Array[String]): Unit = {
-    val index=5
-    if(index>4){
-      println("bbbb")
-
-      return null
-    }
-    println("a")
-    //test_shaixuan
+    test_shaixuan_v2
     //test
-
 
     //val regex_moretv_search = (".*retrieval\\*([\\S]+)\\*([\\S]+)\\*([\\S]+)\\*([\\S]+)").r
 
-
     System.exit(0)
-
 
     val path = "home*(classification*kids-kids_home-kids_anim*英文动画"
 
