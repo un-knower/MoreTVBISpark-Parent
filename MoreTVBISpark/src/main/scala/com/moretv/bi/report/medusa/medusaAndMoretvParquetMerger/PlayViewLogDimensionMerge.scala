@@ -3,6 +3,7 @@ package com.moretv.bi.report.medusa.medusaAndMoretvParquetMerger
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
+import com.moretv.bi.report.medusa.util.FilesInHDFS
 import com.moretv.bi.report.medusa.util.udf.UDFConstantDimension
 import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
@@ -54,9 +55,10 @@ object PlayViewLogDimensionMerge extends BaseClass {
         println("df_daily.count():"+df_daily.count())
 
         //加载生产环境的维度信息
-        val df_online=sqlContext.read.parquet(onLineInputDir)
-        println("df_online.count():"+df_online.count())
-
+        val isExist=FilesInHDFS.IsInputGenerateSuccess(onLineInputDir)
+        if(isExist){
+          val df_online=sqlContext.read.parquet(onLineInputDir)
+          println("df_online.count():"+df_online.count())
         if (p.deleteOld) {
           HdfsUtil.deleteHDFSFile(onLineOutputDir)
         }
@@ -67,8 +69,13 @@ object PlayViewLogDimensionMerge extends BaseClass {
 
         val df_result=df_merge.dropDuplicates(Array(unique_key))
         println("df_result.count():"+df_result.count())
-
         df_result.write.parquet(onLineOutputDir)
+        }else{
+          if (p.deleteOld) {
+            HdfsUtil.deleteHDFSFile(onLineOutputDir)
+          }
+          df_daily.write.parquet(onLineOutputDir)
+        }
       }
       case None => {
         throw new RuntimeException("At least needs one param: startDate!")
