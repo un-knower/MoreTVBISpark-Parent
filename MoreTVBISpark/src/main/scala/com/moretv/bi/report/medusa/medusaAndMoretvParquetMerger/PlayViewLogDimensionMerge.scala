@@ -37,7 +37,7 @@ object PlayViewLogDimensionMerge extends BaseClass {
         val logType = "sourceList"
         val onLineInputDir=s"$inputDirBaseOnline/$logType"
         val onLineOutputDir=s"$inputDirBaseOnline/$logType"
-        val unique_key=UDFConstantDimension.UNIQUE_KEY
+        val unique_key=UDFConstantDimension.SOURCE_LIST_SK
 
         println("inputDirBaseDaily:"+inputDirBaseDaily+",onLineOutputDir:" + onLineOutputDir)
 

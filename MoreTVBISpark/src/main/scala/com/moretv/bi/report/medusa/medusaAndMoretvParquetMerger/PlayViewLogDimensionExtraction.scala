@@ -19,6 +19,8 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
   *
   * take source_list（列表页分类入口） for example
   */
+
+//not used,it can be instead of PlayViewLogDimensionExchange
 object PlayViewLogDimensionExtraction extends BaseClass {
   def main(args: Array[String]) {
     config.set("spark.executor.memory", "10g").
@@ -36,7 +38,7 @@ object PlayViewLogDimensionExtraction extends BaseClass {
         val inputLogType = "playview2filter"
         val outputDirBase = "/data_warehouse/dimensions/medusa/daily"
         val outputType = "sourceList"
-        val unique_key=UDFConstantDimension.UNIQUE_KEY
+        val unique_key=UDFConstantDimension.SOURCE_LIST_SK
 
         val cal = Calendar.getInstance()
         cal.setTime(DateFormatUtils.readFormat.parse(startDate))

@@ -47,26 +47,12 @@ object UDFConstantDimension {
   val MULTI_SEARCH = "multi_search"
 
   val SEARCH_DIMENSION = "search"
-  val SEARCH_KEYWORD = "search_keyword"    // For medusa,从pathMain中获取;For moretv,从path中获取;
-  val SEARCH_FROM = "search_from"          // For medusa,从pathMain中获取;For moretv,从path中获取
-  val MAIN_CATEGORY = "main_category"      // For medusa,从pathMain中获取;For moretv,从path中获取
-  val SUB_CATEGORY = "sub_category"        // For medusa,从pathMain中获取;For moretv,从path中获取
+
 
   //used for 列表页过滤
   val HORIZONTAL="horizontal"
   val MV_RECOMMEND_HOME_PAGE="mvRecommendHomePage"
   val MV_TOP_HOME_PAGE="mvTopHomePage"
-
-  val UNIQUE_KEY ="md"
-
-
-
-
-  //筛选维度【排序方式：最新、最热、得分；标签；地区；年代】
-  val FILTER_CATEGORY_1="filterOne"
-  val FILTER_CATEGORY_2="filterTwo"
-  val FILTER_CATEGORY_3="filterThree"
-  val FILTER_CATEGORY_4="filterFour"
 
   //用来获取列表页使用
   val HOME_CLASSIFICATION = "home*classification"
@@ -74,7 +60,60 @@ object UDFConstantDimension {
   val MEDUSA_LIST_Page_LEVEL_1 = Array("movie","tv","zongyi","jilu","comic","xiqu","collect","accountcenter_home","account")
   // MEDUSA_LIST_Page_LEVEL_2 use MedusaPageDetailInfo , not need mv kids and sport in MEDUSA_LIST_Page_LEVEL_1
 
+  val MEDUSA_BIG_FACT_TABLE_DIR="/log/medusaAndMoretvMergerDimension"
+  val MEDUSA_BIG_FACT_TABLE_PLAY_TYPE="playview2filter"
+  val MEDUSA_DATA_WAREHOUSE="/data_warehouse/medusa"
+  val MEDUSA_DAILY_DIMENSION_DATA_WAREHOUSE="/data_warehouse/dimensions/medusa/daily"
+  /*-------------------筛选维度-------------------*/
+  //筛选维度表名称
+  val SOURCE_RETRIEVAL_TABLE = "source_retrieval"
+  //筛选维度字段【排序方式：最新、最热、得分；标签；地区；年代】
+  val FILTER_CATEGORY_1="sort_way"
+  val FILTER_CATEGORY_2="tag"
+  val FILTER_CATEGORY_3="area"
+  val FILTER_CATEGORY_4="decade"
+  //维度表主键
+  val SOURCE_RETRIEVAL_SK = "source_retrieval_sk"
+  //具体字段,用来生成md5
+  val SOURCE_RETRIEVAL_COLUMN="sort_way,tag,area,decade"
+  /*-------------------筛选维度end-------------------*/
 
+  /*-------------------搜索维度-------------------*/
+  //搜索维度表名称
+  val SOURCE_SEARCH_TABLE = "source_search"
+  //搜索来源维度字段
+  val SEARCH_FROM = "search_from"
+  val SEARCH_KEYWORD = "search_keyword"
+
+  //维度表主键
+  val SOURCE_SEARCH_SK = "source_search_sk"
+  //具体字段,用来生成md5
+  val SOURCE_SEARCH_COLUMN="search_from,search_keyword"
+  /*-------------------搜索维度end-------------------*/
+
+  /*-------------------列表页维度-------------------*/
+  //列表页维度表名称
+  val SOURCE_LIST_TABLE = "source_list"
+  //列表页维度字段
+  val MAIN_CATEGORY = "main_category"
+  val SUB_CATEGORY = "second_category"
+  //维度表主键
+  val SOURCE_LIST_SK = "source_list_sk"
+  //具体字段,用来生成md5
+  val SOURCE_LIST_COLUMN="main_category,second_category"
+  /*-------------------列表页维度end-------------------*/
+
+  /*-------------------推荐入口维度-------------------*/
+  //推荐入口维度表名称
+  val SOURCE_RECOMMEND_TABLE = "source_recommend"
+  //推荐入口维度字段
+  val RECOMMEND_SOURCE_TYPE = "source_type"
+  val RECOMMEND_PROPERTY = "recommend_property"
+  //维度表主键
+  val SOURCE_RECOMMEND_SK = "source_recommend_sk"
+  //具体字段,用来生成md5
+  val SOURCE_RECOMMEND_COLUMN="source_type,recommend_property"
+  /*-------------------列表页维度end-------------------*/
 
 
 
