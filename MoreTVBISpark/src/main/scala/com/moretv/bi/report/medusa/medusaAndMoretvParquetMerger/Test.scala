@@ -4,6 +4,8 @@ import com.moretv.bi.report.medusa.util.udf.{PathParserDimension, UDFConstantDim
 
 /**
   * Created by baozhiwang on 2016/12/13.
+  *
+  * used in prod unit test,not delete
   */
 object Test  {
 
@@ -198,7 +200,14 @@ home-movie-multi_search-hot-juqing-meiguo-2000-2009      最后年代是日期�
 
 
   def main(args: Array[String]): Unit = {
-    test_shaixuan_v2
+    val number_regex=("^\\d+$").r
+     var result="91a"
+    number_regex findFirstMatchIn result match {
+      case Some(p) =>
+      case None => result=null
+    }
+    println("----"+result)
+    //test_shaixuan_v2
     //test
 
     //val regex_moretv_search = (".*retrieval\\*([\\S]+)\\*([\\S]+)\\*([\\S]+)\\*([\\S]+)").r

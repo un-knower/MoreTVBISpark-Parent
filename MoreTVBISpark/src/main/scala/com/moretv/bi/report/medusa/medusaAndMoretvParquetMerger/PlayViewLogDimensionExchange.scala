@@ -44,6 +44,9 @@ object PlayViewLogDimensionExchange extends BaseClass {
         val outputTypeSourceRetrieval = UDFConstantDimension.SOURCE_RETRIEVAL_TABLE
         val outputTypeSourceSearch = UDFConstantDimension.SOURCE_SEARCH_TABLE
         val outputTypeSourceList = UDFConstantDimension.SOURCE_LIST_TABLE
+        val outputTypeSourceRecommend = UDFConstantDimension.SOURCE_RECOMMEND_TABLE
+        val outputTypeSourceSpecial = UDFConstantDimension.SOURCE_SPECIAL_TABLE
+
 
         var printArrayBuffer=ArrayBuffer("")
 
@@ -59,13 +62,13 @@ object PlayViewLogDimensionExchange extends BaseClass {
           val outputPathSourceRetrieval = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceRetrieval"
           val outputPathSourceSearch = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceSearch"
           val outputPathSourceList = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceList"
-          printArrayBuffer+=(outputPath,outputPathSourceRetrieval,outputPathSourceSearch,outputPathSourceList)
+          val outputPathSourceRecommend = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceRecommend"
+          val outputPathSourceSpecial = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceSpecial"
+
+          printArrayBuffer+=(outputPath,outputPathSourceRetrieval,outputPathSourceSearch,outputPathSourceList,outputPathSourceRecommend)
           for(i <- 1 until printArrayBuffer.length){
             println(s"$i:"+printArrayBuffer(i))
           }
-
-          println("inputDirFatTable" + inputDirFatTable+ ",outputPath:" + outputPath)
-          println("outputPathSourceRetrieval" + inputDirFatTable+ ",outputPath:" + outputPath)
 
           if (inputDirFatTableFlag) {
             if (p.deleteOld) {
@@ -73,6 +76,8 @@ object PlayViewLogDimensionExchange extends BaseClass {
               HdfsUtil.deleteHDFSFile(outputPathSourceRetrieval)
               HdfsUtil.deleteHDFSFile(outputPathSourceSearch)
               HdfsUtil.deleteHDFSFile(outputPathSourceList)
+              HdfsUtil.deleteHDFSFile(outputPathSourceRecommend)
+              HdfsUtil.deleteHDFSFile(outputPathSourceSpecial)
             }
               println("-------------------------in inputDirFatTableFlag  --------------")
               val df = sqlContext.read.parquet(inputDirFatTable)
@@ -80,16 +85,22 @@ object PlayViewLogDimensionExchange extends BaseClass {
               println("df.columns.toList.mkString(\",\"):"+df.columns.toList.mkString(","))
               val columns=df.columns.toList.mkString(",")
 
-              val sourceListMd= UDFConstantDimension.SOURCE_LIST_COLUMN
+              val sourceListMd=UDFConstantDimension.SOURCE_LIST_COLUMN
               val sourceListMdKey=UDFConstantDimension.SOURCE_LIST_SK
               val filterMd=UDFConstantDimension.SOURCE_RETRIEVAL_COLUMN
               val filterMdKey=UDFConstantDimension.SOURCE_RETRIEVAL_SK
               val searchMd=UDFConstantDimension.SOURCE_SEARCH_COLUMN
               val searchMdKey=UDFConstantDimension.SOURCE_SEARCH_SK
+              val recommendMd=UDFConstantDimension.SOURCE_RECOMMEND_COLUMN
+              val recommendKey=UDFConstantDimension.SOURCE_RECOMMEND_SK
+              val specialMd=UDFConstantDimension.SOURCE_SPECIAL_COLUMN
+              val specialKey=UDFConstantDimension.SOURCE_SPECIAL_SK
 
               //将大宽表进行维度替换，生成维度替换后的事实表
               df.registerTempTable("log_data")
-              val sqlSelectMedusa = s"select md5(concat($sourceListMd)) $sourceListMdKey,md5(concat($filterMd)) $filterMdKey,md5(concat($searchMd)) $searchMdKey,$columns  from log_data "
+              val sqlSelectMedusa = s"select md5(concat($sourceListMd)) $sourceListMdKey,md5(concat($filterMd)) $filterMdKey,"+
+                s"md5(concat($searchMd)) $searchMdKey,md5(concat($recommendMd)) $recommendKey,"+
+                s"md5(concat($specialMd)) $specialKey,$columns from log_data "
               sqlContext.sql(sqlSelectMedusa).write.parquet(outputPath)
 
              //生成维度字典数据
@@ -99,6 +110,10 @@ object PlayViewLogDimensionExchange extends BaseClass {
              sqlContext.sql(sqlSelectSourceSearch).write.parquet(outputPathSourceSearch)
              val sqlSelectSourceList = s"select distinct md5(concat($sourceListMd)) $sourceListMdKey,$sourceListMd from log_data "
              sqlContext.sql(sqlSelectSourceList).write.parquet(outputPathSourceList)
+             val sqlSelectSourceRecommend = s"select distinct md5(concat($recommendMd)) $recommendKey,$recommendMd from log_data "
+             sqlContext.sql(sqlSelectSourceRecommend).write.parquet(outputPathSourceRecommend)
+             val sqlSelectSourceSpecial = s"select distinct md5(concat($specialMd)) $specialKey,$specialMd from log_data "
+             sqlContext.sql(sqlSelectSourceSpecial).write.parquet(outputPathSourceSpecial)
           }
           cal.add(Calendar.DAY_OF_MONTH, -1)
         })

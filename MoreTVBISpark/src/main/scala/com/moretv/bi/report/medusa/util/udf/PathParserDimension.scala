@@ -12,6 +12,8 @@ import com.moretv.bi.util.{CodeToNameUtils, SubjectUtils}
 
 object PathParserDimension {
 
+
+  private val number_regex=("^\\d+$").r
   //解析电视猫2.x的搜索关键词
   private val regex_moretv_search_keyword = ("(.*-search-)([0-9A-Za-z]+)").r
   def getMoretvSearchKeyword(str: String): String = {
@@ -249,6 +251,13 @@ object PathParserDimension {
               case UDFConstant.LAUNCHERACCESSLOCATION => {
                 result = getPathMainInfo(path,1,3)
                 if(result!=null){
+                  //check if result is number,if result is number:launcher_position_index else launcher_position
+                  //home*recommendation*1
+                   number_regex findFirstMatchIn result match {
+                    case Some(p) => result=null
+                    case None =>
+                  }
+
                   if(getPathMainInfo(path,1,2)==UDFConstant.MedusaLive || !UDFConstant.MedusaLauncherAccessLocation
                     .contains(result)){
                     result = null
@@ -259,6 +268,23 @@ object PathParserDimension {
                     result = "search"
                   }else if(getPathMainInfo(path,2,1)=="setting"){
                     result = "setting"
+                  }
+                }
+              }
+                //launcher_position_index 首页位置索引
+              case UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX => {
+                result = getPathMainInfo(path,1,3)
+                if(result!=null){
+                  //check if result is number,if result is number:launcher_position_index else launcher_position
+                  //home*recommendation*1
+                   number_regex findFirstMatchIn result match {
+                    case Some(p) =>
+                    case None => result=null
+                  }
+
+                  if(getPathMainInfo(path,1,2)==UDFConstant.MedusaLive || !UDFConstant.MedusaLauncherAccessLocation
+                    .contains(result)){
+                    result = null
                   }
                 }
               }
@@ -415,6 +441,10 @@ object PathParserDimension {
                 case UDFConstant.LAUNCHERACCESSLOCATION => {
                   result = getSplitInfo(path,2)
                   if(result!=null){
+                    number_regex findFirstMatchIn result match {
+                      case Some(p) => result=null
+                      case None =>
+                    }
                     // 如果accessArea为“navi”和“classification”，则保持不变，即在launcherAccessLocation中
                     if(!UDFConstant.MoretvLauncherAccessLocation.contains(result)){
                       // 如果不在launcherAccessLocation中，则判断accessArea是否在uppart中
@@ -429,6 +459,16 @@ object PathParserDimension {
                       }else{
                         result = null
                       }
+                    }
+                  }
+                }
+                //launcher_position_index 首页位置索引
+                case UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX => {
+                  result = getSplitInfo(path,2)
+                  if(result!=null){
+                    number_regex findFirstMatchIn result match {
+                      case Some(p) =>
+                      case None =>result=null
                     }
                   }
                 }

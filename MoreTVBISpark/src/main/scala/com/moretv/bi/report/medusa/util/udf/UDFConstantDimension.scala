@@ -60,6 +60,8 @@ object UDFConstantDimension {
   val MEDUSA_LIST_Page_LEVEL_1 = Array("movie","tv","zongyi","jilu","comic","xiqu","collect","accountcenter_home","account")
   // MEDUSA_LIST_Page_LEVEL_2 use MedusaPageDetailInfo , not need mv kids and sport in MEDUSA_LIST_Page_LEVEL_1
 
+
+
   val MEDUSA_BIG_FACT_TABLE_DIR="/log/medusaAndMoretvMergerDimension"
   val MEDUSA_BIG_FACT_TABLE_PLAY_TYPE="playview2filter"
   val MEDUSA_DATA_WAREHOUSE="/data_warehouse/medusa"
@@ -107,13 +109,45 @@ object UDFConstantDimension {
   //推荐入口维度表名称
   val SOURCE_RECOMMEND_TABLE = "source_recommend"
   //推荐入口维度字段
-  val RECOMMEND_SOURCE_TYPE = "source_type"
+  val RECOMMEND_SOURCE_TYPE = "source_type"   //peoplealsolike,similar,guessyoulike
   val RECOMMEND_PROPERTY = "recommend_property"
+  val RECOMMEND_PRE_CONTENT_TYPE ="pre_content_type"
   //维度表主键
   val SOURCE_RECOMMEND_SK = "source_recommend_sk"
   //具体字段,用来生成md5
-  val SOURCE_RECOMMEND_COLUMN="source_type,recommend_property"
-  /*-------------------列表页维度end-------------------*/
+  val SOURCE_RECOMMEND_COLUMN="source_type,recommend_property,pre_content_type"
+  /*-------------------推荐入口维度end-------------------*/
+
+
+  /*-------------------特殊入口维度-------------------*/
+  //特殊入口维度表名称
+  val SOURCE_SPECIAL_TABLE = "source_special"
+  //列表页维度字段
+  val SPECIAL_SOURCE_TYPE = "special_type"
+  val SPECIAL_SOURCE_ID = "special_id"
+  val SPECIAL_SOURCE_NAME = "special_name"
+  //维度表主键
+  val SOURCE_SPECIAL_SK = "source_special_sk"
+  //具体字段,用来生成md5
+  val SOURCE_SPECIAL_COLUMN="special_type,special_id,special_name"
+  /*-------------------特殊入口入口维度end-------------------*/
+
+
+  /*-------------------首页来源入口入口维度-------------------*/
+  //列表页维度表名称
+  val SOURCE_LAUNCHER_TABLE = "source_launcher"
+  //列表页维度字段
+  val SOURCE_LAUNCHER_AREA = "launcher_area"
+  val SOURCE_LAUNCHER_POSITION = "launcher_position"
+  val SOURCE_LAUNCHER_POSITION_INDEX = "launcher_position_index"
+  //维度表主键
+  val SOURCE_LAUNCHER_SK = "source_launcher_sk"
+  //具体字段,用来生成md5
+  val SOURCE_LAUNCHER_COLUMN="launcher_area,launcher_position"
+  /*-------------------首页来源入口入口维度end-------------------*/
+
+
+
 
 
 
