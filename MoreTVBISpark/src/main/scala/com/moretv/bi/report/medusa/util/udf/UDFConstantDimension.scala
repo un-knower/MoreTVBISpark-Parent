@@ -66,6 +66,7 @@ object UDFConstantDimension {
   val MEDUSA_BIG_FACT_TABLE_PLAY_TYPE="playview2filter"
   val MEDUSA_DATA_WAREHOUSE="/data_warehouse/medusa"
   val MEDUSA_DAILY_DIMENSION_DATA_WAREHOUSE="/data_warehouse/dimensions/medusa/daily"
+  val MEDUSA_DIMENSION_DATA_WAREHOUSE="/data_warehouse/dimensions/medusa"
   /*-------------------筛选维度-------------------*/
   //筛选维度表名称
   val SOURCE_RETRIEVAL_TABLE = "source_retrieval"
@@ -143,7 +144,7 @@ object UDFConstantDimension {
   //维度表主键
   val SOURCE_LAUNCHER_SK = "source_launcher_sk"
   //具体字段,用来生成md5
-  val SOURCE_LAUNCHER_COLUMN="launcher_area,launcher_position"
+  val SOURCE_LAUNCHER_COLUMN="launcher_area,launcher_position,launcher_position_index"
   /*-------------------首页来源入口入口维度end-------------------*/
 
 

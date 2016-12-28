@@ -46,6 +46,7 @@ object PlayViewLogDimensionExchange extends BaseClass {
         val outputTypeSourceList = UDFConstantDimension.SOURCE_LIST_TABLE
         val outputTypeSourceRecommend = UDFConstantDimension.SOURCE_RECOMMEND_TABLE
         val outputTypeSourceSpecial = UDFConstantDimension.SOURCE_SPECIAL_TABLE
+        val outputTypeSourceLauncher = UDFConstantDimension.SOURCE_LAUNCHER_TABLE
 
 
         var printArrayBuffer=ArrayBuffer("")
@@ -64,6 +65,7 @@ object PlayViewLogDimensionExchange extends BaseClass {
           val outputPathSourceList = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceList"
           val outputPathSourceRecommend = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceRecommend"
           val outputPathSourceSpecial = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceSpecial"
+          val outputPathSourceLauncher = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceLauncher"
 
           printArrayBuffer+=(outputPath,outputPathSourceRetrieval,outputPathSourceSearch,outputPathSourceList,outputPathSourceRecommend)
           for(i <- 1 until printArrayBuffer.length){
@@ -78,6 +80,7 @@ object PlayViewLogDimensionExchange extends BaseClass {
               HdfsUtil.deleteHDFSFile(outputPathSourceList)
               HdfsUtil.deleteHDFSFile(outputPathSourceRecommend)
               HdfsUtil.deleteHDFSFile(outputPathSourceSpecial)
+              HdfsUtil.deleteHDFSFile(outputPathSourceLauncher)
             }
               println("-------------------------in inputDirFatTableFlag  --------------")
               val df = sqlContext.read.parquet(inputDirFatTable)
@@ -95,6 +98,8 @@ object PlayViewLogDimensionExchange extends BaseClass {
               val recommendKey=UDFConstantDimension.SOURCE_RECOMMEND_SK
               val specialMd=UDFConstantDimension.SOURCE_SPECIAL_COLUMN
               val specialKey=UDFConstantDimension.SOURCE_SPECIAL_SK
+              val launcherMd=UDFConstantDimension.SOURCE_LAUNCHER_COLUMN
+              val launcherKey=UDFConstantDimension.SOURCE_LAUNCHER_SK
 
               //将大宽表进行维度替换，生成维度替换后的事实表
               df.registerTempTable("log_data")
@@ -114,6 +119,8 @@ object PlayViewLogDimensionExchange extends BaseClass {
              sqlContext.sql(sqlSelectSourceRecommend).write.parquet(outputPathSourceRecommend)
              val sqlSelectSourceSpecial = s"select distinct md5(concat($specialMd)) $specialKey,$specialMd from log_data "
              sqlContext.sql(sqlSelectSourceSpecial).write.parquet(outputPathSourceSpecial)
+             val sqlSelectSourceLauncher = s"select distinct md5(concat($launcherMd)) $launcherKey,$launcherMd from log_data "
+             sqlContext.sql(sqlSelectSourceLauncher).write.parquet(outputPathSourceLauncher)
           }
           cal.add(Calendar.DAY_OF_MONTH, -1)
         })
