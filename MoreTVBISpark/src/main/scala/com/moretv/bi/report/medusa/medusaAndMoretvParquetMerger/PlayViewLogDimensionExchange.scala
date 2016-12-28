@@ -110,7 +110,7 @@ object PlayViewLogDimensionExchange extends BaseClass {
               df.registerTempTable("log_data")
               val sqlSelectMedusa = s"select md5(concat($sourceListMd)) $sourceListMdKey,md5(concat($filterMd)) $filterMdKey,"+
                 s"md5(concat($searchMd)) $searchMdKey,md5(concat($recommendMd)) $recommendKey,"+
-                s"md5(concat($specialMd)) $specialKey,$columns from log_data "
+                s"md5(concat($specialMd)) $specialKey,md5(concat($launcherMd)) $launcherKey,$columns from log_data "
               sqlContext.sql(sqlSelectMedusa).write.parquet(outputPath)
 
              //生成维度字典数据

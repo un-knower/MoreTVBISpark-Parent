@@ -47,9 +47,10 @@ object PlayViewLogDimensionMerge extends BaseClass {
 
           val onLineDimensionDir = s"$inputDirBaseOnline/$logType"
           val unique_key = logTypeAndUniqueKeyMap(logType)
-
+          val onLineDimensionDirTmp=s"${onLineDimensionDir}_tmp"
           println("inputDirBaseDaily:" + inputDirBaseDaily)
           println("onLineDimensionDir:" + onLineDimensionDir)
+          println("onLineDimensionDirTmp:" + onLineDimensionDirTmp)
 
           //加载历史维度信息 /data_warehouse/dimensions/medusa/daily/20161201/sourceList
           val cal = Calendar.getInstance()
@@ -62,26 +63,33 @@ object PlayViewLogDimensionMerge extends BaseClass {
             println(s"loading $inputDirBaseDaily/$date/$logType/")
           }
           val df_daily = sqlContext.read.parquet(inputs: _*)
-          println("df_daily.count():" + df_daily.count())
+          println("每日维度数量:" + df_daily.count())
           val distinct_df_daily=df_daily.dropDuplicates(Array(unique_key))
-          println("distinct_df_daily.count():" + distinct_df_daily.count())
+          println("每日维度去重后维度数量:" + distinct_df_daily.count())
 
           //加载生产环境的维度信息
           val isExist = FilesInHDFS.IsInputGenerateSuccess(onLineDimensionDir)
           if (isExist) {
+            println("====合并每日的维度和线上维度，去重，写入hdfs文件夹")
             val df_online = sqlContext.read.parquet(onLineDimensionDir)
-            println("df_online.count():" + df_online.count())
-            //做合并，去重，写入hdfs文件夹
-            val df_merge = df_daily unionAll df_online
-            println("df_merge.count():" + df_merge.count())
+            println("线上维度数量:" + df_online.count())
+            val df_merge = distinct_df_daily unionAll df_online
+            println("合并后维度数量:" + df_merge.count())
 
             val df_result = df_merge.dropDuplicates(Array(unique_key))
-            println("df_result.count():" + df_result.count())
+            println("合并去重后维度数量:" + df_result.count())
+            HdfsUtil.deleteHDFSFile(onLineDimensionDirTmp)
+            df_result.write.parquet(onLineDimensionDirTmp)
             if (p.deleteOld) {
               HdfsUtil.deleteHDFSFile(onLineDimensionDir)
             }
-            df_result.write.parquet(onLineDimensionDir)
+            val isSuccess=HdfsUtil.copyFilesInDir(onLineDimensionDirTmp,onLineDimensionDir)
+            println("is copy success:"+isSuccess)
           } else {
+            val isDirExist= FilesInHDFS.IsDirExist(onLineDimensionDir)
+            if(isDirExist){
+              HdfsUtil.deleteHDFSFile(onLineDimensionDir)
+            }
               println("====完全使用每天的维度表信息生成线上维度表信息")
               distinct_df_daily.write.parquet(onLineDimensionDir)
           }

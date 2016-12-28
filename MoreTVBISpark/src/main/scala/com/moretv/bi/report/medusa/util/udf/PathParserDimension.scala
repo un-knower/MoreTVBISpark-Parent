@@ -254,7 +254,7 @@ object PathParserDimension {
                   //check if result is number,if result is number:launcher_position_index else launcher_position
                   //home*recommendation*1
                    number_regex findFirstMatchIn result match {
-                    case Some(p) => result=null
+                    case Some(p) => result="-1"
                     case None =>
                   }
 
@@ -279,7 +279,7 @@ object PathParserDimension {
                   //home*recommendation*1
                    number_regex findFirstMatchIn result match {
                     case Some(p) =>
-                    case None => result=null
+                    case None => result="-1"
                   }
 
                   if(getPathMainInfo(path,1,2)==UDFConstant.MedusaLive || !UDFConstant.MedusaLauncherAccessLocation
@@ -442,7 +442,7 @@ object PathParserDimension {
                   result = getSplitInfo(path,2)
                   if(result!=null){
                     number_regex findFirstMatchIn result match {
-                      case Some(p) => result=null
+                      case Some(p) => result="-1"
                       case None =>
                     }
                     // 如果accessArea为“navi”和“classification”，则保持不变，即在launcherAccessLocation中
@@ -468,7 +468,7 @@ object PathParserDimension {
                   if(result!=null){
                     number_regex findFirstMatchIn result match {
                       case Some(p) =>
-                      case None =>result=null
+                      case None =>result="-1"
                     }
                   }
                 }

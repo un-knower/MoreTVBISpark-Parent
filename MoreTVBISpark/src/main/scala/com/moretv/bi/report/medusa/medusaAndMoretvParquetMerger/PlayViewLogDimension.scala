@@ -21,9 +21,9 @@ import org.apache.spark.sql.SQLContext
   */
 object PlayViewLogDimension extends BaseClass{
   def main(args: Array[String]) {
-    config.set("spark.executor.memory", "10g").
+    config.set("spark.executor.memory", "5g").
       set("spark.executor.cores", "5").
-      set("spark.cores.max", "20")
+      set("spark.cores.max", "100")
     ModuleClass.executor(this,args)
   }
 
@@ -74,6 +74,12 @@ object PlayViewLogDimension extends BaseClass{
              val moretvDf = sqlContext.read.parquet(logDir2)
              val medusaColNames = medusaDf.columns.toList.filter(e=>{ParquetSchema.schemaArr.contains(e)}).mkString(",")
              val moretvColNames = moretvDf.columns.toList.filter(e=>{ParquetSchema.schemaArr.contains(e)}).mkString(",")
+
+             println("medusaColNames:"+medusaColNames)
+             println("medusaColNames.length"+medusaColNames.length)
+
+             println("moretvColNames:"+moretvColNames)
+             println("moretvColNames.length:"+moretvColNames.length)
 
              //test cache performance
              //medusaDf.cache()
@@ -147,13 +153,13 @@ object PlayViewLogDimension extends BaseClass{
                s" 'moretv' as flag "+
                s" from log_data_2"
 
-             /*val df1 = sqlContext.sql(sqlSelectMedusa).toJSON
-             val df2 = sqlContext.sql(sqlSelectMoretv).toJSON
-             val mergerDf = df1.union(df2)
-             sqlContext.read.json(mergerDf).write.parquet(outputPath)*/
-             val df1 = sqlContext.sql(sqlSelectMedusa)
+            val df1 = sqlContext.sql(sqlSelectMedusa).toJSON
+            val df2 = sqlContext.sql(sqlSelectMoretv).toJSON
+            val mergerDf = df1.union(df2)
+            sqlContext.read.json(mergerDf).write.parquet(outputPath)
+             /* val df1 = sqlContext.sql(sqlSelectMedusa)
              val df2 = sqlContext.sql(sqlSelectMoretv)
-             df1.unionAll(df2).write.parquet(outputPath)
+             df1.unionAll(df2).write.parquet(outputPath)*/
 
            }else if(!medusaFlag && moretvFlag){
              println("-------------------------michael 2--------------")
