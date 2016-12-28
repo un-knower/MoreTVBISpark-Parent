@@ -49,7 +49,7 @@ object PlayViewLogDimensionExchange extends BaseClass {
         val outputTypeSourceLauncher = UDFConstantDimension.SOURCE_LAUNCHER_TABLE
 
 
-        var printArrayBuffer=ArrayBuffer("")
+        var printOutputMap: Map[String, String] = Map()
 
         val cal = Calendar.getInstance()
         cal.setTime(DateFormatUtils.readFormat.parse(startDate))
@@ -66,10 +66,15 @@ object PlayViewLogDimensionExchange extends BaseClass {
           val outputPathSourceRecommend = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceRecommend"
           val outputPathSourceSpecial = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceSpecial"
           val outputPathSourceLauncher = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceLauncher"
-
-          printArrayBuffer+=(outputPath,outputPathSourceRetrieval,outputPathSourceSearch,outputPathSourceList,outputPathSourceRecommend)
-          for(i <- 1 until printArrayBuffer.length){
-            println(s"$i:"+printArrayBuffer(i))
+          printOutputMap+=("outputPath"->outputPath)
+          printOutputMap+=("outputPathSourceRetrieval"->outputPathSourceRetrieval)
+          printOutputMap+=("outputPathSourceSearch"->outputPathSourceSearch)
+          printOutputMap+=("outputPathSourceList"->outputPathSourceList)
+          printOutputMap+=("outputPathSourceRecommend"->outputPathSourceRecommend)
+          printOutputMap+=("outputPathSourceSpecial"->outputPathSourceSpecial)
+          printOutputMap+=("outputPathSourceLauncher"->outputPathSourceLauncher)
+          printOutputMap.keys.foreach { path =>
+            println(s"$path = " + printOutputMap(path))
           }
 
           if (inputDirFatTableFlag) {

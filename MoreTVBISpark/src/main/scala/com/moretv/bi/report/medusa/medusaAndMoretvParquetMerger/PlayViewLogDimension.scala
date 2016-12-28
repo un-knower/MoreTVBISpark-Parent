@@ -147,12 +147,14 @@ object PlayViewLogDimension extends BaseClass{
                s" 'moretv' as flag "+
                s" from log_data_2"
 
-             val df1 = sqlContext.sql(sqlSelectMedusa).toJSON
+             /*val df1 = sqlContext.sql(sqlSelectMedusa).toJSON
              val df2 = sqlContext.sql(sqlSelectMoretv).toJSON
-
              val mergerDf = df1.union(df2)
+             sqlContext.read.json(mergerDf).write.parquet(outputPath)*/
+             val df1 = sqlContext.sql(sqlSelectMedusa)
+             val df2 = sqlContext.sql(sqlSelectMoretv)
+             df1.unionAll(df2).write.parquet(outputPath)
 
-             sqlContext.read.json(mergerDf).write.parquet(outputPath)
            }else if(!medusaFlag && moretvFlag){
              println("-------------------------michael 2--------------")
              val moretvDf = sqlContext.read.parquet(logDir2)
