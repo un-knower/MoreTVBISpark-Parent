@@ -200,13 +200,16 @@ home-movie-multi_search-hot-juqing-meiguo-2000-2009      最后年代是日期�
 
 
   def main(args: Array[String]): Unit = {
-    val number_regex=("^\\d+$").r
-     var result="91a"
-    number_regex findFirstMatchIn result match {
-      case Some(p) =>
-      case None => result=null
-    }
-    println("----"+result)
+    var logTypeAndUniqueKeyMap: Map[String, String] = Map()
+    logTypeAndUniqueKeyMap += (UDFConstantDimension.SOURCE_RETRIEVAL_TABLE -> UDFConstantDimension.SOURCE_RETRIEVAL_SK)
+    logTypeAndUniqueKeyMap += (UDFConstantDimension.SOURCE_SEARCH_TABLE -> UDFConstantDimension.SOURCE_SEARCH_SK)
+    logTypeAndUniqueKeyMap += (UDFConstantDimension.SOURCE_LIST_TABLE -> UDFConstantDimension.SOURCE_LIST_SK)
+    logTypeAndUniqueKeyMap += (UDFConstantDimension.SOURCE_RECOMMEND_TABLE -> UDFConstantDimension.SOURCE_RECOMMEND_SK)
+    logTypeAndUniqueKeyMap += (UDFConstantDimension.SOURCE_SPECIAL_TABLE -> UDFConstantDimension.SOURCE_SPECIAL_SK)
+    logTypeAndUniqueKeyMap += (UDFConstantDimension.SOURCE_LAUNCHER_TABLE -> UDFConstantDimension.SOURCE_LAUNCHER_SK)
+    logTypeAndUniqueKeyMap.keys.foreach { logType =>
+      print("logType = " + logType)
+      println(" UniqueKey = " + logTypeAndUniqueKeyMap(logType))}
     //test_shaixuan_v2
     //test
 

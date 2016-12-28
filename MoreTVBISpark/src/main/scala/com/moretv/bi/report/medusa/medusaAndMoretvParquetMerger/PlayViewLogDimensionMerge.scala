@@ -48,7 +48,8 @@ object PlayViewLogDimensionMerge extends BaseClass {
           val onLineDimensionDir = s"$inputDirBaseOnline/$logType"
           val unique_key = logTypeAndUniqueKeyMap(logType)
 
-          println("inputDirBaseDaily:" + inputDirBaseDaily + ",onLineDimensionDir:" + onLineDimensionDir)
+          println("inputDirBaseDaily:" + inputDirBaseDaily)
+          println("onLineDimensionDir:" + onLineDimensionDir)
 
           //加载历史维度信息 /data_warehouse/dimensions/medusa/daily/20161201/sourceList
           val cal = Calendar.getInstance()
@@ -62,6 +63,8 @@ object PlayViewLogDimensionMerge extends BaseClass {
           }
           val df_daily = sqlContext.read.parquet(inputs: _*)
           println("df_daily.count():" + df_daily.count())
+          val distinct_df_daily=df_daily.dropDuplicates(Array(unique_key))
+          println("distinct_df_daily.count():" + distinct_df_daily.count())
 
           //加载生产环境的维度信息
           val isExist = FilesInHDFS.IsInputGenerateSuccess(onLineDimensionDir)
@@ -79,8 +82,8 @@ object PlayViewLogDimensionMerge extends BaseClass {
             }
             df_result.write.parquet(onLineDimensionDir)
           } else {
-              //完全使用每天的维度表信息生成线上维度表信息
-              df_daily.write.parquet(onLineDimensionDir)
+              println("====完全使用每天的维度表信息生成线上维度表信息")
+              distinct_df_daily.write.parquet(onLineDimensionDir)
           }
         }
       }
