@@ -64,65 +64,77 @@ object UDFConstantDimension {
 
   val MEDUSA_BIG_FACT_TABLE_DIR="/log/medusaAndMoretvMergerDimension"
   val MEDUSA_BIG_FACT_TABLE_PLAY_TYPE="playview2filter"
-  val MEDUSA_DATA_WAREHOUSE="/data_warehouse/medusa"
-  val MEDUSA_DAILY_DIMENSION_DATA_WAREHOUSE="/data_warehouse/dimensions/medusa/daily"
-  val MEDUSA_DIMENSION_DATA_WAREHOUSE="/data_warehouse/dimensions/medusa"
+  val MEDUSA_DATA_WAREHOUSE="/data_warehouse/dw_fact_medusa"
+  val MEDUSA_DAILY_DIMENSION_DATA_WAREHOUSE="/data_warehouse/dw_dimensions/daily"
+  val MEDUSA_DIMENSION_DATA_WAREHOUSE="/data_warehouse/dw_dimensions"
   /*-------------------筛选维度-------------------*/
   //筛选维度表名称
-  val SOURCE_RETRIEVAL_TABLE = "source_retrieval"
+  val SOURCE_RETRIEVAL_TABLE = "dim_medusa_source_retrieval"
   //筛选维度字段【排序方式：最新、最热、得分；标签；地区；年代】
-  val FILTER_CATEGORY_1="sort_way"
-  val FILTER_CATEGORY_2="tag"
-  val FILTER_CATEGORY_3="area"
-  val FILTER_CATEGORY_4="decade"
+  val FILTER_CATEGORY_1="retrieval_sort_way"
+  val FILTER_CATEGORY_2="retrieval_tag"
+  val FILTER_CATEGORY_3="retrieval_area"
+  val FILTER_CATEGORY_4="retrieval_decade"
+  val RETRIEVAL_RESULT_INDEX="retrieval_result_index"
   //维度表主键
   val SOURCE_RETRIEVAL_SK = "source_retrieval_sk"
   //具体字段,用来生成md5
-  val SOURCE_RETRIEVAL_COLUMN="sort_way,tag,area,decade"
+  val SOURCE_RETRIEVAL_COLUMN="retrieval_sort_way,retrieval_tag,retrieval_area,retrieval_decade,retrieval_result_index"
   /*-------------------筛选维度end-------------------*/
 
   /*-------------------搜索维度-------------------*/
   //搜索维度表名称
-  val SOURCE_SEARCH_TABLE = "source_search"
+  val SOURCE_SEARCH_TABLE = "dim_medusa_source_search"
   //搜索来源维度字段
   val SEARCH_FROM = "search_from"
   val SEARCH_KEYWORD = "search_keyword"
+  val SEARCH_TAB_NAME = "search_tab_name"
+  val SEARCH_RESULT_INDEX = "search_result_index"
+  val SEARCH_MOST_SEARCH = "search_most_search"
+
 
   //维度表主键
   val SOURCE_SEARCH_SK = "source_search_sk"
   //具体字段,用来生成md5
-  val SOURCE_SEARCH_COLUMN="search_from,search_keyword"
+  val SOURCE_SEARCH_COLUMN="search_from,search_keyword,search_tab_name,search_result_index,search_most_search"
   /*-------------------搜索维度end-------------------*/
 
   /*-------------------列表页维度-------------------*/
   //列表页维度表名称
-  val SOURCE_LIST_TABLE = "source_list"
+  val SOURCE_LIST_TABLE = "dim_medusa_source_list"
   //列表页维度字段
   val MAIN_CATEGORY = "main_category"
   val SUB_CATEGORY = "second_category"
+  val THIRD_CATEGORY = "third_category"
+  val FOURTH_CATEGORY = "fourth_category"
+  val FIFTH_CATEGORY = "fifth_category"
+  val SOURCE_LIST_INDEX = "source_list_index"
+
   //维度表主键
   val SOURCE_LIST_SK = "source_list_sk"
   //具体字段,用来生成md5
-  val SOURCE_LIST_COLUMN="main_category,second_category"
+  val SOURCE_LIST_COLUMN="main_category,second_category,third_category,fourth_category,fifth_category,source_list_index"
   /*-------------------列表页维度end-------------------*/
 
   /*-------------------推荐入口维度-------------------*/
   //推荐入口维度表名称
-  val SOURCE_RECOMMEND_TABLE = "source_recommend"
+  val SOURCE_RECOMMEND_TABLE = "dim_medusa_source_recommend"
   //推荐入口维度字段
-  val RECOMMEND_SOURCE_TYPE = "source_type"   //peoplealsolike,similar,guessyoulike
+  val RECOMMEND_SOURCE_TYPE = "recommend_source_type"   //peoplealsolike,similar,guessyoulike
   val RECOMMEND_PROPERTY = "recommend_property"
   val RECOMMEND_PRE_CONTENT_TYPE ="pre_content_type"
+  val RECOMMEND_METHOD ="recommend_method"
+
   //维度表主键
   val SOURCE_RECOMMEND_SK = "source_recommend_sk"
   //具体字段,用来生成md5
-  val SOURCE_RECOMMEND_COLUMN="source_type,recommend_property,pre_content_type"
+  val SOURCE_RECOMMEND_COLUMN="recommend_source_type,recommend_property,pre_content_type,recommend_method"
   /*-------------------推荐入口维度end-------------------*/
 
 
   /*-------------------特殊入口维度-------------------*/
   //特殊入口维度表名称
-  val SOURCE_SPECIAL_TABLE = "source_special"
+  val SOURCE_SPECIAL_TABLE = "dim_medusa_source_special"
   //列表页维度字段
   val SPECIAL_SOURCE_TYPE = "special_type"
   val SPECIAL_SOURCE_ID = "special_id"
@@ -136,17 +148,37 @@ object UDFConstantDimension {
 
   /*-------------------首页来源入口入口维度-------------------*/
   //列表页维度表名称
-  val SOURCE_LAUNCHER_TABLE = "source_launcher"
+  val SOURCE_LAUNCHER_TABLE = "dim_medusa_source_launcher"
   //列表页维度字段
   val SOURCE_LAUNCHER_AREA = "launcher_area"
   val SOURCE_LAUNCHER_POSITION = "launcher_position"
   val SOURCE_LAUNCHER_POSITION_INDEX = "launcher_position_index"
   //维度表主键
   val SOURCE_LAUNCHER_SK = "source_launcher_sk"
-  //具体字段,用来生成md5
-  val SOURCE_LAUNCHER_COLUMN="launcher_area,launcher_position,launcher_position_index"
+  //具体字段,用来生成md5[节省存储空间，不需要将二选一的值，为null的赋值默认值]
+  val SOURCE_LAUNCHER_COLUMN="launcher_area,if(launcher_position is null ,launcher_position_index,launcher_position)"
+  val SOURCE_LAUNCHER_COLUMN_NOT_SHOW="launcher_area,launcher_position,launcher_position_index"
   /*-------------------首页来源入口入口维度end-------------------*/
 
+  /*-------------------外部维度-------------------*/
+  //日期维度
+  val DIM_DATE_KEY = "dim_date_key"
+  //时间维度
+  val DIM_TIME_KEY = "dim_time_key"
+  //sid维度
+  val DIM_PROGRAM_SK = "dim_program_sk"
+  //终端用户维度
+  val DIM_TERMINAL_SK = "dim_terminal_sk"
+  //账号维度
+  val DIM_ACCOUNT_SK = "dim_account_sk"
+  //IP地址维度
+  val DIM_WEB_LOCATION_SK = "dim_web_location_sk"
+  /*-------------------外部维度end-------------------*/
+
+  //事实表
+  val FACT_MEDUSA_PLAY="fact_medusa_play"
+  //维度表
+  val DIM_APP_VERSION="dim_app_version"
 
 
 

@@ -151,7 +151,36 @@ object PathParserDimension {
   }
 
 
+  def ipRuleGenerate(ip:String):Long={
+    var ipRule:Long=0
+    if(null==ip||ip.split('.').length!=4){
+      ipRule=0
+    }else{
+      val ipStringArray=ip.split('.')
+      val firstIp=ipStringArray(0)
+      val secondIp=ipStringArray(1)
+      val thirdIp=ipStringArray(2)
+      var firstIpInt=0l
+      var secondIpInt=0l
+      var thirdIpInt=0l
+      val salt=256
 
+      number_regex findFirstMatchIn firstIp match {
+        case Some(p) =>firstIpInt=firstIp.toLong
+        case None => firstIpInt=0
+      }
+      number_regex findFirstMatchIn secondIp match {
+        case Some(p) =>secondIpInt=secondIp.toLong
+        case None => secondIpInt=0
+      }
+      number_regex findFirstMatchIn thirdIp match {
+        case Some(p) =>thirdIpInt=thirdIp.toLong
+        case None => thirdIpInt=0
+      }
+      ipRule=firstIpInt*(salt*salt*salt)+secondIpInt*(salt*salt)+thirdIpInt
+    }
+    ipRule
+  }
 
   /**
     * 该对象用于解析路径信息
@@ -254,7 +283,7 @@ object PathParserDimension {
                   //check if result is number,if result is number:launcher_position_index else launcher_position
                   //home*recommendation*1
                    number_regex findFirstMatchIn result match {
-                    case Some(p) => result="-1"
+                    case Some(p) => result=null
                     case None =>
                   }
 
@@ -279,7 +308,7 @@ object PathParserDimension {
                   //home*recommendation*1
                    number_regex findFirstMatchIn result match {
                     case Some(p) =>
-                    case None => result="-1"
+                    case None => result=null
                   }
 
                   if(getPathMainInfo(path,1,2)==UDFConstant.MedusaLive || !UDFConstant.MedusaLauncherAccessLocation
@@ -442,7 +471,7 @@ object PathParserDimension {
                   result = getSplitInfo(path,2)
                   if(result!=null){
                     number_regex findFirstMatchIn result match {
-                      case Some(p) => result="-1"
+                      case Some(p) => result=null
                       case None =>
                     }
                     // 如果accessArea为“navi”和“classification”，则保持不变，即在launcherAccessLocation中
@@ -468,7 +497,7 @@ object PathParserDimension {
                   if(result!=null){
                     number_regex findFirstMatchIn result match {
                       case Some(p) =>
-                      case None =>result="-1"
+                      case None =>result=null
                     }
                   }
                 }

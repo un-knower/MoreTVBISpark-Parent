@@ -3,10 +3,10 @@ package com.moretv.bi.report.medusa.medusaAndMoretvParquetMerger
 import java.util.Calendar
 
 import com.moretv.bi.report.medusa.util.FilesInHDFS
-import com.moretv.bi.report.medusa.util.udf.{UDFConstantDimension, PathParserDimension, PathParser}
+import com.moretv.bi.report.medusa.util.udf.{PathParser, PathParserDimension, UDFConstantDimension}
 import com.moretv.bi.util._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
-
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
+import org.apache.spark.storage.StorageLevel
 
 
 /**
@@ -17,11 +17,11 @@ import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
   * input: /mbi/parquet/playview/$date
   * output: /log/medusaAndMoretvMergerDimension/$date/playview2filter
   */
-object PlayViewLogDimension extends BaseClass{
+object PlayViewLogDimensionFullRun extends BaseClass{
   def main(args: Array[String]) {
-    config.set("spark.executor.memory", "4g").
+    config.set("spark.executor.memory", "5g").
       set("spark.executor.cores", "5").
-      set("spark.cores.max", "60")
+      set("spark.cores.max", "100")
     ModuleClass.executor(this,args)
   }
 
@@ -31,16 +31,14 @@ object PlayViewLogDimension extends BaseClass{
        case Some(p)=>{
          sqlContext.udf.register("pathParser",PathParser.pathParser _)
          sqlContext.udf.register("pathParserDimension",PathParserDimension.pathParserDimension _)
-         sqlContext.udf.register("ipRuleGenerate",PathParserDimension.ipRuleGenerate _)
          sqlContext.udf.register("getSubjectCode",PathParser.getSubjectCodeByPath _)
          sqlContext.udf.register("getSubjectNameBySid",PathParser.getSubjectNameByPath _)
          val startDate = p.startDate
          val medusaLogType = "play"
          val moretvLogType = "playview"
-        /* val medusaDir ="/log/medusa/parquet"
-         val moretvDir = "/mbi/parquet"*/
-        val medusaDir = "/data_warehouse/medusa_test/parquet"
-         val moretvDir = "/data_warehouse/helios_test/parquet"
+         val medusaDir ="/log/medusa/parquet"
+         val moretvDir = "/mbi/parquet"
+
          val outputDir =  UDFConstantDimension.MEDUSA_BIG_FACT_TABLE_DIR
          val outLogType = UDFConstantDimension.MEDUSA_BIG_FACT_TABLE_PLAY_TYPE
 
@@ -49,18 +47,14 @@ object PlayViewLogDimension extends BaseClass{
 
          (0 until p.numOfDays).foreach(i=>{
            val inputDate = DateFormatUtils.readFormat.format(cal.getTime)
-           //val logDir1 = s"/log/medusa/parquet/$inputDate/$medusaLogType"
-           val logDir1 = s"$medusaDir/$inputDate/$medusaLogType"
+           val logDir1 = s"/log/medusa/parquet/$inputDate/$medusaLogType"
+           val logDir2 = s"/mbi/parquet/$moretvLogType/$inputDate"
+           val outLogType = "playview2filter"
 
-           //val logDir2 = s"/mbi/parquet/$moretvLogType/$inputDate"
-           val logDir2 = s"$moretvDir/$inputDate/$moretvLogType"
            println("logDir1:"+logDir1)
            println("logDir2:"+logDir2)
-
-
            val medusaFlag = FilesInHDFS.fileIsExist(s"$medusaDir/$inputDate",medusaLogType)
-           //val moretvFlag = FilesInHDFS.fileIsExist(s"$moretvDir/$moretvLogType",inputDate)
-           val moretvFlag = FilesInHDFS.fileIsExist(s"$moretvDir/$inputDate",moretvLogType)
+           val moretvFlag = FilesInHDFS.fileIsExist(s"$moretvDir/$moretvLogType",inputDate)
            val outputPath = s"$outputDir/$inputDate/$outLogType"
 
            if(p.deleteOld){
@@ -74,8 +68,20 @@ object PlayViewLogDimension extends BaseClass{
              val medusaColNames = medusaDf.columns.toList.filter(e=>{ParquetSchema.schemaArr.contains(e)}).mkString(",")
              val moretvColNames = moretvDf.columns.toList.filter(e=>{ParquetSchema.schemaArr.contains(e)}).mkString(",")
 
+             println("medusaColNames:"+medusaColNames)
+             println("medusaColNames.length"+medusaColNames.length)
+
+             println("moretvColNames:"+moretvColNames)
+             println("moretvColNames.length:"+moretvColNames.length)
+
+             //test cache performance
+             //medusaDf.cache()
+             //moretvDf.cache()
+
              medusaDf.registerTempTable("log_data_1")
              moretvDf.registerTempTable("log_data_2")
+
+
              val sqlSelectMedusa = s"select $medusaColNames, " +
                s"pathParser('play',pathMain,'pathMain','launcherArea') as launcherAreaFromPath, " +
                s"pathParser('play',pathMain,'pathMain','launcherAccessLocation') as launcherAccessLocationFromPath, " +
@@ -90,39 +96,23 @@ object PlayViewLogDimension extends BaseClass{
                s"getSubjectNameBySid(pathSpecial,'medusa') as subjectName," +
                s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.SEARCH_KEYWORD+"') as " +UDFConstantDimension.SEARCH_KEYWORD+"," +
                s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.SEARCH_FROM+"') as " +UDFConstantDimension.SEARCH_FROM+"," +
-               "'' as "+UDFConstantDimension.SEARCH_TAB_NAME+"," +
-               "-1 as "+UDFConstantDimension.SEARCH_RESULT_INDEX+"," +
-               "'' as "+UDFConstantDimension.SEARCH_MOST_SEARCH+"," +
                s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.MAIN_CATEGORY+"') as " +UDFConstantDimension.MAIN_CATEGORY+"," +
                s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.SUB_CATEGORY+"') as " +UDFConstantDimension.SUB_CATEGORY+"," +
-               "'' as "+UDFConstantDimension.THIRD_CATEGORY+"," +
-               "'' as "+UDFConstantDimension.FOURTH_CATEGORY+"," +
-               "'' as "+UDFConstantDimension.FIFTH_CATEGORY+"," +
-               "-1 as "+UDFConstantDimension.SOURCE_LIST_INDEX+"," +
                s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.FILTER_CATEGORY_1+"') as "+UDFConstantDimension.FILTER_CATEGORY_1+"," +
                s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.FILTER_CATEGORY_2+"') as "+UDFConstantDimension.FILTER_CATEGORY_2+","+
                s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.FILTER_CATEGORY_3+"') as "+UDFConstantDimension.FILTER_CATEGORY_3+"," +
                s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.FILTER_CATEGORY_4+"') as "+UDFConstantDimension.FILTER_CATEGORY_4+"," +
-               "-1 as "+UDFConstantDimension.RETRIEVAL_RESULT_INDEX+"," +
                s"pathParserDimension('play',pathSub,'pathSub','accessPath') as "+UDFConstantDimension.RECOMMEND_SOURCE_TYPE+"," +
                s"pathParserDimension('play',pathSub,'pathSub','previousSid') as "+UDFConstantDimension.RECOMMEND_PROPERTY+"," +
                s"pathParserDimension('play',pathSub,'pathSub','previousContentType') as "+UDFConstantDimension.RECOMMEND_PRE_CONTENT_TYPE+"," +
-               "'' as "+UDFConstantDimension.RECOMMEND_METHOD+"," +
                s"pathParserDimension('play',pathSpecial,'pathSpecial','pathProperty') as "+UDFConstantDimension.SPECIAL_SOURCE_TYPE+"," +
                s"getSubjectCode(pathSpecial,'medusa') as  "+UDFConstantDimension.SPECIAL_SOURCE_ID+"," +
                s"getSubjectNameBySid(pathSpecial,'medusa') as "+UDFConstantDimension.SPECIAL_SOURCE_NAME+"," +
                s"pathParserDimension('play',pathMain,'pathMain','launcherArea') as "+UDFConstantDimension.SOURCE_LAUNCHER_AREA+"," +
                s"pathParserDimension('play',pathMain,'pathMain','launcherAccessLocation') as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION+"," +
                s"pathParserDimension('play',pathMain,'pathMain','"+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"') as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"," +
-               "substring(datetime,1,10) as "+UDFConstantDimension.DIM_DATE_KEY+"," +
-               "substring(datetime,12,8) as "+UDFConstantDimension.DIM_TIME_KEY+"," +
-               "videoSid as "+UDFConstantDimension.DIM_PROGRAM_SK+"," +
-               "userId as "+UDFConstantDimension.DIM_TERMINAL_SK+"," +
-               "accountId as "+UDFConstantDimension.DIM_ACCOUNT_SK+"," +
-               s"ipRuleGenerate(ip) as "+UDFConstantDimension.DIM_WEB_LOCATION_SK+"," +
                s" 'medusa' as flag " +
                s" from log_data_1"
-             //println(sqlSelectMedusa)
              val sqlSelectMoretv = s"select $moretvColNames," +
                s"pathParser('playview',path,'path','launcherArea') as launcherAreaFromPath, " +
                s"pathParser('playview',path,'path','launcherAccessLocation') as launcherAccessLocationFromPath, " +
@@ -138,45 +128,31 @@ object PlayViewLogDimension extends BaseClass{
                s"date as day,"+
                s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.SEARCH_KEYWORD+"') as " +UDFConstantDimension.SEARCH_KEYWORD+"," +
                s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.SEARCH_FROM+"') as " +UDFConstantDimension.SEARCH_FROM+"," +
-               "'' as "+UDFConstantDimension.SEARCH_TAB_NAME+"," +
-               "-1 as "+UDFConstantDimension.SEARCH_RESULT_INDEX+"," +
-               "'' as "+UDFConstantDimension.SEARCH_MOST_SEARCH+"," +
                s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.MAIN_CATEGORY+"') as " +UDFConstantDimension.MAIN_CATEGORY+"," +
                s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.SUB_CATEGORY+"') as " +UDFConstantDimension.SUB_CATEGORY+"," +
-               "'' as "+UDFConstantDimension.THIRD_CATEGORY+"," +
-               "'' as "+UDFConstantDimension.FOURTH_CATEGORY+"," +
-               "'' as "+UDFConstantDimension.FIFTH_CATEGORY+"," +
-               "-1 as "+UDFConstantDimension.SOURCE_LIST_INDEX+"," +
                s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.FILTER_CATEGORY_1+"') as "+UDFConstantDimension.FILTER_CATEGORY_1+"," +
                s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.FILTER_CATEGORY_2+"') as "+UDFConstantDimension.FILTER_CATEGORY_2+","+
                s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.FILTER_CATEGORY_3+"') as "+UDFConstantDimension.FILTER_CATEGORY_3+"," +
                s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.FILTER_CATEGORY_4+"') as "+UDFConstantDimension.FILTER_CATEGORY_4+"," +
-               "-1 as "+UDFConstantDimension.RETRIEVAL_RESULT_INDEX+"," +
                s"pathParserDimension('playview',path,'path', 'accessPath') as "+UDFConstantDimension.RECOMMEND_SOURCE_TYPE+"," +
                s"pathParserDimension('playview',path,'path', 'previousSid') as "+UDFConstantDimension.RECOMMEND_PROPERTY+"," +
                s"pathParserDimension('playview',path,'path', 'previousContentType') as "+UDFConstantDimension.RECOMMEND_PRE_CONTENT_TYPE+"," +
-               "'' as "+UDFConstantDimension.RECOMMEND_METHOD+"," +
                s"pathParser('playview',path,'path','pathProperty') as "+UDFConstantDimension.SPECIAL_SOURCE_TYPE+"," +
                s"getSubjectCode(path,'moretv') as  "+UDFConstantDimension.SPECIAL_SOURCE_ID+"," +
                s"getSubjectNameBySid(path,'moretv') as "+UDFConstantDimension.SPECIAL_SOURCE_NAME+"," +
                s"pathParserDimension('playview',path,'path','launcherArea') as "+UDFConstantDimension.SOURCE_LAUNCHER_AREA+"," +
                s"pathParserDimension('playview',path,'path','launcherAccessLocation') as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION+"," +
                s"pathParserDimension('playview',path,'path','"+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"') as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"," +
-               "substring(datetime,1,10) as "+UDFConstantDimension.DIM_DATE_KEY+"," +
-               "substring(datetime,12,8) as "+UDFConstantDimension.DIM_TIME_KEY+"," +
-               "videoSid as "+UDFConstantDimension.DIM_PROGRAM_SK+"," +
-               "userId as "+UDFConstantDimension.DIM_TERMINAL_SK+"," +
-               "accountId as "+UDFConstantDimension.DIM_ACCOUNT_SK+"," +
                s" 'moretv' as flag "+
                s" from log_data_2"
-             //println(sqlSelectMoretv)
-             val df1 = sqlContext.sql(sqlSelectMedusa).toJSON.repartition(20)
-             val df2 = sqlContext.sql(sqlSelectMoretv).toJSON.repartition(20)
-             val mergerDf = df1.union(df2)
-             sqlContext.read.json(mergerDf).repartition(20).write.parquet(outputPath)
+
+            val df1 = sqlContext.sql(sqlSelectMedusa).toJSON.repartition(20).persist(StorageLevel.MEMORY_AND_DISK)
+            val df2 = sqlContext.sql(sqlSelectMoretv).toJSON.repartition(20)persist(StorageLevel.MEMORY_AND_DISK)
+            val mergerDf = df1.union(df2).repartition(20)persist(StorageLevel.MEMORY_AND_DISK)
+            sqlContext.read.json(mergerDf).repartition(20).write.parquet(outputPath)
              /* val df1 = sqlContext.sql(sqlSelectMedusa)
-              val df2 = sqlContext.sql(sqlSelectMoretv)
-              df1.unionAll(df2).write.parquet(outputPath)*/
+             val df2 = sqlContext.sql(sqlSelectMoretv)
+             df1.unionAll(df2).write.parquet(outputPath)*/
 
            }else if(!medusaFlag && moretvFlag){
              println("-------------------------michael 2--------------")
@@ -197,35 +173,21 @@ object PlayViewLogDimension extends BaseClass{
                s"getSubjectNameBySid(path,'moretv') as subjectName,date as day" +
                s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.SEARCH_KEYWORD+"') as " +UDFConstantDimension.SEARCH_KEYWORD+"," +
                s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.SEARCH_FROM+"') as " +UDFConstantDimension.SEARCH_FROM+"," +
-               "'' as "+UDFConstantDimension.SEARCH_TAB_NAME+"," +
-               "-1 as "+UDFConstantDimension.SEARCH_RESULT_INDEX+"," +
-               "'' as "+UDFConstantDimension.SEARCH_MOST_SEARCH+"," +
                s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.MAIN_CATEGORY+"') as " +UDFConstantDimension.MAIN_CATEGORY+"," +
                s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.SUB_CATEGORY+"') as " +UDFConstantDimension.SUB_CATEGORY+"," +
-               "'' as "+UDFConstantDimension.THIRD_CATEGORY+"," +
-               "'' as "+UDFConstantDimension.FOURTH_CATEGORY+"," +
-               "'' as "+UDFConstantDimension.FIFTH_CATEGORY+"," +
-               "-1 as "+UDFConstantDimension.SOURCE_LIST_INDEX+"," +
                s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.FILTER_CATEGORY_1+"') as "+UDFConstantDimension.FILTER_CATEGORY_1+"," +
                s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.FILTER_CATEGORY_2+"') as "+UDFConstantDimension.FILTER_CATEGORY_2+","+
                s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.FILTER_CATEGORY_3+"') as "+UDFConstantDimension.FILTER_CATEGORY_3+"," +
                s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.FILTER_CATEGORY_4+"') as "+UDFConstantDimension.FILTER_CATEGORY_4+"," +
-               "-1 as "+UDFConstantDimension.RETRIEVAL_RESULT_INDEX+"," +
                s"pathParserDimension('playview',path,'path', 'accessPath') as "+UDFConstantDimension.RECOMMEND_SOURCE_TYPE+"," +
                s"pathParserDimension('playview',path,'path', 'previousSid') as "+UDFConstantDimension.RECOMMEND_PROPERTY+"," +
                s"pathParserDimension('playview',path,'path', 'previousContentType') as "+UDFConstantDimension.RECOMMEND_PRE_CONTENT_TYPE+"," +
-               "'' as "+UDFConstantDimension.RECOMMEND_METHOD+"," +
                s"pathParser('playview',path,'path','pathProperty') as "+UDFConstantDimension.SPECIAL_SOURCE_TYPE+"," +
                s"getSubjectCode(path,'moretv') as  "+UDFConstantDimension.SPECIAL_SOURCE_ID+"," +
                s"getSubjectNameBySid(path,'moretv') as "+UDFConstantDimension.SPECIAL_SOURCE_NAME+"," +
                s"pathParserDimension('playview',path,'path','launcherArea') as "+UDFConstantDimension.SOURCE_LAUNCHER_AREA+"," +
                s"pathParserDimension('playview',path,'path','launcherAccessLocation') as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION+"," +
                s"pathParserDimension('playview',path,'path','"+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"') as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"," +
-               "substring(datetime,1,10) as "+UDFConstantDimension.DIM_DATE_KEY+"," +
-               "substring(datetime,12,8) as "+UDFConstantDimension.DIM_TIME_KEY+"," +
-               "videoSid as "+UDFConstantDimension.DIM_PROGRAM_SK+"," +
-               "userId as "+UDFConstantDimension.DIM_TERMINAL_SK+"," +
-               "accountId as "+UDFConstantDimension.DIM_ACCOUNT_SK+"," +
                s"'moretv' as flag from log_data_2"
 
              val mergerDf=sqlContext.sql(sqlSelectMoretv)
@@ -250,36 +212,21 @@ object PlayViewLogDimension extends BaseClass{
                s"getSubjectNameBySid(pathSpecial,'medusa') as subjectName," +
                s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.SEARCH_KEYWORD+"') as " +UDFConstantDimension.SEARCH_KEYWORD+"," +
                s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.SEARCH_FROM+"') as " +UDFConstantDimension.SEARCH_FROM+"," +
-               "'' as "+UDFConstantDimension.SEARCH_TAB_NAME+"," +
-               "-1 as "+UDFConstantDimension.SEARCH_RESULT_INDEX+"," +
-               "'' as "+UDFConstantDimension.SEARCH_MOST_SEARCH+"," +
                s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.MAIN_CATEGORY+"') as " +UDFConstantDimension.MAIN_CATEGORY+"," +
                s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.SUB_CATEGORY+"') as " +UDFConstantDimension.SUB_CATEGORY+"," +
-               "'' as "+UDFConstantDimension.THIRD_CATEGORY+"," +
-               "'' as "+UDFConstantDimension.FOURTH_CATEGORY+"," +
-               "'' as "+UDFConstantDimension.FIFTH_CATEGORY+"," +
-               "-1 as "+UDFConstantDimension.SOURCE_LIST_INDEX+"," +
                s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.FILTER_CATEGORY_1+"') as "+UDFConstantDimension.FILTER_CATEGORY_1+"," +
                s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.FILTER_CATEGORY_2+"') as "+UDFConstantDimension.FILTER_CATEGORY_2+","+
                s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.FILTER_CATEGORY_3+"') as "+UDFConstantDimension.FILTER_CATEGORY_3+"," +
                s"pathParserDimension('play',pathMain,'pathMain', '"+UDFConstantDimension.FILTER_CATEGORY_4+"') as "+UDFConstantDimension.FILTER_CATEGORY_4+"," +
-               "-1 as "+UDFConstantDimension.RETRIEVAL_RESULT_INDEX+"," +
                s"pathParserDimension('play',pathSub,'pathSub','accessPath') as "+UDFConstantDimension.RECOMMEND_SOURCE_TYPE+"," +
                s"pathParserDimension('play',pathSub,'pathSub','previousSid') as "+UDFConstantDimension.RECOMMEND_PROPERTY+"," +
                s"pathParserDimension('play',pathSub,'pathSub','previousContentType') as "+UDFConstantDimension.RECOMMEND_PRE_CONTENT_TYPE+"," +
-               "'' as "+UDFConstantDimension.RECOMMEND_METHOD+"," +
                s"pathParserDimension('play',pathSpecial,'pathSpecial','pathProperty') as "+UDFConstantDimension.SPECIAL_SOURCE_TYPE+"," +
                s"getSubjectCode(pathSpecial,'medusa') as  "+UDFConstantDimension.SPECIAL_SOURCE_ID+"," +
                s"getSubjectNameBySid(pathSpecial,'medusa') as "+UDFConstantDimension.SPECIAL_SOURCE_NAME+"," +
                s"pathParserDimension('play',pathMain,'pathMain','launcherArea') as "+UDFConstantDimension.SOURCE_LAUNCHER_AREA+"," +
                s"pathParserDimension('play',pathMain,'pathMain','launcherAccessLocation') as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION+"," +
                s"pathParserDimension('play',pathMain,'pathMain','"+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"') as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"," +
-               "substring(datetime,1,10) as "+UDFConstantDimension.DIM_DATE_KEY+"," +
-               "substring(datetime,12,8) as "+UDFConstantDimension.DIM_TIME_KEY+"," +
-               "videoSid as "+UDFConstantDimension.DIM_PROGRAM_SK+"," +
-               "userId as "+UDFConstantDimension.DIM_TERMINAL_SK+"," +
-               "accountId as "+UDFConstantDimension.DIM_ACCOUNT_SK+"," +
-               s"ipRuleGenerate(ip) as "+UDFConstantDimension.DIM_WEB_LOCATION_SK+"," +
                s"'medusa' as flag " +
                " from log_data_1"
 

@@ -38,7 +38,7 @@ object PlayViewLogDimensionExchange extends BaseClass {
         val inputLogType = UDFConstantDimension.MEDUSA_BIG_FACT_TABLE_PLAY_TYPE
 
         val outputFactTableDirBase = UDFConstantDimension.MEDUSA_DATA_WAREHOUSE
-        val outputFactTableType = UDFConstantDimension.PLAY
+        val outputFactTableType = UDFConstantDimension.FACT_MEDUSA_PLAY
 
         val outputDirDimensionBase = UDFConstantDimension.MEDUSA_DAILY_DIMENSION_DATA_WAREHOUSE
         val outputTypeSourceRetrieval = UDFConstantDimension.SOURCE_RETRIEVAL_TABLE
@@ -59,7 +59,7 @@ object PlayViewLogDimensionExchange extends BaseClass {
           val inputDirFatTable = s"$inputDirFatTableBase/$inputDate/$inputLogType"
           val inputDirFatTableFlag = FilesInHDFS.IsInputGenerateSuccess(inputDirFatTable)
 
-          val outputPath = s"$outputFactTableDirBase/$inputDate/$outputFactTableType"
+          val outputPath = s"$outputFactTableDirBase/$outputFactTableType/$inputDate"
           val outputPathSourceRetrieval = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceRetrieval"
           val outputPathSourceSearch = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceSearch"
           val outputPathSourceList = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceList"
@@ -89,9 +89,8 @@ object PlayViewLogDimensionExchange extends BaseClass {
             }
               println("-------------------------in inputDirFatTableFlag  --------------")
               val df = sqlContext.read.parquet(inputDirFatTable)
-              println("df.schema.fieldNames.mkString(\",\"):"+df.schema.fieldNames.mkString(","))
-              println("df.columns.toList.mkString(\",\"):"+df.columns.toList.mkString(","))
-              val columns=df.columns.toList.mkString(",")
+              //println("df.schema.fieldNames.mkString(\",\"):"+df.schema.fieldNames.mkString(","))
+              //println("df.columns.toList.mkString(\",\"):"+df.columns.toList.mkString(","))
 
               val sourceListMd=UDFConstantDimension.SOURCE_LIST_COLUMN
               val sourceListMdKey=UDFConstantDimension.SOURCE_LIST_SK
@@ -104,13 +103,32 @@ object PlayViewLogDimensionExchange extends BaseClass {
               val specialMd=UDFConstantDimension.SOURCE_SPECIAL_COLUMN
               val specialKey=UDFConstantDimension.SOURCE_SPECIAL_SK
               val launcherMd=UDFConstantDimension.SOURCE_LAUNCHER_COLUMN
+              val SOURCE_LAUNCHER_COLUMN_NOT_SHOW=UDFConstantDimension.SOURCE_LAUNCHER_COLUMN_NOT_SHOW
               val launcherKey=UDFConstantDimension.SOURCE_LAUNCHER_SK
+
+             //需要通过多个字段关联，当满足条件，替换为md5
+
+
+
+            //生成事实表，去掉用来生成md5的列
+            val fatTableColumnArray=df.columns
+            val fatTableColumns=fatTableColumnArray.map(e=>e.trim).mkString(",")
+
+            val noNeedShowInFactString=s"$sourceListMd,$filterMd,$searchMd,$recommendMd,$specialMd,$SOURCE_LAUNCHER_COLUMN_NOT_SHOW"
+            val noNeedShowInFactColumnArray=noNeedShowInFactString.split(',')
+            val product_columns=df.columns.filter(e=>{!noNeedShowInFactColumnArray.contains(e)})
+            println("noNeedShowInFactTable:"+noNeedShowInFactString)
+
+            println("fatTableColumns:"+fatTableColumns)
+            println("df.columns.toList.size:"+df.columns.toList.size)
+            println("product_columns.size:"+product_columns.size)
+            //
 
               //将大宽表进行维度替换，生成维度替换后的事实表
               df.registerTempTable("log_data")
               val sqlSelectMedusa = s"select md5(concat($sourceListMd)) $sourceListMdKey,md5(concat($filterMd)) $filterMdKey,"+
                 s"md5(concat($searchMd)) $searchMdKey,md5(concat($recommendMd)) $recommendKey,"+
-                s"md5(concat($specialMd)) $specialKey,md5(concat($launcherMd)) $launcherKey,$columns from log_data "
+                s"md5(concat($specialMd)) $specialKey,md5(concat($launcherMd)) $launcherKey,$product_columns from log_data "
               sqlContext.sql(sqlSelectMedusa).write.parquet(outputPath)
 
              //生成维度字典数据

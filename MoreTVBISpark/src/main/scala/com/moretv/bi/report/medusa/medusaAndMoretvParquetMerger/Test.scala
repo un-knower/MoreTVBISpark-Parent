@@ -200,21 +200,25 @@ home-movie-multi_search-hot-juqing-meiguo-2000-2009      最后年代是日期�
 
 
   def main(args: Array[String]): Unit = {
-    var logTypeAndUniqueKeyMap: Map[String, String] = Map()
-    logTypeAndUniqueKeyMap += (UDFConstantDimension.SOURCE_RETRIEVAL_TABLE -> UDFConstantDimension.SOURCE_RETRIEVAL_SK)
-    logTypeAndUniqueKeyMap += (UDFConstantDimension.SOURCE_SEARCH_TABLE -> UDFConstantDimension.SOURCE_SEARCH_SK)
-    logTypeAndUniqueKeyMap += (UDFConstantDimension.SOURCE_LIST_TABLE -> UDFConstantDimension.SOURCE_LIST_SK)
-    logTypeAndUniqueKeyMap += (UDFConstantDimension.SOURCE_RECOMMEND_TABLE -> UDFConstantDimension.SOURCE_RECOMMEND_SK)
-    logTypeAndUniqueKeyMap += (UDFConstantDimension.SOURCE_SPECIAL_TABLE -> UDFConstantDimension.SOURCE_SPECIAL_SK)
-    logTypeAndUniqueKeyMap += (UDFConstantDimension.SOURCE_LAUNCHER_TABLE -> UDFConstantDimension.SOURCE_LAUNCHER_SK)
-    logTypeAndUniqueKeyMap.keys.foreach { logType =>
-      print("logType = " + logType)
-      println(" UniqueKey = " + logTypeAndUniqueKeyMap(logType))}
-    //test_shaixuan_v2
-    //test
+    val sourceListMd=" main_category, second_category "
+    val sourceListMdKey=UDFConstantDimension.SOURCE_LIST_SK
+    val filterMd=UDFConstantDimension.SOURCE_RETRIEVAL_COLUMN
+    val filterMdKey=UDFConstantDimension.SOURCE_RETRIEVAL_SK
+    val searchMd=UDFConstantDimension.SOURCE_SEARCH_COLUMN
+    val searchMdKey=UDFConstantDimension.SOURCE_SEARCH_SK
+    val recommendMd=UDFConstantDimension.SOURCE_RECOMMEND_COLUMN
+    val recommendKey=UDFConstantDimension.SOURCE_RECOMMEND_SK
+    val specialMd=UDFConstantDimension.SOURCE_SPECIAL_COLUMN
+    val specialKey=UDFConstantDimension.SOURCE_SPECIAL_SK
+    val launcherMd=UDFConstantDimension.SOURCE_LAUNCHER_COLUMN
+    val launcherKey=UDFConstantDimension.SOURCE_LAUNCHER_SK
+    val SOURCE_LAUNCHER_COLUMN_NOT_SHOW=UDFConstantDimension.SOURCE_LAUNCHER_COLUMN_NOT_SHOW
 
-    //val regex_moretv_search = (".*retrieval\\*([\\S]+)\\*([\\S]+)\\*([\\S]+)\\*([\\S]+)").r
-
+    //
+    val noNeedShowInFactString=s"$sourceListMd,$filterMd,$searchMd,$recommendMd,$specialMd,$SOURCE_LAUNCHER_COLUMN_NOT_SHOW"
+    val noNeedShowInFactTable=noNeedShowInFactString.split(',').map(e=>e.trim)
+    println(noNeedShowInFactTable.mkString(","))
+    //println("noNeedShowInFactTable:"+noNeedShowInFactTable.size)
     System.exit(0)
 
     val path = "home*(classification*kids-kids_home-kids_anim*英文动画"
