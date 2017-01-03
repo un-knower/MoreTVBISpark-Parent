@@ -113,8 +113,12 @@ object PlayViewLogDimensionExchange extends BaseClass {
               val searchMdKey=UDFConstantDimension.SOURCE_SEARCH_SK
               val recommendMd=UDFConstantDimension.SOURCE_RECOMMEND_COLUMN
               val recommendKey=UDFConstantDimension.SOURCE_RECOMMEND_SK
+
               val specialMd=UDFConstantDimension.SOURCE_SPECIAL_COLUMN
               val specialKey=UDFConstantDimension.SOURCE_SPECIAL_SK
+              val SOURCE_SPECIAL_COLUMN_FOR_DIMENSION=UDFConstantDimension.SOURCE_SPECIAL_COLUMN_FOR_DIMENSION
+
+              val SOURCE_SPECIAL_COLUMN_NOT_SHOW=UDFConstantDimension.SOURCE_SPECIAL_COLUMN_NOT_SHOW
               val launcherMd=UDFConstantDimension.SOURCE_LAUNCHER_COLUMN
               val SOURCE_LAUNCHER_COLUMN_NOT_SHOW=UDFConstantDimension.SOURCE_LAUNCHER_COLUMN_NOT_SHOW
               val launcherKey=UDFConstantDimension.SOURCE_LAUNCHER_SK
@@ -123,28 +127,32 @@ object PlayViewLogDimensionExchange extends BaseClass {
             //需要通过多个字段关联，当满足条件，替换为md5 [dim_app_version]
             ///data_warehouse/dw_dimensions/dim_app_version
             val appVersionKey=UDFConstantDimension.DIM_APP_VERSION_KEY
+            val dimAppVersionColumnNotShow=UDFConstantDimension.DIM_APP_VERSION_COLUMN_NOT_SHOW
 
-
+            //大宽表中不需要在事实表中出现的字段
+            val fatTableColumnNotShow=UDFConstantDimension.FAT_TABLE_COLUMN_NOT_SHOW
 
             //生成事实表，去掉用来生成md5的列
             val fatTableColumnArray=dfFactTable.columns
             val fatTableColumns=fatTableColumnArray.map(e=>e.trim).mkString(",")
 
-            val noNeedShowInFactString=s"$sourceListMd,$filterMd,$searchMd,$recommendMd,$specialMd,$SOURCE_LAUNCHER_COLUMN_NOT_SHOW"
+            val noNeedShowInFactString=s"$sourceListMd,$filterMd,$searchMd,$recommendMd,$SOURCE_LAUNCHER_COLUMN_NOT_SHOW,$SOURCE_SPECIAL_COLUMN_NOT_SHOW,$dimAppVersionColumnNotShow,$fatTableColumnNotShow"
             val noNeedShowInFactColumnArray=noNeedShowInFactString.split(',')
             val factColumnsArray=dfFactTable.columns.filter(e=>{!noNeedShowInFactColumnArray.contains(e)})
             val factColumnsString=factColumnsArray.mkString(",")
-            println("noNeedShowInFactTable:"+noNeedShowInFactString)
             println("fatTableColumns:"+fatTableColumns)
-            println("dfFactTable.columns.toList.size:"+dfFactTable.columns.toList.size)
-            println("factColumnsArray.size:"+factColumnsArray.size)
+            println("noNeedShowInFactString:"+noNeedShowInFactString)
             println("factColumnsString:"+factColumnsString)
-            //
+
+            println("fatTableColumnArray size:"+fatTableColumnArray.size)
+            println("noNeedShowInFactColumnArray size:"+noNeedShowInFactColumnArray.size)
+            println("fact table column size:"+factColumnsArray.size)
+
 
               //将大宽表进行维度替换，生成维度替换后的事实表
               dfFactTable.registerTempTable("log_data")
               dfDimAppVersionTable.registerTempTable("dim_app_version_table")
-              val sqlSelectMedusa = s"select md5(concat($sourceListMd)) $sourceListMdKey,md5(concat($filterMd)) $filterMdKey,"+
+              val factLogSql = s"select md5(concat($sourceListMd)) $sourceListMdKey,md5(concat($filterMd)) $filterMdKey,"+
                 s"md5(concat($searchMd)) $searchMdKey,md5(concat($recommendMd)) $recommendKey,"+
                 s"md5(concat($specialMd)) $specialKey,md5(concat($launcherMd)) $launcherKey,b.app_version_key as $appVersionKey,$factColumnsString "+
                 " from log_data a "+
@@ -152,8 +160,8 @@ object PlayViewLogDimensionExchange extends BaseClass {
              " on  trim(if(a.buildDate is null,'',a.buildDate))=trim(if(b.build_time is null,'',b.build_time)) "+
              " and trim(if(a.apkVersion is null,'',a.apkVersion))=trim(if(b.version is null,'',b.version)) "+
              " and trim(if(a.apkSeries is null,'',a.apkSeries))=trim(if(b.app_series is null,'',b.app_series))"
-            println("sqlSelectMedusa:"+sqlSelectMedusa)
-              sqlContext.sql(sqlSelectMedusa).write.parquet(outputPath)
+              println("factLogSql:"+factLogSql)
+              sqlContext.sql(factLogSql).write.parquet(outputPath)
 
             //left outer join dim_app_version_table b  on trim(if(a.buildDate is null,'',a.buildDate))=trim(if(b.build_time is null,'',b.build_time)) and trim(a.apkVersion)=trim(b.version) and trim(a.apkSeries)=trim(b.app_series)
 
@@ -166,7 +174,7 @@ object PlayViewLogDimensionExchange extends BaseClass {
              sqlContext.sql(sqlSelectSourceList).write.parquet(outputPathSourceList)
              val sqlSelectSourceRecommend = s"select distinct md5(concat($recommendMd)) $recommendKey,$recommendMd from log_data "
              sqlContext.sql(sqlSelectSourceRecommend).write.parquet(outputPathSourceRecommend)
-             val sqlSelectSourceSpecial = s"select distinct md5(concat($specialMd)) $specialKey,$specialMd from log_data "
+             val sqlSelectSourceSpecial = s"select distinct md5(concat($specialMd)) $specialKey,$SOURCE_SPECIAL_COLUMN_FOR_DIMENSION from log_data "
              sqlContext.sql(sqlSelectSourceSpecial).write.parquet(outputPathSourceSpecial)
              val sqlSelectSourceLauncher = s"select distinct md5(concat($launcherMd)) $launcherKey,$launcherMd from log_data "
              sqlContext.sql(sqlSelectSourceLauncher).write.parquet(outputPathSourceLauncher)

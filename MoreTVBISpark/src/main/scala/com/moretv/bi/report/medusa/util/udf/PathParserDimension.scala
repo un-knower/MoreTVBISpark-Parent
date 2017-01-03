@@ -388,7 +388,7 @@ object PathParserDimension {
               case UDFConstant.PATHPROPERTY => {
                 result = getPathMainInfo(path,1,1)
                 if(!UDFConstant.MedusaPathProperty.contains(result)){
-                  result = null
+                  result = ""
                 }
               }
               // 获取medusa的pathSpecial中的“路径标识”信息
@@ -405,6 +405,8 @@ object PathParserDimension {
                     }
                     result = tempResult
                   }
+                }else{
+                  result=""
                 }
               }
             }
@@ -554,6 +556,8 @@ object PathParserDimension {
                     result ="subject"
                   }else if(path.contains("-actor-")){
                     result = "star"
+                  }else{
+                    result=""
                   }
                 }
                 case UDFConstant.PATHIDENTIFICATION => {
@@ -571,6 +575,9 @@ object PathParserDimension {
                     // 取最后一次出现的tag的位置信息
                     val tagIndex = path.split("-").lastIndexOf("tag")+1
                     result = getSplitInfo(path,tagIndex+1)
+                  }
+                  if(null==result){
+                    result=""
                   }
                 }
               }
@@ -708,7 +715,7 @@ object PathParserDimension {
      *  从路径中获取专题code
      */
   def getSubjectCodeByPath(path:String,flag:String) = {
-    var result:String = null
+    var result:String = ""
     if(flag!=null){
       flag match {
         case "medusa" => {
@@ -740,7 +747,7 @@ object PathParserDimension {
        *   从路径中获取专题名称
        */
   def getSubjectNameByPath(path:String,flag:String) = {
-    var result:String = null
+    var result:String = ""
     if(flag!=null){
       flag match {
         case "medusa" => {

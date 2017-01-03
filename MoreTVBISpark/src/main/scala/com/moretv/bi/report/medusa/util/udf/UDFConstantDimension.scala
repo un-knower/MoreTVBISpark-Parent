@@ -142,7 +142,10 @@ object UDFConstantDimension {
   //维度表主键
   val SOURCE_SPECIAL_SK = "source_special_sk"
   //具体字段,用来生成md5
-  val SOURCE_SPECIAL_COLUMN="special_type,special_id,special_name"
+  val SOURCE_SPECIAL_COLUMN="if(special_type='',special_type_v2,special_type),if(special_id='',special_id_v2,special_id) ,if(special_name='',special_name_v2,special_name) "
+  val SOURCE_SPECIAL_COLUMN_FOR_DIMENSION="if(special_type='',special_type_v2,special_type) as special_type,if(special_id='',special_id_v2,special_id) as special_id ,if(special_name='',special_name_v2,special_name) as special_name "
+  val SOURCE_SPECIAL_COLUMN_NOT_SHOW="special_type,special_id,special_name,special_type_v2,special_id_v2,special_name_v2"
+
   /*-------------------特殊入口入口维度end-------------------*/
 
 
@@ -175,9 +178,19 @@ object UDFConstantDimension {
   val DIM_WEB_LOCATION_SK = "dim_web_location_sk"
   //app version维度
   val DIM_APP_VERSION_KEY = "dim_app_version_key"
-
-
   /*-------------------外部维度end-------------------*/
+
+  /*-------------------外部维度表中不需要在事实表展示的字段-------------------*/
+  val DIM_APP_VERSION_COLUMN_NOT_SHOW="buildDate,apkVersion,apkSeries"
+
+
+  /*-------------------大宽表中不需要在事实表展示的字段-------------------*/
+  val FAT_TABLE_COLUMN_NOT_SHOW="accountId,accessPathFromPath,versionCode,appEnterWay,ip,launcherAccessLocationFromPath,launcherAreaFromPath,logType,logVersion,omnibusName,omnibusSid,pageDetailInfoFromPath,pageTypeFromPath,path,"+
+  "pathIdentificationFromPath,pathMain,pathPropertyFromPath,pathSpecial,pathSub,previousContentTypeFromPath,previousSidFromPath,retrieval,searchText,"+
+  "singer,singerSid,station,subjectCode,subjectName,topRankName,topRankSid,userId,videoSid,contentType,date,day,videoName,productModel"
+  //exist in table: datetime,duration,episodeSid,event,flag,mark,promotionChannel
+
+
 
   //事实表
   val FACT_MEDUSA_PLAY="fact_medusa_play"

@@ -32,14 +32,14 @@ object PlayViewLogDimension extends BaseClass{
          sqlContext.udf.register("pathParser",PathParser.pathParser _)
          sqlContext.udf.register("pathParserDimension",PathParserDimension.pathParserDimension _)
          sqlContext.udf.register("ipRuleGenerate",PathParserDimension.ipRuleGenerate _)
-         sqlContext.udf.register("getSubjectCode",PathParser.getSubjectCodeByPath _)
-         sqlContext.udf.register("getSubjectNameBySid",PathParser.getSubjectNameByPath _)
+         sqlContext.udf.register("getSubjectCode",PathParserDimension.getSubjectCodeByPath _)
+         sqlContext.udf.register("getSubjectNameBySid",PathParserDimension.getSubjectNameByPath _)
          val startDate = p.startDate
          val medusaLogType = "play"
          val moretvLogType = "playview"
         /* val medusaDir ="/log/medusa/parquet"
          val moretvDir = "/mbi/parquet"*/
-        val medusaDir = "/data_warehouse/medusa_test/parquet"
+         val medusaDir = "/data_warehouse/medusa_test/parquet"
          val moretvDir = "/data_warehouse/helios_test/parquet"
          val outputDir =  UDFConstantDimension.MEDUSA_BIG_FACT_TABLE_DIR
          val outLogType = UDFConstantDimension.MEDUSA_BIG_FACT_TABLE_PLAY_TYPE
@@ -71,8 +71,8 @@ object PlayViewLogDimension extends BaseClass{
              println("-------------------------michael 1--------------")
              val medusaDf = sqlContext.read.parquet(logDir1)
              val moretvDf = sqlContext.read.parquet(logDir2)
-             val medusaColNames = medusaDf.columns.toList.filter(e=>{ParquetSchema.schemaArr.contains(e)}).mkString(",")
-             val moretvColNames = moretvDf.columns.toList.filter(e=>{ParquetSchema.schemaArr.contains(e)}).mkString(",")
+             val medusaColNames = medusaDf.columns.toList.filter(e=>{ParquetSchemaDimension.schemaArr.contains(e)}).mkString(",")
+             val moretvColNames = moretvDf.columns.toList.filter(e=>{ParquetSchemaDimension.schemaArr.contains(e)}).mkString(",")
 
              medusaDf.registerTempTable("log_data_1")
              moretvDf.registerTempTable("log_data_2")
@@ -120,6 +120,9 @@ object PlayViewLogDimension extends BaseClass{
                "userId as "+UDFConstantDimension.DIM_TERMINAL_SK+"," +
                "accountId as "+UDFConstantDimension.DIM_ACCOUNT_SK+"," +
                s"ipRuleGenerate(ip) as "+UDFConstantDimension.DIM_WEB_LOCATION_SK+"," +
+               "if(station is null,if(singer is null,if(omnibusSid is null,if(topRankSid is null,'','topRank'),'omnibus'),'singer'),'station') as special_type_v2,"+
+               "if(station is null,if(singer is null,if(omnibusSid is null,if(topRankSid is null,'',topRankSid),omnibusSid),singer),station) as special_id_v2,"+
+               "if(station is null,if(singer is null,if(omnibusName is null,if(topRankName is null,'',topRankName),omnibusName),singer),station) as special_name_v2,"+
                s" 'medusa' as flag " +
                s" from log_data_1"
              //println(sqlSelectMedusa)
@@ -156,7 +159,7 @@ object PlayViewLogDimension extends BaseClass{
                s"pathParserDimension('playview',path,'path', 'previousSid') as "+UDFConstantDimension.RECOMMEND_PROPERTY+"," +
                s"pathParserDimension('playview',path,'path', 'previousContentType') as "+UDFConstantDimension.RECOMMEND_PRE_CONTENT_TYPE+"," +
                "'' as "+UDFConstantDimension.RECOMMEND_METHOD+"," +
-               s"pathParser('playview',path,'path','pathProperty') as "+UDFConstantDimension.SPECIAL_SOURCE_TYPE+"," +
+               s"pathParserDimension('playview',path,'path','pathProperty') as "+UDFConstantDimension.SPECIAL_SOURCE_TYPE+"," +
                s"getSubjectCode(path,'moretv') as  "+UDFConstantDimension.SPECIAL_SOURCE_ID+"," +
                s"getSubjectNameBySid(path,'moretv') as "+UDFConstantDimension.SPECIAL_SOURCE_NAME+"," +
                s"pathParserDimension('playview',path,'path','launcherArea') as "+UDFConstantDimension.SOURCE_LAUNCHER_AREA+"," +
@@ -215,7 +218,7 @@ object PlayViewLogDimension extends BaseClass{
                s"pathParserDimension('playview',path,'path', 'previousSid') as "+UDFConstantDimension.RECOMMEND_PROPERTY+"," +
                s"pathParserDimension('playview',path,'path', 'previousContentType') as "+UDFConstantDimension.RECOMMEND_PRE_CONTENT_TYPE+"," +
                "'' as "+UDFConstantDimension.RECOMMEND_METHOD+"," +
-               s"pathParser('playview',path,'path','pathProperty') as "+UDFConstantDimension.SPECIAL_SOURCE_TYPE+"," +
+               s"pathParserDimension('playview',path,'path','pathProperty') as "+UDFConstantDimension.SPECIAL_SOURCE_TYPE+"," +
                s"getSubjectCode(path,'moretv') as  "+UDFConstantDimension.SPECIAL_SOURCE_ID+"," +
                s"getSubjectNameBySid(path,'moretv') as "+UDFConstantDimension.SPECIAL_SOURCE_NAME+"," +
                s"pathParserDimension('playview',path,'path','launcherArea') as "+UDFConstantDimension.SOURCE_LAUNCHER_AREA+"," +
@@ -280,6 +283,9 @@ object PlayViewLogDimension extends BaseClass{
                "userId as "+UDFConstantDimension.DIM_TERMINAL_SK+"," +
                "accountId as "+UDFConstantDimension.DIM_ACCOUNT_SK+"," +
                s"ipRuleGenerate(ip) as "+UDFConstantDimension.DIM_WEB_LOCATION_SK+"," +
+               "if(station is null,if(singer is null,if(omnibusSid is null,if(topRankSid is null,'','topRank'),'omnibus'),'singer'),'station') as special_type_v2,"+
+               "if(station is null,if(singer is null,if(omnibusSid is null,if(topRankSid is null,'',topRankSid),omnibusSid),singer),station) as special_id_v2,"+
+               "if(station is null,if(singer is null,if(omnibusName is null,if(topRankName is null,'',topRankName),omnibusName),singer),station) as special_name_v2,"+
                s"'medusa' as flag " +
                " from log_data_1"
 
