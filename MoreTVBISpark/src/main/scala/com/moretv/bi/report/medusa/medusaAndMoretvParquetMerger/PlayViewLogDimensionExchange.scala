@@ -7,6 +7,7 @@ import com.moretv.bi.report.medusa.util.udf.UDFConstantDimension
 import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 
@@ -36,9 +37,12 @@ object PlayViewLogDimensionExchange extends BaseClass {
         val startDate = p.startDate
         val inputDirFatTableBase = UDFConstantDimension.MEDUSA_BIG_FACT_TABLE_DIR
         val inputLogType = UDFConstantDimension.MEDUSA_BIG_FACT_TABLE_PLAY_TYPE
+        val inputDataWarehouseDimensionsDir = UDFConstantDimension.MEDUSA_DIMENSION_DATA_WAREHOUSE
+        val inputDimAppVersionDirName = UDFConstantDimension.DIM_APP_VERSION_TABLE_NAME
 
         val outputFactTableDirBase = UDFConstantDimension.MEDUSA_DATA_WAREHOUSE
         val outputFactTableType = UDFConstantDimension.FACT_MEDUSA_PLAY
+
 
         val outputDirDimensionBase = UDFConstantDimension.MEDUSA_DAILY_DIMENSION_DATA_WAREHOUSE
         val outputTypeSourceRetrieval = UDFConstantDimension.SOURCE_RETRIEVAL_TABLE
@@ -57,7 +61,15 @@ object PlayViewLogDimensionExchange extends BaseClass {
         (0 until p.numOfDays).foreach(i => {
           val inputDate = DateFormatUtils.readFormat.format(cal.getTime)
           val inputDirFatTable = s"$inputDirFatTableBase/$inputDate/$inputLogType"
+          val inputDimAppVersionTable = s"$inputDataWarehouseDimensionsDir/$inputDimAppVersionDirName"
           val inputDirFatTableFlag = FilesInHDFS.IsInputGenerateSuccess(inputDirFatTable)
+          val inputDimAppVersionTableFlag = FilesInHDFS.IsInputGenerateSuccess(inputDimAppVersionTable)
+          printOutputMap+=("inputDate"->inputDate)
+          printOutputMap+=("inputDirFatTable"->inputDirFatTable)
+          printOutputMap+=("inputDimAppVersionTable"->inputDimAppVersionTable)
+          printOutputMap+=("inputDirFatTableFlag"->inputDirFatTableFlag.toString)
+          printOutputMap+=("inputDimAppVersionTableFlag"->inputDimAppVersionTableFlag.toString)
+
 
           val outputPath = s"$outputFactTableDirBase/$outputFactTableType/$inputDate"
           val outputPathSourceRetrieval = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceRetrieval"
@@ -77,7 +89,7 @@ object PlayViewLogDimensionExchange extends BaseClass {
             println(s"$path = " + printOutputMap(path))
           }
 
-          if (inputDirFatTableFlag) {
+          if (inputDirFatTableFlag && inputDimAppVersionTableFlag) {
             if (p.deleteOld) {
               HdfsUtil.deleteHDFSFile(outputPath)
               HdfsUtil.deleteHDFSFile(outputPathSourceRetrieval)
@@ -88,9 +100,10 @@ object PlayViewLogDimensionExchange extends BaseClass {
               HdfsUtil.deleteHDFSFile(outputPathSourceLauncher)
             }
               println("-------------------------in inputDirFatTableFlag  --------------")
-              val df = sqlContext.read.parquet(inputDirFatTable)
-              //println("df.schema.fieldNames.mkString(\",\"):"+df.schema.fieldNames.mkString(","))
-              //println("df.columns.toList.mkString(\",\"):"+df.columns.toList.mkString(","))
+              val dfFactTable = sqlContext.read.parquet(inputDirFatTable)
+              val dfDimAppVersionTable = sqlContext.read.parquet(inputDimAppVersionTable)
+              //println("dfFactTable.schema.fieldNames.mkString(\",\"):"+dfFactTable.schema.fieldNames.mkString(","))
+              //println("dfFactTable.columns.toList.mkString(\",\"):"+dfFactTable.columns.toList.mkString(","))
 
               val sourceListMd=UDFConstantDimension.SOURCE_LIST_COLUMN
               val sourceListMdKey=UDFConstantDimension.SOURCE_LIST_SK
@@ -106,30 +119,43 @@ object PlayViewLogDimensionExchange extends BaseClass {
               val SOURCE_LAUNCHER_COLUMN_NOT_SHOW=UDFConstantDimension.SOURCE_LAUNCHER_COLUMN_NOT_SHOW
               val launcherKey=UDFConstantDimension.SOURCE_LAUNCHER_SK
 
-             //需要通过多个字段关联，当满足条件，替换为md5
+
+            //需要通过多个字段关联，当满足条件，替换为md5 [dim_app_version]
+            ///data_warehouse/dw_dimensions/dim_app_version
+            val appVersionKey=UDFConstantDimension.DIM_APP_VERSION_KEY
 
 
 
             //生成事实表，去掉用来生成md5的列
-            val fatTableColumnArray=df.columns
+            val fatTableColumnArray=dfFactTable.columns
             val fatTableColumns=fatTableColumnArray.map(e=>e.trim).mkString(",")
 
             val noNeedShowInFactString=s"$sourceListMd,$filterMd,$searchMd,$recommendMd,$specialMd,$SOURCE_LAUNCHER_COLUMN_NOT_SHOW"
             val noNeedShowInFactColumnArray=noNeedShowInFactString.split(',')
-            val product_columns=df.columns.filter(e=>{!noNeedShowInFactColumnArray.contains(e)})
+            val factColumnsArray=dfFactTable.columns.filter(e=>{!noNeedShowInFactColumnArray.contains(e)})
+            val factColumnsString=factColumnsArray.mkString(",")
             println("noNeedShowInFactTable:"+noNeedShowInFactString)
-
             println("fatTableColumns:"+fatTableColumns)
-            println("df.columns.toList.size:"+df.columns.toList.size)
-            println("product_columns.size:"+product_columns.size)
+            println("dfFactTable.columns.toList.size:"+dfFactTable.columns.toList.size)
+            println("factColumnsArray.size:"+factColumnsArray.size)
+            println("factColumnsString:"+factColumnsString)
             //
 
               //将大宽表进行维度替换，生成维度替换后的事实表
-              df.registerTempTable("log_data")
+              dfFactTable.registerTempTable("log_data")
+              dfDimAppVersionTable.registerTempTable("dim_app_version_table")
               val sqlSelectMedusa = s"select md5(concat($sourceListMd)) $sourceListMdKey,md5(concat($filterMd)) $filterMdKey,"+
                 s"md5(concat($searchMd)) $searchMdKey,md5(concat($recommendMd)) $recommendKey,"+
-                s"md5(concat($specialMd)) $specialKey,md5(concat($launcherMd)) $launcherKey,$product_columns from log_data "
+                s"md5(concat($specialMd)) $specialKey,md5(concat($launcherMd)) $launcherKey,b.app_version_key as $appVersionKey,$factColumnsString "+
+                " from log_data a "+
+             " left outer join dim_app_version_table b "+
+             " on  trim(if(a.buildDate is null,'',a.buildDate))=trim(if(b.build_time is null,'',b.build_time)) "+
+             " and trim(if(a.apkVersion is null,'',a.apkVersion))=trim(if(b.version is null,'',b.version)) "+
+             " and trim(if(a.apkSeries is null,'',a.apkSeries))=trim(if(b.app_series is null,'',b.app_series))"
+            println("sqlSelectMedusa:"+sqlSelectMedusa)
               sqlContext.sql(sqlSelectMedusa).write.parquet(outputPath)
+
+            //left outer join dim_app_version_table b  on trim(if(a.buildDate is null,'',a.buildDate))=trim(if(b.build_time is null,'',b.build_time)) and trim(a.apkVersion)=trim(b.version) and trim(a.apkSeries)=trim(b.app_series)
 
              //生成维度字典数据
              val sqlSelectSourceRetrieval = s"select distinct md5(concat($filterMd)) $filterMdKey,$filterMd from log_data "

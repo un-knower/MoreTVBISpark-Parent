@@ -12,10 +12,10 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 /**
   * Created by wangbaozhi on 2016/12/26,
   * This object is used to merge dimension of daily and online dimension,generate the new online dimension
-  * input: /data_warehouse/dimensions/medusa/daily,/data_warehouse/dimensions/medusa
-  * output:/data_warehouse/dimensions/medusa
+  * input: /data_warehouse/dw_dimensions/daily/20161201/dim_medusa_source_retrieval/
+  *        /data_warehouse/dw_dimensions/dim_medusa_source_retrieval
+  * output:/data_warehouse/dw_dimensions/dim_medusa_source_retrieval
   *
-  * take source_list（列表页分类入口） for example
   */
 object PlayViewLogDimensionMerge extends BaseClass {
   def main(args: Array[String]) {
@@ -52,7 +52,7 @@ object PlayViewLogDimensionMerge extends BaseClass {
           println("onLineDimensionDir:" + onLineDimensionDir)
           println("onLineDimensionDirTmp:" + onLineDimensionDirTmp)
 
-          //加载历史维度信息 /data_warehouse/dimensions/medusa/daily/20161201/sourceList
+          //加载历史维度信息 /data_warehouse/dw_dimensions/daily/20161201/dim_medusa_source_retrieval/
           val cal = Calendar.getInstance()
           cal.setTime(DateFormatUtils.readFormat.parse(startDate))
           val inputs = new Array[String](p.numOfDays)

@@ -173,12 +173,16 @@ object UDFConstantDimension {
   val DIM_ACCOUNT_SK = "dim_account_sk"
   //IP地址维度
   val DIM_WEB_LOCATION_SK = "dim_web_location_sk"
+  //app version维度
+  val DIM_APP_VERSION_KEY = "dim_app_version_key"
+
+
   /*-------------------外部维度end-------------------*/
 
   //事实表
   val FACT_MEDUSA_PLAY="fact_medusa_play"
   //维度表
-  val DIM_APP_VERSION="dim_app_version"
+  val DIM_APP_VERSION_TABLE_NAME="dim_app_version"
 
 
 
