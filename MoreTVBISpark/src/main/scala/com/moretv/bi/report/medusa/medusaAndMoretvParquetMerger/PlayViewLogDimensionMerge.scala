@@ -33,6 +33,7 @@ object PlayViewLogDimensionMerge extends BaseClass {
         val startDate = p.startDate
         val inputDirBaseDaily = UDFConstantDimension.MEDUSA_DAILY_DIMENSION_DATA_WAREHOUSE
         val inputDirBaseOnline = UDFConstantDimension.MEDUSA_DIMENSION_DATA_WAREHOUSE
+        val outputDimensionBackupBaseDir = UDFConstantDimension.MEDUSA_DIMENSION_BACKUP_DATA_WAREHOUSE
         var logTypeAndUniqueKeyMap: Map[String, String] = Map()
         logTypeAndUniqueKeyMap += (UDFConstantDimension.SOURCE_RETRIEVAL_TABLE -> UDFConstantDimension.SOURCE_RETRIEVAL_SK)
         logTypeAndUniqueKeyMap += (UDFConstantDimension.SOURCE_SEARCH_TABLE -> UDFConstantDimension.SOURCE_SEARCH_SK)
@@ -46,11 +47,13 @@ object PlayViewLogDimensionMerge extends BaseClass {
           println(" UniqueKey = " + logTypeAndUniqueKeyMap(logType))
 
           val onLineDimensionDir = s"$inputDirBaseOnline/$logType"
+          val onLineDimensionBackupDir = s"$outputDimensionBackupBaseDir/$startDate/$logType"
           val unique_key = logTypeAndUniqueKeyMap(logType)
           val onLineDimensionDirTmp=s"${onLineDimensionDir}_tmp"
           println("inputDirBaseDaily:" + inputDirBaseDaily)
           println("onLineDimensionDir:" + onLineDimensionDir)
           println("onLineDimensionDirTmp:" + onLineDimensionDirTmp)
+          println("onLineDimensionBackupDir:" + onLineDimensionBackupDir)
 
           //加载历史维度信息 /data_warehouse/dw_dimensions/daily/20161201/dim_medusa_source_retrieval/
           val cal = Calendar.getInstance()
@@ -80,7 +83,18 @@ object PlayViewLogDimensionMerge extends BaseClass {
             println("合并去重后维度数量:" + df_result.count())
             HdfsUtil.deleteHDFSFile(onLineDimensionDirTmp)
             df_result.write.parquet(onLineDimensionDirTmp)
+
+            println("backup线上维度数据:" + onLineDimensionDir+" to "+onLineDimensionBackupDir)
+            val isBackupExist = FilesInHDFS.IsDirExist(onLineDimensionBackupDir)
+            if(isBackupExist){
+              println("删除线上维度备份数据:" + onLineDimensionBackupDir)
+              HdfsUtil.deleteHDFSFile(onLineDimensionBackupDir)
+            }
+            val isSuccessBackup=HdfsUtil.copyFilesInDir(onLineDimensionDir,onLineDimensionBackupDir)
+            println("isSuccessBackup:"+isSuccessBackup)
+
             if (p.deleteOld) {
+              println("删除线上维度数据:" + onLineDimensionDir)
               HdfsUtil.deleteHDFSFile(onLineDimensionDir)
             }
             val isSuccess=HdfsUtil.copyFilesInDir(onLineDimensionDirTmp,onLineDimensionDir)

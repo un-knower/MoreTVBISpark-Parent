@@ -66,6 +66,7 @@ object UDFConstantDimension {
   val MEDUSA_BIG_FACT_TABLE_PLAY_TYPE="playview2filter"
   val MEDUSA_DATA_WAREHOUSE="/data_warehouse/dw_fact_medusa"
   val MEDUSA_DAILY_DIMENSION_DATA_WAREHOUSE="/data_warehouse/dw_dimensions/daily"
+  val MEDUSA_DIMENSION_BACKUP_DATA_WAREHOUSE="/data_warehouse/dw_dimensions/backup"
   val MEDUSA_DIMENSION_DATA_WAREHOUSE="/data_warehouse/dw_dimensions"
   /*-------------------筛选维度-------------------*/
   //筛选维度表名称
@@ -182,6 +183,8 @@ object UDFConstantDimension {
 
   /*-------------------外部维度表中不需要在事实表展示的字段-------------------*/
   val DIM_APP_VERSION_COLUMN_NOT_SHOW="buildDate,apkVersion,apkSeries"
+  val DIM_MEDUSA_PROGRAM_COLUMN_NOT_SHOW="videoSid"
+  val DIM_MEDUSA_TERMINAL_COLUMN_NOT_SHOW="userId"
 
 
   /*-------------------大宽表中不需要在事实表展示的字段-------------------*/
@@ -196,6 +199,11 @@ object UDFConstantDimension {
   val FACT_MEDUSA_PLAY="fact_medusa_play"
   //维度表
   val DIM_APP_VERSION_TABLE_NAME="dim_app_version"
+  val DIM_MEDUSA_TERMINAL_USER="dim_medusa_terminal_user"
+  val DIM_MEDUSA_PROGRAM="dim_medusa_program"
+  val DIM_MEDUSA_PROGRAM_COLUMN= "program_sk,sid"
+  val DIM_MEDUSA_TERMINAL_USER_COLUMN= "terminal_sk,user_id"
+
 
 
 

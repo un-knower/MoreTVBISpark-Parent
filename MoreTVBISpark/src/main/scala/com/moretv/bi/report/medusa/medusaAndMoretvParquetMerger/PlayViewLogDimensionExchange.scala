@@ -39,6 +39,8 @@ object PlayViewLogDimensionExchange extends BaseClass {
         val inputLogType = UDFConstantDimension.MEDUSA_BIG_FACT_TABLE_PLAY_TYPE
         val inputDataWarehouseDimensionsDir = UDFConstantDimension.MEDUSA_DIMENSION_DATA_WAREHOUSE
         val inputDimAppVersionDirName = UDFConstantDimension.DIM_APP_VERSION_TABLE_NAME
+        val inputDimMedusaTerminalUserDirName = UDFConstantDimension.DIM_MEDUSA_TERMINAL_USER
+        val inputDimMedusaProgramDirName = UDFConstantDimension.DIM_MEDUSA_PROGRAM
 
         val outputFactTableDirBase = UDFConstantDimension.MEDUSA_DATA_WAREHOUSE
         val outputFactTableType = UDFConstantDimension.FACT_MEDUSA_PLAY
@@ -62,13 +64,21 @@ object PlayViewLogDimensionExchange extends BaseClass {
           val inputDate = DateFormatUtils.readFormat.format(cal.getTime)
           val inputDirFatTable = s"$inputDirFatTableBase/$inputDate/$inputLogType"
           val inputDimAppVersionTable = s"$inputDataWarehouseDimensionsDir/$inputDimAppVersionDirName"
+          val inputDimMedusaTerminalUserTable = s"$inputDataWarehouseDimensionsDir/$inputDimMedusaTerminalUserDirName"
+          val inputDimMedusaProgramTable = s"$inputDataWarehouseDimensionsDir/$inputDimMedusaProgramDirName"
           val inputDirFatTableFlag = FilesInHDFS.IsInputGenerateSuccess(inputDirFatTable)
           val inputDimAppVersionTableFlag = FilesInHDFS.IsInputGenerateSuccess(inputDimAppVersionTable)
+          val inputDimMedusaTerminalUserTableFlag = FilesInHDFS.IsInputGenerateSuccess(inputDimMedusaTerminalUserTable)
+          val inputDimMedusaProgramTableFlag = FilesInHDFS.IsInputGenerateSuccess(inputDimMedusaProgramTable)
           printOutputMap+=("inputDate"->inputDate)
           printOutputMap+=("inputDirFatTable"->inputDirFatTable)
           printOutputMap+=("inputDimAppVersionTable"->inputDimAppVersionTable)
           printOutputMap+=("inputDirFatTableFlag"->inputDirFatTableFlag.toString)
           printOutputMap+=("inputDimAppVersionTableFlag"->inputDimAppVersionTableFlag.toString)
+          printOutputMap+=("inputDimMedusaTerminalUserTableFlag"->inputDimMedusaTerminalUserTableFlag.toString)
+          printOutputMap+=("inputDimMedusaProgramTableFlag"->inputDimMedusaProgramTableFlag.toString)
+          printOutputMap+=("inputDimMedusaTerminalUserTable"->inputDimMedusaTerminalUserTable)
+          printOutputMap+=("inputDimMedusaProgramTable"->inputDimMedusaProgramTable)
 
 
           val outputPath = s"$outputFactTableDirBase/$outputFactTableType/$inputDate"
@@ -89,7 +99,7 @@ object PlayViewLogDimensionExchange extends BaseClass {
             println(s"$path = " + printOutputMap(path))
           }
 
-          if (inputDirFatTableFlag && inputDimAppVersionTableFlag) {
+          if (inputDirFatTableFlag && inputDimAppVersionTableFlag && inputDimMedusaProgramTableFlag && inputDimMedusaTerminalUserTableFlag) {
             if (p.deleteOld) {
               HdfsUtil.deleteHDFSFile(outputPath)
               HdfsUtil.deleteHDFSFile(outputPathSourceRetrieval)
@@ -102,6 +112,8 @@ object PlayViewLogDimensionExchange extends BaseClass {
               println("-------------------------in inputDirFatTableFlag  --------------")
               val dfFactTable = sqlContext.read.parquet(inputDirFatTable)
               val dfDimAppVersionTable = sqlContext.read.parquet(inputDimAppVersionTable)
+              val dfDimMedusaProgramTable = sqlContext.read.parquet(inputDimMedusaProgramTable).select("program_sk","sid")
+              val dfDimMedusaTerminalUserTable = sqlContext.read.parquet(inputDimMedusaTerminalUserTable).select("terminal_sk","user_id")
               //println("dfFactTable.schema.fieldNames.mkString(\",\"):"+dfFactTable.schema.fieldNames.mkString(","))
               //println("dfFactTable.columns.toList.mkString(\",\"):"+dfFactTable.columns.toList.mkString(","))
 
@@ -124,10 +136,14 @@ object PlayViewLogDimensionExchange extends BaseClass {
               val launcherKey=UDFConstantDimension.SOURCE_LAUNCHER_SK
 
 
-            //需要通过多个字段关联，当满足条件，替换为md5 [dim_app_version]
+            //需要通过多个字段关联，当满足条件，替换为代理主键 [dim_app_version]
             ///data_warehouse/dw_dimensions/dim_app_version
             val appVersionKey=UDFConstantDimension.DIM_APP_VERSION_KEY
             val dimAppVersionColumnNotShow=UDFConstantDimension.DIM_APP_VERSION_COLUMN_NOT_SHOW
+            val dimProgramSk=UDFConstantDimension.DIM_PROGRAM_SK
+            val dimProgramColumnNotShow=UDFConstantDimension.DIM_MEDUSA_PROGRAM_COLUMN_NOT_SHOW
+            val dimTerminalSk=UDFConstantDimension.DIM_TERMINAL_SK
+            val dimTerminalColumnNotShow=UDFConstantDimension.DIM_MEDUSA_PROGRAM_COLUMN_NOT_SHOW
 
             //大宽表中不需要在事实表中出现的字段
             val fatTableColumnNotShow=UDFConstantDimension.FAT_TABLE_COLUMN_NOT_SHOW
@@ -136,7 +152,7 @@ object PlayViewLogDimensionExchange extends BaseClass {
             val fatTableColumnArray=dfFactTable.columns
             val fatTableColumns=fatTableColumnArray.map(e=>e.trim).mkString(",")
 
-            val noNeedShowInFactString=s"$sourceListMd,$filterMd,$searchMd,$recommendMd,$SOURCE_LAUNCHER_COLUMN_NOT_SHOW,$SOURCE_SPECIAL_COLUMN_NOT_SHOW,$dimAppVersionColumnNotShow,$fatTableColumnNotShow"
+            val noNeedShowInFactString=s"$sourceListMd,$filterMd,$searchMd,$recommendMd,$SOURCE_LAUNCHER_COLUMN_NOT_SHOW,$SOURCE_SPECIAL_COLUMN_NOT_SHOW,$dimAppVersionColumnNotShow,$dimProgramColumnNotShow,$dimTerminalColumnNotShow,$fatTableColumnNotShow"
             val noNeedShowInFactColumnArray=noNeedShowInFactString.split(',')
             val factColumnsArray=dfFactTable.columns.filter(e=>{!noNeedShowInFactColumnArray.contains(e)})
             val factColumnsString=factColumnsArray.mkString(",")
@@ -152,14 +168,20 @@ object PlayViewLogDimensionExchange extends BaseClass {
               //将大宽表进行维度替换，生成维度替换后的事实表
               dfFactTable.registerTempTable("log_data")
               dfDimAppVersionTable.registerTempTable("dim_app_version_table")
+              dfDimMedusaProgramTable.registerTempTable("dim_medusa_program")
+              dfDimMedusaTerminalUserTable.registerTempTable("dim_medusa_terminal_user")
               val factLogSql = s"select md5(concat($sourceListMd)) $sourceListMdKey,md5(concat($filterMd)) $filterMdKey,"+
                 s"md5(concat($searchMd)) $searchMdKey,md5(concat($recommendMd)) $recommendKey,"+
-                s"md5(concat($specialMd)) $specialKey,md5(concat($launcherMd)) $launcherKey,b.app_version_key as $appVersionKey,$factColumnsString "+
+                s"md5(concat($specialMd)) $specialKey,md5(concat($launcherMd)) $launcherKey,b.app_version_key as $appVersionKey,c.program_sk as $dimProgramSk,d.terminal_sk as $dimTerminalSk,$factColumnsString "+
                 " from log_data a "+
              " left outer join dim_app_version_table b "+
              " on  trim(if(a.buildDate is null,'',a.buildDate))=trim(if(b.build_time is null,'',b.build_time)) "+
              " and trim(if(a.apkVersion is null,'',a.apkVersion))=trim(if(b.version is null,'',b.version)) "+
-             " and trim(if(a.apkSeries is null,'',a.apkSeries))=trim(if(b.app_series is null,'',b.app_series))"
+             " and trim(if(a.apkSeries is null,'',a.apkSeries))=trim(if(b.app_series is null,'',b.app_series)) "+
+             " left outer join dim_medusa_program c "+
+             " on trim(a.videoSid)=trim(c.sid) "+
+             " left outer join dim_medusa_terminal_user d "+
+              " on trim(a.userId)=trim(d.user_id) "
               println("factLogSql:"+factLogSql)
               sqlContext.sql(factLogSql).write.parquet(outputPath)
 

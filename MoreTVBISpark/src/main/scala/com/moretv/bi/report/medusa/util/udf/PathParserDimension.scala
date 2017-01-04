@@ -747,7 +747,7 @@ object PathParserDimension {
        *   从路径中获取专题名称
        */
   def getSubjectNameByPath(path:String,flag:String) = {
-    var result:String = ""
+    var result:String = null
     if(flag!=null){
       flag match {
         case "medusa" => {
@@ -775,13 +775,15 @@ object PathParserDimension {
           }
         }
         case "moretv" => {
-          if(path!=null){
+          result=""
+          //TODO change read mysql db to get sname by sid
+         /* if(path!=null){
             val info = SubjectUtils.getSubjectCodeAndPath(path)
             if(!info.isEmpty){
                 val subjectCode = info(0)
                 result = CodeToNameUtils.getSubjectNameBySid(subjectCode._1)
             }
-          }
+          }*/
         }
         case _ =>
       }
