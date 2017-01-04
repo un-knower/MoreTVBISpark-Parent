@@ -308,12 +308,12 @@ object PathParserDimension {
                   //home*recommendation*1
                    number_regex findFirstMatchIn result match {
                     case Some(p) =>
-                    case None => result=null
+                    case None => result="-1"
                   }
 
                   if(getPathMainInfo(path,1,2)==UDFConstant.MedusaLive || !UDFConstant.MedusaLauncherAccessLocation
                     .contains(result)){
-                    result = null
+                    result = "-1"
                   }
                 }
               }
@@ -499,7 +499,7 @@ object PathParserDimension {
                   if(result!=null){
                     number_regex findFirstMatchIn result match {
                       case Some(p) =>
-                      case None =>result=null
+                      case None =>result="-1"
                     }
                   }
                 }

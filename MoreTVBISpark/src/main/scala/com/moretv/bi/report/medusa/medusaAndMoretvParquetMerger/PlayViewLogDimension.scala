@@ -113,7 +113,7 @@ object PlayViewLogDimension extends BaseClass{
                s"getSubjectNameBySid(pathSpecial,'medusa') as "+UDFConstantDimension.SPECIAL_SOURCE_NAME+"," +
                s"pathParserDimension('play',pathMain,'pathMain','launcherArea') as "+UDFConstantDimension.SOURCE_LAUNCHER_AREA+"," +
                s"pathParserDimension('play',pathMain,'pathMain','launcherAccessLocation') as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION+"," +
-               s"pathParserDimension('play',pathMain,'pathMain','"+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"') as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"," +
+               s"cast(pathParserDimension('play',pathMain,'pathMain','"+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"') as long) as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"," +
                "substring(datetime,1,10) as "+UDFConstantDimension.DIM_DATE_KEY+"," +
                "substring(datetime,12,8) as "+UDFConstantDimension.DIM_TIME_KEY+"," +
               /* "videoSid as "+UDFConstantDimension.DIM_PROGRAM_SK+"," +
@@ -164,7 +164,7 @@ object PlayViewLogDimension extends BaseClass{
                s"getSubjectNameBySid(path,'moretv') as "+UDFConstantDimension.SPECIAL_SOURCE_NAME+"," +
                s"pathParserDimension('playview',path,'path','launcherArea') as "+UDFConstantDimension.SOURCE_LAUNCHER_AREA+"," +
                s"pathParserDimension('playview',path,'path','launcherAccessLocation') as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION+"," +
-               s"pathParserDimension('playview',path,'path','"+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"') as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"," +
+               s"cast(pathParserDimension('playview',path,'path','"+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"') as long) as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"," +
                "substring(datetime,1,10) as "+UDFConstantDimension.DIM_DATE_KEY+"," +
                "substring(datetime,12,8) as "+UDFConstantDimension.DIM_TIME_KEY+"," +
          /*      "videoSid as "+UDFConstantDimension.DIM_PROGRAM_SK+"," +
@@ -224,7 +224,7 @@ object PlayViewLogDimension extends BaseClass{
                s"getSubjectNameBySid(path,'moretv') as "+UDFConstantDimension.SPECIAL_SOURCE_NAME+"," +
                s"pathParserDimension('playview',path,'path','launcherArea') as "+UDFConstantDimension.SOURCE_LAUNCHER_AREA+"," +
                s"pathParserDimension('playview',path,'path','launcherAccessLocation') as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION+"," +
-               s"pathParserDimension('playview',path,'path','"+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"') as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"," +
+               s"cast(pathParserDimension('playview',path,'path','"+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"') as long) as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"," +
                "substring(datetime,1,10) as "+UDFConstantDimension.DIM_DATE_KEY+"," +
                "substring(datetime,12,8) as "+UDFConstantDimension.DIM_TIME_KEY+"," +
               /* "videoSid as "+UDFConstantDimension.DIM_PROGRAM_SK+"," +
@@ -277,7 +277,7 @@ object PlayViewLogDimension extends BaseClass{
                s"getSubjectNameBySid(pathSpecial,'medusa') as "+UDFConstantDimension.SPECIAL_SOURCE_NAME+"," +
                s"pathParserDimension('play',pathMain,'pathMain','launcherArea') as "+UDFConstantDimension.SOURCE_LAUNCHER_AREA+"," +
                s"pathParserDimension('play',pathMain,'pathMain','launcherAccessLocation') as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION+"," +
-               s"pathParserDimension('play',pathMain,'pathMain','"+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"') as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"," +
+               s"cast(pathParserDimension('play',pathMain,'pathMain','"+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"') as long) as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"," +
                "substring(datetime,1,10) as "+UDFConstantDimension.DIM_DATE_KEY+"," +
                "substring(datetime,12,8) as "+UDFConstantDimension.DIM_TIME_KEY+"," +
               /* "videoSid as "+UDFConstantDimension.DIM_PROGRAM_SK+"," +

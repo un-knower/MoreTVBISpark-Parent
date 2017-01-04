@@ -109,12 +109,12 @@ object UDFConstantDimension {
   val THIRD_CATEGORY = "third_category"
   val FOURTH_CATEGORY = "fourth_category"
   val FIFTH_CATEGORY = "fifth_category"
-  val SOURCE_LIST_INDEX = "source_list_index"
+  val SOURCE_LIST_INDEX = "list_index"
 
   //维度表主键
   val SOURCE_LIST_SK = "source_list_sk"
   //具体字段,用来生成md5
-  val SOURCE_LIST_COLUMN="main_category,second_category,third_category,fourth_category,fifth_category,source_list_index"
+  val SOURCE_LIST_COLUMN="main_category,second_category,third_category,fourth_category,fifth_category,list_index"
   /*-------------------列表页维度end-------------------*/
 
   /*-------------------推荐入口维度-------------------*/
