@@ -151,7 +151,36 @@ object PathParserDimension {
   }
 
 
+  def ipRuleGenerate(ip:String):Long={
+    var ipRule:Long=0
+    if(null==ip||ip.split('.').length!=4){
+      ipRule=0
+    }else{
+      val ipStringArray=ip.split('.')
+      val firstIp=ipStringArray(0)
+      val secondIp=ipStringArray(1)
+      val thirdIp=ipStringArray(2)
+      var firstIpInt=0l
+      var secondIpInt=0l
+      var thirdIpInt=0l
+      val salt=256
 
+      number_regex findFirstMatchIn firstIp match {
+        case Some(p) =>firstIpInt=firstIp.toLong
+        case None => firstIpInt=0
+      }
+      number_regex findFirstMatchIn secondIp match {
+        case Some(p) =>secondIpInt=secondIp.toLong
+        case None => secondIpInt=0
+      }
+      number_regex findFirstMatchIn thirdIp match {
+        case Some(p) =>thirdIpInt=thirdIp.toLong
+        case None => thirdIpInt=0
+      }
+      ipRule=firstIpInt*(salt*salt*salt)+secondIpInt*(salt*salt)+thirdIpInt
+    }
+    ipRule
+  }
 
   /**
     * 该对象用于解析路径信息
@@ -239,7 +268,7 @@ object PathParserDimension {
                 result = getPathMainInfo(path,1,2)
                 if(result!=null){
                   if(!UDFConstant.MedusaLauncherArea.contains(result)){
-                    result = null
+                    result = ""
                   }
                 }else{
                   if(getPathMainInfo(path,2,1)=="search" || getPathMainInfo(path,2,1)=="setting"){
@@ -254,13 +283,13 @@ object PathParserDimension {
                   //check if result is number,if result is number:launcher_position_index else launcher_position
                   //home*recommendation*1
                    number_regex findFirstMatchIn result match {
-                    case Some(p) => result=null
+                    case Some(p) => result=""
                     case None =>
                   }
 
                   if(getPathMainInfo(path,1,2)==UDFConstant.MedusaLive || !UDFConstant.MedusaLauncherAccessLocation
                     .contains(result)){
-                    result = null
+                    result = ""
                   }
                 }else{
                   // 处理launcher的搜索和设置的点击事件
@@ -279,12 +308,12 @@ object PathParserDimension {
                   //home*recommendation*1
                    number_regex findFirstMatchIn result match {
                     case Some(p) =>
-                    case None => result=null
+                    case None => result="-1"
                   }
 
                   if(getPathMainInfo(path,1,2)==UDFConstant.MedusaLive || !UDFConstant.MedusaLauncherAccessLocation
                     .contains(result)){
-                    result = null
+                    result = "-1"
                   }
                 }
               }
@@ -359,7 +388,7 @@ object PathParserDimension {
               case UDFConstant.PATHPROPERTY => {
                 result = getPathMainInfo(path,1,1)
                 if(!UDFConstant.MedusaPathProperty.contains(result)){
-                  result = null
+                  result = ""
                 }
               }
               // 获取medusa的pathSpecial中的“路径标识”信息
@@ -376,6 +405,8 @@ object PathParserDimension {
                     }
                     result = tempResult
                   }
+                }else{
+                  result=""
                 }
               }
             }
@@ -468,7 +499,7 @@ object PathParserDimension {
                   if(result!=null){
                     number_regex findFirstMatchIn result match {
                       case Some(p) =>
-                      case None =>result=null
+                      case None =>result="-1"
                     }
                   }
                 }
@@ -525,6 +556,8 @@ object PathParserDimension {
                     result ="subject"
                   }else if(path.contains("-actor-")){
                     result = "star"
+                  }else{
+                    result=""
                   }
                 }
                 case UDFConstant.PATHIDENTIFICATION => {
@@ -542,6 +575,9 @@ object PathParserDimension {
                     // 取最后一次出现的tag的位置信息
                     val tagIndex = path.split("-").lastIndexOf("tag")+1
                     result = getSplitInfo(path,tagIndex+1)
+                  }
+                  if(null==result){
+                    result=""
                   }
                 }
               }
@@ -679,7 +715,7 @@ object PathParserDimension {
      *  从路径中获取专题code
      */
   def getSubjectCodeByPath(path:String,flag:String) = {
-    var result:String = null
+    var result:String = ""
     if(flag!=null){
       flag match {
         case "medusa" => {
@@ -711,7 +747,7 @@ object PathParserDimension {
        *   从路径中获取专题名称
        */
   def getSubjectNameByPath(path:String,flag:String) = {
-    var result:String = null
+    var result:String = ""
     if(flag!=null){
       flag match {
         case "medusa" => {
@@ -739,13 +775,16 @@ object PathParserDimension {
           }
         }
         case "moretv" => {
-          if(path!=null){
+          result=""
+          //TODO change read mysql db to get sname by sid
+         /* if(path!=null){
             val info = SubjectUtils.getSubjectCodeAndPath(path)
             if(!info.isEmpty){
                 val subjectCode = info(0)
                 result = CodeToNameUtils.getSubjectNameBySid(subjectCode._1)
             }
-          }
+          }*/
+
         }
         case _ =>
       }

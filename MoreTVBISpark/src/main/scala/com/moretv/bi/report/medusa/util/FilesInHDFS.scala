@@ -41,4 +41,12 @@ object FilesInHDFS {
     flag
   }
 
+  def IsDirExist(path:String):Boolean={
+    var flag = false
+    val conf = new Configuration()
+    val fs = FileSystem.get(conf)
+    flag=fs.exists(new Path(path))
+    flag
+  }
+
 }
