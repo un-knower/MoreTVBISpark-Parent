@@ -268,7 +268,7 @@ object PathParserDimension {
                 result = getPathMainInfo(path,1,2)
                 if(result!=null){
                   if(!UDFConstant.MedusaLauncherArea.contains(result)){
-                    result = null
+                    result = ""
                   }
                 }else{
                   if(getPathMainInfo(path,2,1)=="search" || getPathMainInfo(path,2,1)=="setting"){
@@ -283,13 +283,13 @@ object PathParserDimension {
                   //check if result is number,if result is number:launcher_position_index else launcher_position
                   //home*recommendation*1
                    number_regex findFirstMatchIn result match {
-                    case Some(p) => result=null
+                    case Some(p) => result=""
                     case None =>
                   }
 
                   if(getPathMainInfo(path,1,2)==UDFConstant.MedusaLive || !UDFConstant.MedusaLauncherAccessLocation
                     .contains(result)){
-                    result = null
+                    result = ""
                   }
                 }else{
                   // 处理launcher的搜索和设置的点击事件
@@ -747,7 +747,7 @@ object PathParserDimension {
        *   从路径中获取专题名称
        */
   def getSubjectNameByPath(path:String,flag:String) = {
-    var result:String = null
+    var result:String = ""
     if(flag!=null){
       flag match {
         case "medusa" => {
@@ -784,6 +784,7 @@ object PathParserDimension {
                 result = CodeToNameUtils.getSubjectNameBySid(subjectCode._1)
             }
           }*/
+
         }
         case _ =>
       }

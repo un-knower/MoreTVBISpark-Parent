@@ -10,11 +10,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
 /**
   * Created by wangbaozhi on 2016/12/12,
-  * This object is used to merge the parquet data of medusa and moretv into one parquet!
-  * and get kinds of dimension from pathMain to generate new columns.
-  * input: /log/medusa/parquet/$date/play
-  * input: /mbi/parquet/playview/$date
-  * output: /log/medusaAndMoretvMergerDimension/$date/playview2filter
+  *
   */
 object PlayViewLogDimensionUnionAll extends BaseClass{
   def main(args: Array[String]) {

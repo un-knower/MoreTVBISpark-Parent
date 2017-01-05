@@ -160,7 +160,7 @@ object UDFConstantDimension {
   //维度表主键
   val SOURCE_LAUNCHER_SK = "source_launcher_sk"
   //具体字段,用来生成md5[节省存储空间，不需要将二选一的值，为null的赋值默认值]
-  val SOURCE_LAUNCHER_COLUMN="launcher_area,if(launcher_position is null ,launcher_position_index,launcher_position)"
+  val SOURCE_LAUNCHER_COLUMN="launcher_area,launcher_position,launcher_position_index"
   val SOURCE_LAUNCHER_COLUMN_NOT_SHOW="launcher_area,launcher_position,launcher_position_index"
   /*-------------------首页来源入口入口维度end-------------------*/
 
@@ -190,7 +190,7 @@ object UDFConstantDimension {
   /*-------------------大宽表中不需要在事实表展示的字段-------------------*/
   val FAT_TABLE_COLUMN_NOT_SHOW="accountId,accessPathFromPath,versionCode,appEnterWay,ip,launcherAccessLocationFromPath,launcherAreaFromPath,logType,logVersion,omnibusName,omnibusSid,pageDetailInfoFromPath,pageTypeFromPath,path,"+
   "pathIdentificationFromPath,pathMain,pathPropertyFromPath,pathSpecial,pathSub,previousContentTypeFromPath,previousSidFromPath,retrieval,searchText,"+
-  "singer,singerSid,station,subjectCode,subjectName,topRankName,topRankSid,userId,videoSid,contentType,date,day,videoName,productModel"
+  "singer,singerSid,station,subjectCode,subjectName,topRankName,topRankSid,videoSid,contentType,date,day,videoName,productModel"
   //exist in table: datetime,duration,episodeSid,event,flag,mark,promotionChannel
 
 

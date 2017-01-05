@@ -36,7 +36,7 @@ object PlayViewLogDimensionExchange extends BaseClass {
       case Some(p) => {
         val startDate = p.startDate
         val inputDirFatTableBase = UDFConstantDimension.MEDUSA_BIG_FACT_TABLE_DIR
-        val inputLogType = UDFConstantDimension.MEDUSA_BIG_FACT_TABLE_PLAY_TYPE
+        val inputLogType = UDFConstantDimension.PLAYVIEW
         val inputDataWarehouseDimensionsDir = UDFConstantDimension.MEDUSA_DIMENSION_DATA_WAREHOUSE
         val inputDimAppVersionDirName = UDFConstantDimension.DIM_APP_VERSION_TABLE_NAME
         val inputDimMedusaTerminalUserDirName = UDFConstantDimension.DIM_MEDUSA_TERMINAL_USER
