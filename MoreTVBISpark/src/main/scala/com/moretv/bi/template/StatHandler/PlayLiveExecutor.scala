@@ -24,7 +24,7 @@ object PlayLiveExecutor {
 
     sqlContext.read.parquet(loadPath)
       .filter("duration between 0 and 10800")
-      .selectExpr("datetime", "substr(apkVersion,1,1) as version", "userId", "event", "channelSid", "duration","pathMain")
+      .selectExpr("datetime", "substr(apkVersion,1,1) as version", "userId", "event", "channelSid", "duration", "pathMain")
       .registerTempTable("log_data")
 
   }
@@ -43,11 +43,13 @@ object PlayLiveExecutor {
 
     val rdd = sc.textFile(loadPath)
       .map(_.split("\t"))
-      .map(attr => {
-        cal.setTime(DateFormatUtils.readFormat.parse(attr(0)))
-        Row(attr(1), attr(2), DateFormatUtils.cnFormat.format(cal.getTime) + " " + attr(3),
-          DateFormatUtils.cnFormat.format(cal.getTime) + " " + attr(4))
-      })
+      .map {
+        attr =>
+          cal.setTime(DateFormatUtils.readFormat.parse(attr(0)))
+          Row(attr(1), attr(2),
+            DateFormatUtils.cnFormat.format(cal.getTime) + " " + attr(3),
+            DateFormatUtils.cnFormat.format(cal.getTime) + " " + attr(4))
+      }
 
     val fields = schemaString.split(",")
       .map(fieldName => StructField(fieldName, StringType, nullable = true))
@@ -56,7 +58,7 @@ object PlayLiveExecutor {
 
     sqlContext.createDataFrame(rdd, schema).registerTempTable("log_ref")
 
-    sqlContext.sql("select * from log_ref").show(100,false)
+    sqlContext.sql("select * from log_ref").show(100, false)
 
   }
 
