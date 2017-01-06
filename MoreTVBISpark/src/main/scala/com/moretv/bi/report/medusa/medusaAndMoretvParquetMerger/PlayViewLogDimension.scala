@@ -97,9 +97,9 @@ object PlayViewLogDimension extends BaseClass{
                s"pathParserDimension('play',pathSub,'pathSub','previousSid') as "+UDFConstantDimension.RECOMMEND_PROPERTY+"," +
                s"pathParserDimension('play',pathSub,'pathSub','previousContentType') as "+UDFConstantDimension.RECOMMEND_PRE_CONTENT_TYPE+"," +
                "'' as "+UDFConstantDimension.RECOMMEND_METHOD+"," +
-               s"pathParserDimension('play',pathSpecial,'pathSpecial','pathProperty') as "+UDFConstantDimension.SPECIAL_SOURCE_TYPE+"," +
+               /*s"pathParserDimension('play',pathSpecial,'pathSpecial','pathProperty') as "+UDFConstantDimension.SPECIAL_SOURCE_TYPE+"," +
                s"getSubjectCode(pathSpecial,'medusa') as  "+UDFConstantDimension.SPECIAL_SOURCE_ID+"," +
-               s"getSubjectNameBySid(pathSpecial,'medusa') as "+UDFConstantDimension.SPECIAL_SOURCE_NAME+"," +
+               s"getSubjectNameBySid(pathSpecial,'medusa') as "+UDFConstantDimension.SPECIAL_SOURCE_NAME+"," +*/
                s"pathParserDimension('play',pathMain,'pathMain','launcherArea') as "+UDFConstantDimension.SOURCE_LAUNCHER_AREA+"," +
                s"pathParserDimension('play',pathMain,'pathMain','launcherAccessLocation') as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION+"," +
                s"cast(pathParserDimension('play',pathMain,'pathMain','"+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"') as long) as "+UDFConstantDimension.SOURCE_LAUNCHER_POSITION_INDEX+"," +
@@ -107,9 +107,9 @@ object PlayViewLogDimension extends BaseClass{
                "substring(datetime,12,8) as "+UDFConstantDimension.DIM_TIME_KEY+"," +
                "accountId as "+UDFConstantDimension.DIM_ACCOUNT_SK+"," +
                s"ipRuleGenerate(ip) as "+UDFConstantDimension.DIM_WEB_LOCATION_SK+"," +
-               "if(station is null,if(singer is null,if(omnibusSid is null,if(topRankSid is null,'','topRank'),'omnibus'),'singer'),'station') as special_type_v2,"+
-               "if(station is null,if(singer is null,if(omnibusSid is null,if(topRankSid is null,'',topRankSid),omnibusSid),singer),station) as special_id_v2,"+
-               "if(station is null,if(singer is null,if(omnibusName is null,if(topRankName is null,'',topRankName),omnibusName),singer),station) as special_name_v2,"+
+               "if(pathParserDimension('play',pathSpecial,'pathSpecial','pathProperty')='',if(station is null,if(singer is null,if(omnibusSid is null,if(topRankSid is null,'','topRank'),'omnibus'),'singer'),'station'),pathParserDimension('play',pathSpecial,'pathSpecial','pathProperty')) as "+UDFConstantDimension.SPECIAL_SOURCE_TYPE+"," +
+               "if(getSubjectCode(pathSpecial,'medusa')='',if(station is null,if(singer is null,if(omnibusSid is null,if(topRankSid is null,'',topRankSid),omnibusSid),singer),station),getSubjectCode(pathSpecial,'medusa')) as "+UDFConstantDimension.SPECIAL_SOURCE_ID+"," +
+               "if(getSubjectNameBySid(pathSpecial,'medusa')='',if(station is null,if(singer is null,if(omnibusName is null,if(topRankName is null,'',topRankName),omnibusName),singer),station),getSubjectNameBySid(pathSpecial,'medusa')) as "+UDFConstantDimension.SPECIAL_SOURCE_NAME+"," +
                s" 'medusa' as flag " +
                s" from log_data_1"
              //println(sqlSelectMedusa)
@@ -144,7 +144,7 @@ object PlayViewLogDimension extends BaseClass{
                "substring(datetime,1,10) as "+UDFConstantDimension.DIM_DATE_KEY+"," +
                "substring(datetime,12,8) as "+UDFConstantDimension.DIM_TIME_KEY+"," +
                "accountId as "+UDFConstantDimension.DIM_ACCOUNT_SK+"," +
-               s" 'moretv' as flag "+
+               " 'moretv' as flag "+
                s" from log_data_2"
              val df1 = sqlContext.sql(sqlSelectMedusa).toJSON.repartition(20)
              val df2 = sqlContext.sql(sqlSelectMoretv).toJSON.repartition(20)

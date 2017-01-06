@@ -39,7 +39,9 @@ object PlayViewLogDimensionMerge extends BaseClass {
         logTypeAndUniqueKeyMap += (UDFConstantDimension.SOURCE_SEARCH_TABLE -> UDFConstantDimension.SOURCE_SEARCH_SK)
         logTypeAndUniqueKeyMap += (UDFConstantDimension.SOURCE_LIST_TABLE -> UDFConstantDimension.SOURCE_LIST_SK)
         logTypeAndUniqueKeyMap += (UDFConstantDimension.SOURCE_RECOMMEND_TABLE -> UDFConstantDimension.SOURCE_RECOMMEND_SK)
+/*
         logTypeAndUniqueKeyMap += (UDFConstantDimension.SOURCE_SPECIAL_TABLE -> UDFConstantDimension.SOURCE_SPECIAL_SK)
+*/
         logTypeAndUniqueKeyMap += (UDFConstantDimension.SOURCE_LAUNCHER_TABLE -> UDFConstantDimension.SOURCE_LAUNCHER_SK)
 
         logTypeAndUniqueKeyMap.keys.foreach { logType =>

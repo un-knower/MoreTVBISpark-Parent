@@ -190,7 +190,7 @@ object UDFConstantDimension {
   /*-------------------大宽表中不需要在事实表展示的字段-------------------*/
   val FAT_TABLE_COLUMN_NOT_SHOW="accountId,accessPathFromPath,versionCode,appEnterWay,ip,launcherAccessLocationFromPath,launcherAreaFromPath,logType,logVersion,omnibusName,omnibusSid,pageDetailInfoFromPath,pageTypeFromPath,path,"+
   "pathIdentificationFromPath,pathMain,pathPropertyFromPath,pathSpecial,pathSub,previousContentTypeFromPath,previousSidFromPath,retrieval,searchText,"+
-  "singer,singerSid,station,subjectCode,subjectName,topRankName,topRankSid,videoSid,contentType,date,day,videoName,productModel"
+  "singer,singerSid,station,subjectCode,subjectName,topRankName,topRankSid,videoSid,date,day,videoName,productModel"
   //exist in table: datetime,duration,episodeSid,event,flag,mark,promotionChannel
 
 
