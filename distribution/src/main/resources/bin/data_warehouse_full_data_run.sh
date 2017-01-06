@@ -10,6 +10,11 @@ echo "开始生成大宽表"
 cd /script/bi/medusa/michael/MoreTVBISpark-1.0.0-SNAPSHOT-bin/bin
 sh /script/bi/medusa/michael/MoreTVBISpark-1.0.0-SNAPSHOT-bin/bin/submit.sh  com.moretv.bi.report.medusa.medusaAndMoretvParquetMerger.PlayViewLogDimensionFullRun --startDate ${one_day} --deleteOld true
 
+echo "过滤播放次数大于指定数值的记录"
+cd /script/bi/medusa/michael/MoreTVBISpark-1.0.0-SNAPSHOT-bin/bin
+sh /script/bi/medusa/michael/MoreTVBISpark-1.0.0-SNAPSHOT-bin/bin/submit.sh  com.moretv.bi.report.medusa.medusaAndMoretvParquetMerger.PlayViewLogDimensionFilter --startDate ${one_day} --deleteOld true
+
+
 echo "生成事实表和维度的每日信息"
 cd /script/bi/medusa/michael/MoreTVBISpark-1.0.0-SNAPSHOT-bin/bin
 sh /script/bi/medusa/michael/MoreTVBISpark-1.0.0-SNAPSHOT-bin/bin/submit.sh  com.moretv.bi.report.medusa.medusaAndMoretvParquetMerger.PlayViewLogDimensionExchange --startDate ${one_day} --deleteOld true

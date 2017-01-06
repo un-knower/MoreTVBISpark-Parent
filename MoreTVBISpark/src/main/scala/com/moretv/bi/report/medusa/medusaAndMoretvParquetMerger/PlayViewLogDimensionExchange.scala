@@ -26,7 +26,7 @@ object PlayViewLogDimensionExchange extends BaseClass {
   def main(args: Array[String]) {
     config.set("spark.executor.memory", "5g").
       set("spark.executor.cores", "5").
-      set("spark.cores.max", "80")
+      set("spark.cores.max", "100")
     ModuleClass.executor(this, args)
   }
 
@@ -36,11 +36,12 @@ object PlayViewLogDimensionExchange extends BaseClass {
       case Some(p) => {
         val startDate = p.startDate
         val inputDirFatTableBase = UDFConstantDimension.MEDUSA_BIG_FACT_TABLE_DIR
-        val inputLogType = UDFConstantDimension.MEDUSA_BIG_FACT_TABLE_PLAY_TYPE
+        val inputLogType = UDFConstantDimension.PLAYVIEW
         val inputDataWarehouseDimensionsDir = UDFConstantDimension.MEDUSA_DIMENSION_DATA_WAREHOUSE
         val inputDimAppVersionDirName = UDFConstantDimension.DIM_APP_VERSION_TABLE_NAME
         val inputDimMedusaTerminalUserDirName = UDFConstantDimension.DIM_MEDUSA_TERMINAL_USER
         val inputDimMedusaProgramDirName = UDFConstantDimension.DIM_MEDUSA_PROGRAM
+        val inputDimMedusaSourceSpecial = UDFConstantDimension.SOURCE_SPECIAL_TABLE
 
         val outputFactTableDirBase = UDFConstantDimension.MEDUSA_DATA_WAREHOUSE
         val outputFactTableType = UDFConstantDimension.FACT_MEDUSA_PLAY
@@ -51,8 +52,10 @@ object PlayViewLogDimensionExchange extends BaseClass {
         val outputTypeSourceSearch = UDFConstantDimension.SOURCE_SEARCH_TABLE
         val outputTypeSourceList = UDFConstantDimension.SOURCE_LIST_TABLE
         val outputTypeSourceRecommend = UDFConstantDimension.SOURCE_RECOMMEND_TABLE
-        val outputTypeSourceSpecial = UDFConstantDimension.SOURCE_SPECIAL_TABLE
+        //val outputTypeSourceSpecial = UDFConstantDimension.SOURCE_SPECIAL_TABLE
         val outputTypeSourceLauncher = UDFConstantDimension.SOURCE_LAUNCHER_TABLE
+
+        val dim_medusa_source_special_table=UDFConstantDimension.SOURCE_SPECIAL_TABLE
 
 
         var printOutputMap: Map[String, String] = Map()
@@ -66,19 +69,23 @@ object PlayViewLogDimensionExchange extends BaseClass {
           val inputDimAppVersionTable = s"$inputDataWarehouseDimensionsDir/$inputDimAppVersionDirName"
           val inputDimMedusaTerminalUserTable = s"$inputDataWarehouseDimensionsDir/$inputDimMedusaTerminalUserDirName"
           val inputDimMedusaProgramTable = s"$inputDataWarehouseDimensionsDir/$inputDimMedusaProgramDirName"
+          val inputDimMedusaSourceSpecialTable = s"$inputDataWarehouseDimensionsDir/$inputDimMedusaSourceSpecial"
           val inputDirFatTableFlag = FilesInHDFS.IsInputGenerateSuccess(inputDirFatTable)
           val inputDimAppVersionTableFlag = FilesInHDFS.IsInputGenerateSuccess(inputDimAppVersionTable)
           val inputDimMedusaTerminalUserTableFlag = FilesInHDFS.IsInputGenerateSuccess(inputDimMedusaTerminalUserTable)
           val inputDimMedusaProgramTableFlag = FilesInHDFS.IsInputGenerateSuccess(inputDimMedusaProgramTable)
+          val inputDimMedusaSourceSpecialTableFlag = FilesInHDFS.IsInputGenerateSuccess(inputDimMedusaSourceSpecialTable)
           printOutputMap+=("inputDate"->inputDate)
           printOutputMap+=("inputDirFatTable"->inputDirFatTable)
           printOutputMap+=("inputDimAppVersionTable"->inputDimAppVersionTable)
+          printOutputMap+=("inputDimMedusaTerminalUserTable"->inputDimMedusaTerminalUserTable)
+          printOutputMap+=("inputDimMedusaProgramTable"->inputDimMedusaProgramTable)
+          printOutputMap+=("inputDimMedusaSourceSpecialTable"->inputDimMedusaSourceSpecialTable)
           printOutputMap+=("inputDirFatTableFlag"->inputDirFatTableFlag.toString)
           printOutputMap+=("inputDimAppVersionTableFlag"->inputDimAppVersionTableFlag.toString)
           printOutputMap+=("inputDimMedusaTerminalUserTableFlag"->inputDimMedusaTerminalUserTableFlag.toString)
           printOutputMap+=("inputDimMedusaProgramTableFlag"->inputDimMedusaProgramTableFlag.toString)
-          printOutputMap+=("inputDimMedusaTerminalUserTable"->inputDimMedusaTerminalUserTable)
-          printOutputMap+=("inputDimMedusaProgramTable"->inputDimMedusaProgramTable)
+          printOutputMap+=("inputDimMedusaSourceSpecialTableFlag"->inputDimMedusaSourceSpecialTableFlag.toString)
 
 
           val outputPath = s"$outputFactTableDirBase/$outputFactTableType/$inputDate"
@@ -86,27 +93,27 @@ object PlayViewLogDimensionExchange extends BaseClass {
           val outputPathSourceSearch = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceSearch"
           val outputPathSourceList = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceList"
           val outputPathSourceRecommend = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceRecommend"
-          val outputPathSourceSpecial = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceSpecial"
+          //val outputPathSourceSpecial = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceSpecial"
           val outputPathSourceLauncher = s"$outputDirDimensionBase/$inputDate/$outputTypeSourceLauncher"
           printOutputMap+=("outputPath"->outputPath)
           printOutputMap+=("outputPathSourceRetrieval"->outputPathSourceRetrieval)
           printOutputMap+=("outputPathSourceSearch"->outputPathSourceSearch)
           printOutputMap+=("outputPathSourceList"->outputPathSourceList)
           printOutputMap+=("outputPathSourceRecommend"->outputPathSourceRecommend)
-          printOutputMap+=("outputPathSourceSpecial"->outputPathSourceSpecial)
+          //printOutputMap+=("outputPathSourceSpecial"->outputPathSourceSpecial)
           printOutputMap+=("outputPathSourceLauncher"->outputPathSourceLauncher)
           printOutputMap.keys.foreach { path =>
             println(s"$path = " + printOutputMap(path))
           }
 
-          if (inputDirFatTableFlag && inputDimAppVersionTableFlag && inputDimMedusaProgramTableFlag && inputDimMedusaTerminalUserTableFlag) {
+          if (inputDirFatTableFlag && inputDimAppVersionTableFlag && inputDimMedusaProgramTableFlag && inputDimMedusaTerminalUserTableFlag && inputDimMedusaSourceSpecialTableFlag) {
             if (p.deleteOld) {
               HdfsUtil.deleteHDFSFile(outputPath)
               HdfsUtil.deleteHDFSFile(outputPathSourceRetrieval)
               HdfsUtil.deleteHDFSFile(outputPathSourceSearch)
               HdfsUtil.deleteHDFSFile(outputPathSourceList)
               HdfsUtil.deleteHDFSFile(outputPathSourceRecommend)
-              HdfsUtil.deleteHDFSFile(outputPathSourceSpecial)
+              //HdfsUtil.deleteHDFSFile(outputPathSourceSpecial)
               HdfsUtil.deleteHDFSFile(outputPathSourceLauncher)
             }
               println("-------------------------in inputDirFatTableFlag  --------------")
@@ -114,6 +121,7 @@ object PlayViewLogDimensionExchange extends BaseClass {
               val dfDimAppVersionTable = sqlContext.read.parquet(inputDimAppVersionTable)
               val dfDimMedusaProgramTable = sqlContext.read.parquet(inputDimMedusaProgramTable).select("program_sk","sid")
               val dfDimMedusaTerminalUserTable = sqlContext.read.parquet(inputDimMedusaTerminalUserTable).select("terminal_sk","user_id")
+              val dfDimMedusaSourceSpecialTable = sqlContext.read.parquet(inputDimMedusaSourceSpecialTable).select("source_special_sk","special_code","special_name")
               //println("dfFactTable.schema.fieldNames.mkString(\",\"):"+dfFactTable.schema.fieldNames.mkString(","))
               //println("dfFactTable.columns.toList.mkString(\",\"):"+dfFactTable.columns.toList.mkString(","))
 
@@ -126,12 +134,12 @@ object PlayViewLogDimensionExchange extends BaseClass {
               val recommendMd=UDFConstantDimension.SOURCE_RECOMMEND_COLUMN
               val recommendKey=UDFConstantDimension.SOURCE_RECOMMEND_SK
 
-              val specialMd=UDFConstantDimension.SOURCE_SPECIAL_COLUMN
+              //val specialMd=UDFConstantDimension.SOURCE_SPECIAL_COLUMN
               val specialKey=UDFConstantDimension.SOURCE_SPECIAL_SK
-              val SOURCE_SPECIAL_COLUMN_FOR_DIMENSION=UDFConstantDimension.SOURCE_SPECIAL_COLUMN_FOR_DIMENSION
+              //val SOURCE_SPECIAL_COLUMN_FOR_DIMENSION=UDFConstantDimension.SOURCE_SPECIAL_COLUMN_FOR_DIMENSION
 
               val SOURCE_SPECIAL_COLUMN_NOT_SHOW=UDFConstantDimension.SOURCE_SPECIAL_COLUMN_NOT_SHOW
-              val launcherMd=UDFConstantDimension.SOURCE_LAUNCHER_COLUMN
+                val launcherMd=UDFConstantDimension.SOURCE_LAUNCHER_COLUMN
               val SOURCE_LAUNCHER_COLUMN_NOT_SHOW=UDFConstantDimension.SOURCE_LAUNCHER_COLUMN_NOT_SHOW
               val launcherKey=UDFConstantDimension.SOURCE_LAUNCHER_SK
 
@@ -170,9 +178,10 @@ object PlayViewLogDimensionExchange extends BaseClass {
               dfDimAppVersionTable.registerTempTable("dim_app_version_table")
               dfDimMedusaProgramTable.registerTempTable("dim_medusa_program")
               dfDimMedusaTerminalUserTable.registerTempTable("dim_medusa_terminal_user")
+              dfDimMedusaSourceSpecialTable.registerTempTable(dim_medusa_source_special_table)
               val factLogSql = s"select md5(concat($sourceListMd)) $sourceListMdKey,md5(concat($filterMd)) $filterMdKey,"+
                 s"md5(concat($searchMd)) $searchMdKey,md5(concat($recommendMd)) $recommendKey,"+
-                s"md5(concat($specialMd)) $specialKey,md5(concat($launcherMd)) $launcherKey,b.app_version_key as $appVersionKey,c.program_sk as $dimProgramSk,d.terminal_sk as $dimTerminalSk,$factColumnsString "+
+                s" e.$specialKey ,md5(concat($launcherMd)) $launcherKey,b.app_version_key as $appVersionKey,c.program_sk as $dimProgramSk,d.terminal_sk as $dimTerminalSk,$factColumnsString "+
                 " from log_data a "+
              " left outer join dim_app_version_table b "+
              " on  trim(if(a.buildDate is null,'',a.buildDate))=trim(if(b.build_time is null,'',b.build_time)) "+
@@ -181,7 +190,10 @@ object PlayViewLogDimensionExchange extends BaseClass {
              " left outer join dim_medusa_program c "+
              " on trim(a.videoSid)=trim(c.sid) "+
              " left outer join dim_medusa_terminal_user d "+
-              " on trim(a.userId)=trim(d.user_id) "
+             " on trim(a.userId)=trim(d.user_id) "+
+             s" left outer join  $dim_medusa_source_special_table e "+
+            " on (trim(a.special_id)=trim(e.special_code) or trim(a.special_name)=trim(e.special_name))"
+            // " on if(a.special_id<>'',a.special_id,a.special_name)=if(a.special_id<>'',e.special_code,e.special_name)"
               println("factLogSql:"+factLogSql)
               sqlContext.sql(factLogSql).write.parquet(outputPath)
 
@@ -196,8 +208,8 @@ object PlayViewLogDimensionExchange extends BaseClass {
              sqlContext.sql(sqlSelectSourceList).write.parquet(outputPathSourceList)
              val sqlSelectSourceRecommend = s"select distinct md5(concat($recommendMd)) $recommendKey,$recommendMd from log_data "
              sqlContext.sql(sqlSelectSourceRecommend).write.parquet(outputPathSourceRecommend)
-             val sqlSelectSourceSpecial = s"select distinct md5(concat($specialMd)) $specialKey,$SOURCE_SPECIAL_COLUMN_FOR_DIMENSION from log_data "
-             sqlContext.sql(sqlSelectSourceSpecial).write.parquet(outputPathSourceSpecial)
+           /*  val sqlSelectSourceSpecial = s"select distinct md5(concat($specialMd)) $specialKey,$SOURCE_SPECIAL_COLUMN_FOR_DIMENSION from log_data "
+             sqlContext.sql(sqlSelectSourceSpecial).write.parquet(outputPathSourceSpecial)*/
              val sqlSelectSourceLauncher = s"select distinct md5(concat($launcherMd)) $launcherKey,$launcherMd from log_data "
              sqlContext.sql(sqlSelectSourceLauncher).write.parquet(outputPathSourceLauncher)
           }

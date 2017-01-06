@@ -35,42 +35,62 @@ object IPLocationDataUtil {
     } else ip
   }
 
+  /**
+    * 获取国家信息
+    * @param ip
+    * @return
+    */
   def getCountry(ip: String) = {
     if (ip != null) {
       val value = ipLocationMap.getOrDefault(getFirst3IP(ip), null)
       if (value != null) {
         val country = value(0)
         country
-      } else "未知"
+      } else IPOperatorsUtil.getCountry(ip)
     } else "未知"
 
   }
 
+  /**
+    * 获取省份信息
+    * @param ip
+    * @return
+    */
   def getProvince(ip: String) = {
     if (ip != null) {
       val value = ipLocationMap.getOrDefault(getFirst3IP(ip), null)
       if (value != null) {
         val province = value(1)
         province
-      } else "未知"
+      } else IPOperatorsUtil.getProvince(ip)
     } else "未知"
   }
 
+  /**
+    * 获取城市信息
+    * @param ip
+    * @return
+    */
   def getCity(ip: String) = {
     if (ip != null) {
       val value = ipLocationMap.getOrDefault(getFirst3IP(ip), null)
       if (value != null) {
         val city = value(2)
         city
-      } else "未知"
+      } else IPOperatorsUtil.getCity(ip)
     } else "未知"
   }
 
+  /**
+    * 获取区县信息
+    * @param ip
+    * @return
+    */
   def getDistrict(ip: String) = {
     if (ip != null) {
       val value = ipLocationMap.getOrDefault(getFirst3IP(ip), null)
       if (value != null) {
-        val district = value(1)
+        val district = value(3)
         district
       } else "未知"
     } else "未知"
@@ -80,9 +100,9 @@ object IPLocationDataUtil {
     if (ip != null) {
       val value = ipLocationMap.getOrDefault(getFirst3IP(ip), null)
       if (value != null) {
-        value(1) + "-" + value(2)
+        s"${value(1)}-${value(2)}"
       }
-      else "未知-未知"
+      else s"${IPOperatorsUtil.getProvince(ip)}-${IPOperatorsUtil.getCity(ip)}"
     } else "未知-未知"
 
   }

@@ -268,7 +268,7 @@ object PathParserDimension {
                 result = getPathMainInfo(path,1,2)
                 if(result!=null){
                   if(!UDFConstant.MedusaLauncherArea.contains(result)){
-                    result = null
+                    result = ""
                   }
                 }else{
                   if(getPathMainInfo(path,2,1)=="search" || getPathMainInfo(path,2,1)=="setting"){
@@ -283,13 +283,13 @@ object PathParserDimension {
                   //check if result is number,if result is number:launcher_position_index else launcher_position
                   //home*recommendation*1
                    number_regex findFirstMatchIn result match {
-                    case Some(p) => result=null
+                    case Some(p) => result=""
                     case None =>
                   }
 
                   if(getPathMainInfo(path,1,2)==UDFConstant.MedusaLive || !UDFConstant.MedusaLauncherAccessLocation
                     .contains(result)){
-                    result = null
+                    result = ""
                   }
                 }else{
                   // 处理launcher的搜索和设置的点击事件
@@ -381,7 +381,8 @@ object PathParserDimension {
               }
             }
           }
-          // medusa的detail/play日志中的pathSpecial字段
+          // medusa的detail/play日志中的pathSpecial字段,subject-新闻头条-hot11,subject-儿歌一周热播榜
+            //get subject
           case UDFConstant.PATHSPECIAL => {
             outputType match {
               // 获取medusa的pathSpecial中的“路径性质”信息
@@ -391,7 +392,8 @@ object PathParserDimension {
                   result = ""
                 }
               }
-              // 获取medusa的pathSpecial中的“路径标识”信息
+              // 获取medusa的pathSpecial中的“路径标识”信息 subject-新闻头条-hot11,subject-儿歌一周热播榜
+                //得到 新闻头条-hot11,儿歌一周热播榜
               case UDFConstant.PATHIDENTIFICATION => {
                 if(UDFConstant.MedusaPathProperty.contains(getPathMainInfo(path,1,1))){
                   val pathLen = path.split("-").length
@@ -399,7 +401,6 @@ object PathParserDimension {
                     result = getPathMainInfo(path,2,1)
                   }else if(pathLen>2){
                     var tempResult = getPathMainInfo(path,2,1)
-                    var splitData = path.split("-")
                     for(i<- 2 until pathLen){
                       tempResult = tempResult.concat("-").concat(getPathMainInfo(path,i+1,1))
                     }
@@ -473,7 +474,7 @@ object PathParserDimension {
                   result = getSplitInfo(path,2)
                   if(result!=null){
                     number_regex findFirstMatchIn result match {
-                      case Some(p) => result=null
+                      case Some(p) => result=""
                       case None =>
                     }
                     // 如果accessArea为“navi”和“classification”，则保持不变，即在launcherAccessLocation中
@@ -481,14 +482,14 @@ object PathParserDimension {
                       // 如果不在launcherAccessLocation中，则判断accessArea是否在uppart中
                       if(UDFConstant.MoretvLauncherUPPART.contains(result)){
                         result match {
-                          case "watchhistory" => result = null
+                          case "watchhistory" => result = ""
                           case "otherwatch" => result = getSplitInfo(path,3)
                           case "hotrecommend" => result = getSplitInfo(path,3)
-                          case "TVlive" => result = null
-                          case _ => result = null
+                          case "TVlive" => result = ""
+                          case _ => result = ""
                         }
                       }else{
-                        result = null
+                        result = ""
                       }
                     }
                   }
@@ -713,6 +714,9 @@ object PathParserDimension {
 
     /**
      *  从路径中获取专题code
+      * 从 pathSpecial字段获得，
+      * 例如：subject-90后超模新势力-hot77，需要获得hot77
+      * subject-儿歌一周热播榜 获得""
      */
   def getSubjectCodeByPath(path:String,flag:String) = {
     var result:String = ""
@@ -745,9 +749,12 @@ object PathParserDimension {
 
       /**
        *   从路径中获取专题名称
+        *   从 pathSpecial字段获得，
+        *   例如： subject-新闻头条-hot11 里面获得 新闻头条
+        *   subject-先生好 里面获得   先生好  [这种情况要看是先生好是哪个渠道，需要查询特殊路径字段表]
        */
   def getSubjectNameByPath(path:String,flag:String) = {
-    var result:String = null
+    var result:String = ""
     if(flag!=null){
       flag match {
         case "medusa" => {
@@ -776,7 +783,7 @@ object PathParserDimension {
         }
         case "moretv" => {
           result=""
-          //TODO change read mysql db to get sname by sid
+          //use dimension table to get subject name by subject code
          /* if(path!=null){
             val info = SubjectUtils.getSubjectCodeAndPath(path)
             if(!info.isEmpty){
@@ -784,6 +791,7 @@ object PathParserDimension {
                 result = CodeToNameUtils.getSubjectNameBySid(subjectCode._1)
             }
           }*/
+
         }
         case _ =>
       }

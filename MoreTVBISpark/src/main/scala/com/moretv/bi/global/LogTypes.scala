@@ -78,4 +78,7 @@ object LogTypes {
   val BULLETSCREEN = "bulletscreen"
   val DANMUSWITCH = "danmuswitch"
   val DANMUSTATUS = "danmustatus"
+
+  val AREAINFO = "/log/medusa/temple/areaInfo/cityInfo/"
+  val USERAREAOUTDIR = "/log/medusa/userAreaInfo/"
 }
