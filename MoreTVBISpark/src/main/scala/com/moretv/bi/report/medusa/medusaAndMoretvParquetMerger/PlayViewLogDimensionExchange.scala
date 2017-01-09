@@ -122,8 +122,6 @@ object PlayViewLogDimensionExchange extends BaseClass {
               val dfDimMedusaProgramTable = sqlContext.read.parquet(inputDimMedusaProgramTable).select("program_sk","sid")
               val dfDimMedusaTerminalUserTable = sqlContext.read.parquet(inputDimMedusaTerminalUserTable).select("terminal_sk","user_id")
               val dfDimMedusaSourceSpecialTable = sqlContext.read.parquet(inputDimMedusaSourceSpecialTable).select("source_special_sk","special_code","special_name")
-              //println("dfFactTable.schema.fieldNames.mkString(\",\"):"+dfFactTable.schema.fieldNames.mkString(","))
-              //println("dfFactTable.columns.toList.mkString(\",\"):"+dfFactTable.columns.toList.mkString(","))
 
               val sourceListMd=UDFConstantDimension.SOURCE_LIST_COLUMN
               val sourceListMdKey=UDFConstantDimension.SOURCE_LIST_SK
@@ -175,13 +173,17 @@ object PlayViewLogDimensionExchange extends BaseClass {
 
               //将大宽表进行维度替换，生成维度替换后的事实表
               dfFactTable.registerTempTable("log_data")
+              println("dfFactTable.count():"+dfFactTable.count())
               dfDimAppVersionTable.registerTempTable("dim_app_version_table")
               dfDimMedusaProgramTable.registerTempTable("dim_medusa_program")
               dfDimMedusaTerminalUserTable.registerTempTable("dim_medusa_terminal_user")
               dfDimMedusaSourceSpecialTable.registerTempTable(dim_medusa_source_special_table)
-              val factLogSql = s"select md5(concat($sourceListMd)) $sourceListMdKey,md5(concat($filterMd)) $filterMdKey,"+
-                s"md5(concat($searchMd)) $searchMdKey,md5(concat($recommendMd)) $recommendKey,"+
-                s" e.$specialKey ,md5(concat($launcherMd)) $launcherKey,b.app_version_key as $appVersionKey,c.program_sk as $dimProgramSk,d.terminal_sk as $dimTerminalSk,$factColumnsString "+
+              val factLogSql = "select second_table.*,if(second_table.source_special_sk_v1 is null,f.source_special_sk,second_table.source_special_sk_v1) as source_special_sk "+
+                " from ("+
+                s"select md5(concat($sourceListMd)) $sourceListMdKey,md5(concat($filterMd)) $filterMdKey,"+
+                s" md5(concat($searchMd)) $searchMdKey,md5(concat($recommendMd)) $recommendKey,"+
+                //s" md5(concat($launcherMd)) $launcherKey,b.app_version_key as $appVersionKey,c.program_sk as $dimProgramSk,d.terminal_sk as $dimTerminalSk,$factColumnsString "+
+                s" a.special_name,e.$specialKey as source_special_sk_v1,md5(concat($launcherMd)) $launcherKey,b.app_version_key as $appVersionKey,c.program_sk as $dimProgramSk,d.terminal_sk as $dimTerminalSk,$factColumnsString "+
                 " from log_data a "+
              " left outer join dim_app_version_table b "+
              " on  trim(if(a.buildDate is null,'',a.buildDate))=trim(if(b.build_time is null,'',b.build_time)) "+
@@ -192,7 +194,10 @@ object PlayViewLogDimensionExchange extends BaseClass {
              " left outer join dim_medusa_terminal_user d "+
              " on trim(a.userId)=trim(d.user_id) "+
              s" left outer join  $dim_medusa_source_special_table e "+
-            " on (trim(a.special_id)=trim(e.special_code) or trim(a.special_name)=trim(e.special_name))"
+             " on trim(if(a.special_id='','-1',a.special_id))=trim(e.special_code) "+
+             s" ) second_table left outer join $dim_medusa_source_special_table f on "+
+            "  if(second_table.special_name='','-1',second_table.special_name)=f.special_name "
+             //" on (trim(a.special_id)=trim(if(e.special_code is null,'-1',e.special_code)) or trim(a.special_name)=trim(if(e.special_name is null,'-1',e.special_name)))"
             // " on if(a.special_id<>'',a.special_id,a.special_name)=if(a.special_id<>'',e.special_code,e.special_name)"
               println("factLogSql:"+factLogSql)
               sqlContext.sql(factLogSql).write.parquet(outputPath)

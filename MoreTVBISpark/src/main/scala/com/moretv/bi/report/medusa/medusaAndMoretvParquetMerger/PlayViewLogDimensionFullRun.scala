@@ -67,6 +67,9 @@ object PlayViewLogDimensionFullRun extends BaseClass{
              val medusaColNames = medusaDf.columns.toList.filter(e=>{ParquetSchemaDimension.schemaArr.contains(e)}).mkString(",")
              val moretvColNames = moretvDf.columns.toList.filter(e=>{ParquetSchemaDimension.schemaArr.contains(e)}).mkString(",")
 
+
+
+
              medusaDf.registerTempTable("log_data_1")
              moretvDf.registerTempTable("log_data_2")
              val sqlSelectMedusa = s"select $medusaColNames, " +
