@@ -1,10 +1,12 @@
 package com.moretv.bi.temp.annual
 
 import java.lang.{Long => JLong}
+
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.DataBases
 import com.moretv.bi.util.ParamsParseUtil
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
+import org.apache.spark.sql.Encoders
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.{SparkConf, SparkContext}
@@ -38,6 +40,7 @@ object HighestUVDist extends BaseClass {
         import q.implicits._
 
 
+        Encoders
         val df = sqlContext.read.parquet(p.srcPath)
           .orderBy($"minuteId".asc)
           .map(e => (e.getString(1), e.getLong(0)))
