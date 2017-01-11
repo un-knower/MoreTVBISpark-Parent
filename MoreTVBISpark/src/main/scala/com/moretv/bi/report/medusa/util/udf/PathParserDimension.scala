@@ -515,7 +515,7 @@ object PathParserDimension {
                   result = getSplitInfo(path,3)
                   if(result!=null){
                     if(getSplitInfo(path,2)=="search"){
-                      result = null
+                      result = ""
                     }
                     if(getSplitInfo(path,2)=="kids_home" || getSplitInfo(path,2)=="sports"){
                       result = getSplitInfo(path,3)+"-"+getSplitInfo(path,4)
@@ -527,6 +527,9 @@ object PathParserDimension {
                     if(UDFConstant.MoretvPageDetailInfo.contains(result)){
                       result = transformEng2Chinese(page,result)
                     }
+                  }
+                  if(null==result){
+                    result=""
                   }
                 }
 
@@ -595,7 +598,7 @@ object PathParserDimension {
   /**
    * 该函数用于获取moretv的subjectCode
    */
-  def getSubjectCode(path:String)={
+/*  def getSubjectCode(path:String)={
     var result:String = null
     if(path !=null){
       val regex = """^.*-([movie|tv|comic|zongyi|kids|hot|jilu]+[0-9]+).*$""".r
@@ -605,7 +608,7 @@ object PathParserDimension {
       }
     }
     result
-  }
+  }*/
 
 
 

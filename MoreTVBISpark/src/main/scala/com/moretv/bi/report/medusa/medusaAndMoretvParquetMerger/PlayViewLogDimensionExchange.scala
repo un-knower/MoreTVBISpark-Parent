@@ -185,7 +185,7 @@ object PlayViewLogDimensionExchange extends BaseClass {
               s"select md5(concat($sourceListMd)) $sourceListMdKey,md5(concat($filterMd)) $filterMdKey," +
               s" md5(concat($searchMd)) $searchMdKey,md5(concat($recommendMd)) $recommendKey," +
               //s" md5(concat($launcherMd)) $launcherKey,b.app_version_key as $appVersionKey,c.program_sk as $dimProgramSk,d.terminal_sk as $dimTerminalSk,$factColumnsString "+
-              s" a.special_name,e.$specialKey as source_special_sk_v1,md5(concat($launcherMd)) $launcherKey,b.app_version_key as $appVersionKey,c.program_sk as $dimProgramSk,d.terminal_sk as $dimTerminalSk,$factColumnsString " +
+              s" a.special_name,a.special_type,e.$specialKey as source_special_sk_v1,md5(concat($launcherMd)) $launcherKey,b.app_version_key as $appVersionKey,c.program_sk as $dimProgramSk,d.terminal_sk as $dimTerminalSk,$factColumnsString " +
               " from log_data a " +
               " left outer join dim_app_version_table b " +
               " on trim(a.buildDate)<>'' and a.buildDate is not null and trim(a.buildDate)=trim(b.build_time) " +
@@ -196,11 +196,12 @@ object PlayViewLogDimensionExchange extends BaseClass {
               " left outer join dim_medusa_terminal_user d " +
               " on a.userId<>'' and a.userId is not null and trim(a.userId)=trim(d.user_id) " +
               s" left outer join  $dim_medusa_source_special_table e " +
-              " on trim(a.special_id)<>'' and a.special_id is not null and trim(a.special_id)=trim(e.special_code) " +
+              " on a.special_type='subject' and trim(a.special_id)<>'' and a.special_id is not null and trim(a.special_id)=trim(e.special_code) " +
               s" and e.special_type='subject') second_table left outer join " +
               s" (select special_name,last(source_special_sk) as source_special_sk from $dim_medusa_source_special_table where special_type='subject' " +
               "  group by special_name  ) f on  " +
-              "  trim(second_table.special_name)<>'' and second_table.special_name is not null and trim(second_table.special_name)=trim(f.special_name) "
+              "  trim(second_table.special_name)<>'' and second_table.special_name is not null and trim(second_table.special_name)=trim(f.special_name) "+
+              " and second_table.special_type='subject' "
             println("factLogSql:" + factLogSql)
             sqlContext.sql(factLogSql).write.parquet(outputPath)
 
