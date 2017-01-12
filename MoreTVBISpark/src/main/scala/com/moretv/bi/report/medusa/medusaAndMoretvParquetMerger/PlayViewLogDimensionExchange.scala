@@ -192,7 +192,7 @@ object PlayViewLogDimensionExchange extends BaseClass {
               " and trim(a.apkVersion)<>'' and a.apkVersion is not null and trim(a.apkVersion)=trim(b.version) " +
               " and trim(a.apkSeries)<>'' and a.apkSeries is not null and trim(a.apkSeries)=trim(b.app_series) " +
               " left outer join dim_medusa_program c " +
-              " on a.videoSid<>'' and a.videoSid is not null and trim(a.videoSid)=trim(c.sid) " +
+              " on a.contentType<>'reservation' and a.videoSid<>'' and a.videoSid is not null and trim(a.videoSid)=trim(c.sid) " +
               " left outer join dim_medusa_terminal_user d " +
               " on a.userId<>'' and a.userId is not null and trim(a.userId)=trim(d.user_id) " +
               s" left outer join  $dim_medusa_source_special_table e " +
