@@ -196,12 +196,12 @@ object PlayViewLogDimensionExchange extends BaseClass {
               " left outer join dim_medusa_terminal_user d " +
               " on a.userId<>'' and a.userId is not null and trim(a.userId)=trim(d.user_id) " +
               s" left outer join  $dim_medusa_source_special_table e " +
-              " on a.special_type='subject' and trim(a.special_id)<>'' and a.special_id is not null and trim(a.special_id)=trim(e.special_code) " +
+              " on a.special_type in ('subject','')  and trim(a.special_id)<>'' and a.special_id is not null and trim(a.special_id)=trim(e.special_code) " +
               s" and e.special_type='subject') second_table left outer join " +
               s" (select special_name,last(source_special_sk) as source_special_sk from $dim_medusa_source_special_table where special_type='subject' " +
               "  group by special_name  ) f on  " +
               "  trim(second_table.special_name)<>'' and second_table.special_name is not null and trim(second_table.special_name)=trim(f.special_name) "+
-              " and second_table.special_type='subject' "
+              " and second_table.special_type in ('subject','')  "
             println("factLogSql:" + factLogSql)
             sqlContext.sql(factLogSql).write.parquet(outputPath)
 
