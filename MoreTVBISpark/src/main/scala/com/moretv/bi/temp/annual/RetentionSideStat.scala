@@ -35,24 +35,24 @@ object RetentionSideStat extends BaseClass {
       }
     })
 
-    val loadPath = "/log/moretvloginlog/parquet/{2016*}/loginlog"
+    val loadPath = "/log/moretvloginlog/parquet/{2015*,20160101}/loginlog"
 
     val baseDf = sqlContext.read.parquet(loadPath)
       .filter($"mac".isNotNull)
-      .filter("date between '2016-01-01' and '2016-12-31'")
+      .filter("date between '2015-01-01' and '2015-12-31'")
       .select(
         month($"date").as("month"),
         $"mac"
       )
       .distinct
 
-    //     .withColumn("halfYear", halfYearUdf($"quarter"))
+    threeMonthRetention(baseDf)
 
-    // println(halfYearRetention(baseDf.select($"halfYear", $"mac").distinct))
+    //println(halfYearRetention(baseDf.select($"halfYear", $"mac").distinct))
 
-   // userBackFlowRate(baseDf.select($"month", $"mac"))
+    // userBackFlowRate(baseDf.select($"month", $"mac"))
 
-    userSleepRate(baseDf.select($"month", $"mac"))
+    // userSleepRate(baseDf.select($"month", $"mac"))
 
 
   }
@@ -92,6 +92,31 @@ object RetentionSideStat extends BaseClass {
       .collect.map(e => {
       (e.getInt(0), e.getDouble(1))
     })
+
+  }
+
+  def threeMonthRetention(df: DataFrame) = {
+    val q = sqlContext
+    import q.implicits._
+
+    val lastMonthUsers = df.filter($"month".between(1, 9))
+    val nextMonthUsers = df.filter($"month".between(2, 10)).withColumn("month", $"month" - 1)
+    val nextTwoMonthUsers = df.filter($"month".between(3, 11)).withColumn("month", $"month" - 2)
+    val nextThreeMonthUsers = df.filter($"month".between(4, 12)).withColumn("month", $"month" - 3)
+
+    lastMonthUsers.as("l").join(nextMonthUsers.as("n1"),
+      $"l.month" === $"n1.month" && $"l.mac" === $"n1.mac")
+      .select($"l.month", $"l.mac")
+      .as("j1").join(nextTwoMonthUsers.as("n2"),
+      $"j1.month" === $"n2.month" && $"j1.mac" === $"n2.mac")
+      .select($"j1.month", $"j1.mac")
+      .as("j2").join(nextThreeMonthUsers.as("n3"),
+      $"j2.month" === $"n3.month" && $"j2.mac" === $"n3.mac")
+      .select($"j2.month", $"j2.mac")
+      .groupBy($"j2.month")
+      .agg(count($"j2.mac"))
+      .show(100, false)
+
 
   }
 
@@ -137,7 +162,7 @@ object RetentionSideStat extends BaseClass {
     * @param df :DataFrame["halfYear","mac"]  ps: already be distinct
     *           0 -> 1
     */
-  def halfYearRetention(df: DataFrame): Double = {
+  def halfYearRetention(df: DataFrame): Unit = {
 
     val q = sqlContext
     import q.implicits._
@@ -149,12 +174,14 @@ object RetentionSideStat extends BaseClass {
 
     val lastHalfYearAgg = lastHalfYearUsers.count
 
+    println(lastHalfYearAgg)
+
     val lastNextHalfYearJointAgg = lastHalfYearUsers.as("l")
-      .join(nextHalfYearUsers.as("n"), $"l.halfYear" === $"n.halfYear")
+      .join(nextHalfYearUsers.as("n"), $"l.halfYear" === $"n.halfYear" && $"l.mac" === $"n.mac")
       .count
 
-    "%.3f".format(lastNextHalfYearJointAgg / lastHalfYearAgg)
-      .toDouble
+    println(lastNextHalfYearJointAgg)
+
 
   }
 
@@ -173,17 +200,20 @@ object RetentionSideStat extends BaseClass {
 
     val nextMonthUsers = df.filter($"month" between(2, 12))
 
-    val nextMonthAgg = nextMonthUsers.groupBy($"month")
-      .agg(count($"mac").as("uv"))
+    //    val nextMonthAgg = nextMonthUsers.groupBy($"month")
+    //      .agg(count($"mac").as("uv"))
 
     val lastNextJointAgg = lastMonthUsers.as("l")
-      .join(nextMonthUsers.as("n"), $"l.month" === $"n.month")
+      .join(nextMonthUsers.as("n"), $"l.month" === $"n.month" && $"l.mac" === $"n.mac")
       .groupBy($"n.month".as("month"))
       .agg(count($"n.mac").as("uv"))
 
-    nextMonthAgg.as("n").join(lastNextJointAgg.as("j"), $"n.month" === $"j.month")
-      .select(($"n.uv" - $"j.uv"))
-      .show(100, false)
+    lastNextJointAgg.show(100, false)
+    //
+    //
+    //    nextMonthAgg.as("n").join(lastNextJointAgg.as("j"), $"n.month" === $"j.month")
+    //      .select(($"n.uv" - $"j.uv"))
+    //      .show(100, false)
   }
 
   /**
@@ -204,17 +234,20 @@ object RetentionSideStat extends BaseClass {
     val nextTwoMonthUsers = df.filter($"month" between(3, 12))
       .withColumn("month", $"month" - 2)
 
-    val lastMonthAgg = lastMonthUsers.groupBy($"month")
-      .agg(count($"mac").as("uv"))
+    //    val lastMonthAgg = lastMonthUsers.groupBy($"month")
+    //      .agg(count($"mac").as("uv"))
 
-    val lastNextJointAgg = nextOneMonthUsers.unionAll(nextTwoMonthUsers).distinct.as("j")
-      .join(lastMonthUsers.as("l"), $"j.month" === $"l.month")
-      .groupBy($"j.month")
-      .agg(count($"j.mac").as("uv"))
+    //lastMonthAgg.show(100, false)
 
-    lastNextJointAgg.as("j").join(lastMonthAgg.as("l"), $"j.month" === $"l.month")
-      .select(round(($"l.uv" - $"j.uv") / $"l.uv", 3))
+    val lastNextJointAgg = nextOneMonthUsers.unionAll(nextTwoMonthUsers).distinct.as("n")
+      .join(lastMonthUsers.as("l"), $"n.month" === $"l.month" && $"l.mac" === $"n.mac")
+      .groupBy($"n.month")
+      .agg(count($"n.mac").as("uv"))
       .show(100, false)
+
+    //    lastNextJointAgg.as("j").join(lastMonthAgg.as("l"), $"j.month" === $"l.month")
+    //      .select(round(($"l.uv" - $"j.uv") / $"l.uv", 3))
+    //      .show(100, false)
 
   }
 
