@@ -84,13 +84,13 @@ object DailyActiveUserByUserId extends BaseClass {
 
           println(year, month, sqlDate, totalUserNum, loginNum, userLoginNum, newUserNum, activeNum)
 
-          //          if (p.deleteOld) {
-          //            util.delete(deleteSql, sqlDate)
-          //          }
-          //
-          //          util.insert(insertSql,
-          //            year, month, sqlDate, totalUserNum, loginNum, userLoginNum, newUserNum, activeNum
-          //          )
+          if (p.deleteOld) {
+            util.delete(deleteSql, sqlDate)
+          }
+
+          util.insert(insertSql,
+            year, month, sqlDate, totalUserNum, loginNum, userLoginNum, newUserNum, activeNum
+          )
 
         })
 

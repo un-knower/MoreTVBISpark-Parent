@@ -4,7 +4,7 @@ import org.junit.Test
 /**
   * Created by witnes on 1/13/17.
   */
-object LivePathMatchTest {
+class LivePathMatchTest {
 
   import com.moretv.bi.report.medusa.liveCastStat.LiveSationTree
 
@@ -14,14 +14,11 @@ object LivePathMatchTest {
     val strList = List(
       "home*live*game-webcast*电竞风",
       "home*live*life-webcast*看现场",
-      "home*live*eagle-webcast*电竞风"
+      "home*live*eagle-webcast*看现场",
+      "home*live*eagle-webcast*潮娱乐"
     )
 
-    strList.foreach(_ => {
-      val str = LiveSationTree.categoryMatch(_)
-      println (str)
-    }
-    )
+     strList.map(LiveSationTree.categoryMatch).foreach(println)
 
 
   }
