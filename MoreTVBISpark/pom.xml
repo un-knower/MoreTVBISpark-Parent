@@ -16,7 +16,7 @@
 
     <!-- 定义相关变量 -->
     <properties>
-        <scala.version>2.10.6</scala.version>
+        <scala.version>2.10.4</scala.version>
         <maven.compiler.source>1.8</maven.compiler.source>
     </properties>
 
@@ -146,12 +146,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <scalaVersion>${scala.version}</scalaVersion>
-                    <args>
-                        <arg>-target:jvm-1.5</arg>
-                    </args>
-                </configuration>
             </plugin>
         </plugins>
     </build>
