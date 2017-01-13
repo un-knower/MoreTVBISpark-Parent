@@ -1,126 +1,120 @@
-//package com.moretv.bi.login
-//
-//import java.util.Calendar
-//
-//import org.apache.spark.sql.functions._
-//import cn.whaley.sdk.dataexchangeio.DataIO
-//import cn.whaley.sdk.dataexchangeio.DataIO
-//import com.moretv.bi.global.{DataBases, LogTypes}
-//import cn.whaley.sdk.dataOps.MySqlOps
-//import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-//import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil, SparkSetting}
-//import org.apache.spark.SparkContext
-//import org.apache.spark.sql.SQLContext
-//
-//import scala.collection.JavaConversions._
-//
-///**
-//  * Created by zhangyu and xiajun on 2016/7/20.
-//  * 统计分版本的日新增、活跃及累计用户数，采用mac去重方式。
-//  * tablename: medusa.medusa_user_statistics_based_apkversion
-//  * (id,day,apk_version,adduser_num,accumulate_num,active_num)
-//  * Params : startDate, numOfDays(default = 1),deleteOld;
-//  *
-//  */
-//object UserStatisticsBasedApkVersion extends BaseClass {
-//  def main(args: Array[String]): Unit = {
-//    ModuleClass.executor(this,args)
-//  }
-//
-//  override def execute(args: Array[String]): Unit = {
-//    ParamsParseUtil.parse(args) match {
-//      case Some(p) => {
-//
-//        val util = DataIO.getMySqlOps("moretv_medusa_mysql")
-//
-//        //cal1代表用户数据库快照对应日期，cal2代表活跃用户库日志对应日期
-//        val cal1 = Calendar.getInstance()
-//        cal1.setTime(DateFormatUtils.readFormat.parse(p.startDate))
-//        cal1.add(Calendar.DAY_OF_MONTH, -1)
-//
-//        val cal2 = Calendar.getInstance()
-//        cal2.setTime(DateFormatUtils.readFormat.parse(p.startDate))
-//
-//        (0 until p.numOfDays).foreach(i => {
-//          val addLogdate = DateFormatUtils.readFormat.format(cal1.getTime)
-//          val addTimeday = DateFormatUtils.toDateCN(addLogdate)
-//          val startTime = s"$addTimeday" + " " + "00:00:00"
-//          val endTime = s"$addTimeday" + " " + "23:59:59"
-//
-//          DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MTVACCOUNT, addLogdate)
-//            .filter(s"openTime  <= $endTime")
-//            .select("current_version", "openTime", "mac")
-//            .registerTempTable("log_dat")
-//
-//          val dfd = sqlContext.sql(
-//            """
-//              | select case
-//              |   when current_version is null then 'null'
-//              |   when current_version = '' then 'kong'
-//              |   else current_version as version, mac
-//              | from log_dat
-//            """.stripMargin)
-//
-//          sqlContext.dropTempTable("log_dat")
-//
-//          val addMap =
-//            dfd.filter(s"openTime between '$startTime' and '$endTime'")
-//              .groupBy("version")
-//              .agg(count("mac").alias("counts"))
-//              .collectAsList
-//              .toMap
-//
-//          val accumulateMap =
-//            dfd.filter(s"openTime < = '$endTime'")
-//              .groupBy("version")
-//              .agg(count("mac").alias("counts"))
-//              .collectAsList
-//              .toMap
-//
-//          val activeLogdate = DateFormatUtils.readFormat.format(cal2.getTime)
-//
-//          DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG, activeLogdate)
-//            .select("mac", "version")
-//            .registerTempTable("activelog_data")
-//
-//          val activeMap = sqlContext.sql(
-//            s"""
-//               |select case
-//               |   when version is null then 'null'
-//               |   when version = '' then 'kong'
-//               |   else version as version, mac
-//               | from log_dat
-//             """.stripMargin)
-//            .groupBy("version")
-//            .agg(count("mac").alias("counts"))
-//            .collectAsList.toMap
-//
-//          if (p.deleteOld) {
-//            val deleteSql = "delete from medusa_user_statistics_based_apkversion where day = ?"
-//            util.delete(deleteSql, addTimeday)
-//          }
-//
-//          val insertSql = "insert into medusa_user_statistics_based_apkversion(day,apk_version,adduser_num,accumulate_num,active_num) values(?,?,?,?,?)"
-//
-//          val keys = addMap.keySet.union(accumulateMap.keySet).union(activeMap.keySet)
-//
-//          keys.foreach(key => {
-//            val adduser_num = addMap.getOrElse(key, 0)
-//            val accumulate_num = accumulateMap.getOrElse(key, 0)
-//            val active_num = activeMap.getOrElse(key, 0)
-//            util.insert(insertSql, addTimeday, key, adduser_num, accumulate_num, active_num)
-//          }
-//
-//          )
-//          cal1.add(Calendar.DAY_OF_MONTH, -1)
-//          cal2.add(Calendar.DAY_OF_MONTH, -1)
-//        })
-//
-//      }
-//      case None => {
-//        throw new RuntimeException("At least needs one param: startDate!")
-//      }
-//    }
-//
-//  }
-//}
+package com.moretv.bi.login
+
+import java.text.SimpleDateFormat
+import java.util.Calendar
+
+import org.apache.spark.sql.functions._
+import cn.whaley.sdk.dataexchangeio.DataIO
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil, SparkSetting}
+import org.apache.spark.SparkContext
+import org.apache.spark.sql.SQLContext
+
+import scala.collection.JavaConversions._
+
+/**
+  * Created by zhangyu and xiajun on 2016/7/20.
+  * 统计分版本的日新增、活跃及累计用户数，采用mac去重方式。
+  * tablename: medusa.medusa_user_statistics_based_apkversion
+  * (id,day,apk_version,adduser_num,accumulate_num,active_num)
+  * Params : startDate, numOfDays(default = 1),deleteOld;
+  *
+  */
+object UserStatisticsBasedApkVersion extends BaseClass {
+
+  private val cnFormat = new SimpleDateFormat("yyyy-MM-dd")
+
+  private val readFormat = new SimpleDateFormat("yyyyMMdd")
+
+  private val tableName = "medusa_user_statistics_based_apkversion"
+
+  private val insertSql = s"insert into $tableName(day,apk_version,adduser_num,accumulate_num,active_num) values(?,?,?,?,?)"
+
+  private val deleteSql = s"delete from $tableName where day = ?"
+
+  def main(args: Array[String]): Unit = {
+    ModuleClass.executor(this, args)
+  }
+
+  override def execute(args: Array[String]): Unit = {
+    ParamsParseUtil.parse(args) match {
+      case Some(p) => {
+
+        val s = sqlContext
+        import s.implicits._
+
+        val versionUdf = udf((s: String) => {
+          s match {
+            case "" => "kong"
+            case _ => if (s == null) {
+              "null"
+            } else {
+              s
+            }
+          }
+        })
+        val util = DataIO.getMySqlOps("moretv_medusa_mysql")
+        val cal = Calendar.getInstance
+
+        (0 until p.numOfDays).foreach(i => {
+
+          cal.setTime(readFormat.parse(p.startDate))
+          val loadDate = readFormat.format(cal.getTime)
+          cal.add(Calendar.DAY_OF_YEAR, -1)
+          val loadDate1 = readFormat.format(cal.getTime)
+          val sqlDate = cnFormat.format(cal.getTime)
+
+
+          val dfd1 = DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT, loadDate1)
+            .select(
+              versionUdf($"current_version").as("version"),
+              to_date($"openTime").as("date"),
+              $"mac"
+            )
+
+          val dfd2 = DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG, loadDate)
+            .select($"mac", versionUdf($"version").as("version"))
+            .groupBy("version")
+            .agg(count("mac").alias("counts"))
+
+          val resDf = dfd1.filter($"date" === sqlDate)
+            .groupBy("version")
+            .agg(count("mac").alias("counts"))
+            .as("t1")
+            .join(
+              dfd1.filter($"date" <= sqlDate)
+                .groupBy("version")
+                .agg(count("mac").alias("counts"))
+                .as("t2"),
+              $"t1.version" === $"t2.version")
+            .join(
+              dfd2.as("t3"), $"t2.version" === $"t3.version")
+            .select($"t1.version", $"t1.counts", $"t2.counts", $"t3.counts")
+
+          if (p.deleteOld) {
+            util.delete(deleteSql, sqlDate)
+          }
+
+          resDf.collect.foreach(e => {
+            println(sqlDate, e.getString(0), e.getLong(1), e.getLong(2), e.getLong(3))
+            //            util.insert(insertSql, sqlDate, e.getString(0), e.getLong(1), e.getLong(2), e.getLong(3))
+          }
+          )
+
+          util.destory
+
+
+        })
+
+      }
+      case None => {
+        throw new RuntimeException("At least needs one param: startDate!")
+      }
+    }
+
+  }
+
+}

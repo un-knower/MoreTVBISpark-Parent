@@ -28,6 +28,7 @@ object LogType {
   val DANMU_STATUS = "danmustatus"
   val DANMU_SWITCH = "danmuswitch"
   val QRCODE_SWITCH = "qrcodeswitch"
+  val TABVIEW = "tabview"
 
 
   //special log type which is apart from basic log type

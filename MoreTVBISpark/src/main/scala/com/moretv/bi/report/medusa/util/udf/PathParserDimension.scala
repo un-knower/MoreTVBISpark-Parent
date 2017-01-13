@@ -316,6 +316,9 @@ object PathParserDimension {
                     result = "-1"
                   }
                 }
+                if(null==result){
+                  result = "-1"
+                }
               }
               // medusa的pathMain路径中的pageType信息
               case UDFConstant.PAGETYPE => {
@@ -502,6 +505,9 @@ object PathParserDimension {
                       case Some(p) =>
                       case None =>result="-1"
                     }
+                  }
+                  if(null==result){
+                    result = "-1"
                   }
                 }
                 // moretv的pageType信息

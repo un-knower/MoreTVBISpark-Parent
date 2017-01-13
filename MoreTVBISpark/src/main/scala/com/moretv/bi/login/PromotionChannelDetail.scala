@@ -18,7 +18,7 @@ object PromotionChannelDetail extends BaseClass {
   val regex = "^\\w+$".r
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(this,args)
+    ModuleClass.executor(this, args)
   }
 
   override def execute(args: Array[String]) {
@@ -55,8 +55,13 @@ object PromotionChannelDetail extends BaseClass {
           val userNums = logRdd.distinct().countByKey()
 
           val dbTvService = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
-          val pcSql = "SELECT ifnull(promotion_channel,'null') as pchannel, COUNT(DISTINCT mac) as new_num " +
-            s"FROM mtv_account WHERE openTime BETWEEN '$day 00:00:00' AND '$day 23:59:59' GROUP BY promotion_channel"
+          val pcSql =
+            """
+              | SELECT ifnull(promotion_channel,'null') as pchannel, COUNT(DISTINCT mac) as new_num
+              | FROM mtv_account
+              | WHERE openTime BETWEEN '$day 00:00:00' AND '$day 23:59:59'
+              | GROUP BY promotion_channel
+            """.stripMargin
 
           val pcMap = dbTvService.selectArrayList(pcSql).map(arr => {
             val promotionChannel = arr(0).toString
@@ -65,21 +70,30 @@ object PromotionChannelDetail extends BaseClass {
           }).toMap
 
           val db = DataIO.getMySqlOps(DataBases.MORETV_EAGLETV_MYSQL)
+
           if (p.deleteOld) {
             val sqlDelete = "delete from promotion_detail where day = ?"
             db.delete(sqlDelete, day)
           }
 
-          val sqlInsert = "insert into promotion_detail(year,month,day, promotion_channel,new_num,user_num, login_num) " +
-            " values(?,?,? ,?,?,? ,?)"
+          val sqlInsert =
+            """
+              |insert into promotion_detail(year,month,day, promotion_channel,new_num,user_num, login_num)
+              |values(?,?,? ,?,?,? ,?)
+            """.stripMargin
+
           val year = day.substring(0, 4).toInt
           val month = day.substring(5, 7).toInt
+
           pcMap.keySet.union(userNums.keySet).foreach(key => {
             val promotionChannel = key
             val usernum = userNums.getOrElse(promotionChannel, 0L)
             val loginnum = loginNums.getOrElse(promotionChannel, 0L)
+
             val newnum = pcMap.getOrElse(promotionChannel, 0)
-            db.insert(sqlInsert, new Integer(year), new Integer(month), day, promotionChannel, new Integer(newnum),
+
+            db.insert(sqlInsert,
+              new Integer(year), new Integer(month), day, promotionChannel, new Integer(newnum),
               new Integer(usernum.toInt), new Integer(loginnum.toInt))
           })
 
