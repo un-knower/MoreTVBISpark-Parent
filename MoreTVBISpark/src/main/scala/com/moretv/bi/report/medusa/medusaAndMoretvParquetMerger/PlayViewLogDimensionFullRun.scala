@@ -67,6 +67,9 @@ object PlayViewLogDimensionFullRun extends BaseClass{
              val medusaColNames = medusaDf.columns.toList.filter(e=>{ParquetSchemaDimension.schemaArr.contains(e)}).mkString(",")
              val moretvColNames = moretvDf.columns.toList.filter(e=>{ParquetSchemaDimension.schemaArr.contains(e)}).mkString(",")
 
+
+
+
              medusaDf.registerTempTable("log_data_1")
              moretvDf.registerTempTable("log_data_2")
              val sqlSelectMedusa = s"select $medusaColNames, " +
@@ -113,8 +116,8 @@ object PlayViewLogDimensionFullRun extends BaseClass{
                "'' as "+UDFConstantDimension.SEARCH_TAB_NAME+"," +
                "-1 as "+UDFConstantDimension.SEARCH_RESULT_INDEX+"," +
                "'' as "+UDFConstantDimension.SEARCH_MOST_SEARCH+"," +
-               s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.MAIN_CATEGORY+"') as " +UDFConstantDimension.MAIN_CATEGORY+"," +
-               s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.SUB_CATEGORY+"') as " +UDFConstantDimension.SUB_CATEGORY+"," +
+               "pathParserDimension('playview',path,'path','launcherAccessLocation') as " +UDFConstantDimension.MAIN_CATEGORY+"," +
+               "pathParserDimension('playview',path,'path','pageDetailInfo') as " +UDFConstantDimension.SUB_CATEGORY+"," +
                "'' as "+UDFConstantDimension.THIRD_CATEGORY+"," +
                "'' as "+UDFConstantDimension.FOURTH_CATEGORY+"," +
                "'' as "+UDFConstantDimension.FIFTH_CATEGORY+"," +
@@ -166,8 +169,8 @@ object PlayViewLogDimensionFullRun extends BaseClass{
                "'' as "+UDFConstantDimension.SEARCH_TAB_NAME+"," +
                "-1 as "+UDFConstantDimension.SEARCH_RESULT_INDEX+"," +
                "'' as "+UDFConstantDimension.SEARCH_MOST_SEARCH+"," +
-               s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.MAIN_CATEGORY+"') as " +UDFConstantDimension.MAIN_CATEGORY+"," +
-               s"pathParserDimension('playview',path,'path', '"+UDFConstantDimension.SUB_CATEGORY+"') as " +UDFConstantDimension.SUB_CATEGORY+"," +
+               "pathParserDimension('playview',path,'path','launcherAccessLocation') as " +UDFConstantDimension.MAIN_CATEGORY+"," +
+               "pathParserDimension('playview',path,'path','pageDetailInfo') as " +UDFConstantDimension.SUB_CATEGORY+"," +
                "'' as "+UDFConstantDimension.THIRD_CATEGORY+"," +
                "'' as "+UDFConstantDimension.FOURTH_CATEGORY+"," +
                "'' as "+UDFConstantDimension.FIFTH_CATEGORY+"," +

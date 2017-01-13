@@ -56,7 +56,7 @@ class ProgramRedisUtils {
 	def getTitleBySid(sid:String) = {
 		try {
 			val id = CodeIDOperator.codeToId(sid)
-			if(id != null) {
+			if(id != 0) {
 				val metadata = metadata_jedis.get(id.toString)
 				if (metadata == null || "nil" == metadata) null
 				else {

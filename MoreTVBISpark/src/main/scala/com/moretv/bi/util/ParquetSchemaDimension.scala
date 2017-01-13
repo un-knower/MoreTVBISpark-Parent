@@ -21,6 +21,20 @@ object ParquetSchemaDimension {
     "subjectCode","subscribeContent","subscribeType","switch","userId","versionCode","videoName",
     "videoSid","omnibusName","omnibusSid","topRankName","topRankSid","singerSid")
 
+  val schemaArray1  =Array("accessArea","accessLocation","accessSource","accountId","action","apkSeries","apkVersion",
+    "appAnterWay","appEnterWay","appSid","belongTo")
+
+  val schemaArr3 =Array("bufferTimes","buildDate","button","channelSid","collectClass",
+    "collectContent","collectType","contentType","corruptKey","date","datetime","day","duration","entrance","entryWay",
+    "episodeSid","episodyed_android_youku","event")
+
+  val schemaArr2 = Array("happenTime","homeContent","homeLocation","homeType","ip",
+  "jsonLog","liveName","liveSid","liveType","locationIndex","logType","logVersion","mark","match","matchSid",
+  "newEntrance","oldEntrance","page","path","pathMain","pathSpecial","pathSub","productModel","programSid",
+  "programType","promotionChannel","region","retrieval","searchText","singer","source","station","stationcode",
+  "subjectCode","subscribeContent","subscribeType","switch","userId","versionCode","videoName",
+  "videoSid","omnibusName","omnibusSid","topRankName","topRankSid","singerSid")
+
   // 处理parquet schema中类型
 
   def schemaTypeConvert(schemaString:Array[String]):Array[String] = {
