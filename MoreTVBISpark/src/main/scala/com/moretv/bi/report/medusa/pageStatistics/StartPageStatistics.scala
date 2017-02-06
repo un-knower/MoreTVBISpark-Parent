@@ -43,11 +43,11 @@ object StartPageStatistics extends  BaseClass{
           cal.add(Calendar.DAY_OF_MONTH,-1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          val df=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.MEDU)
+          val df=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.MEDUSABOOTSTARTPAGE)
 
           val startPageDf = df.select("apkVersion","pageType","userId")
                 .filter("pageType is not null")
-          //rdd((apkVersion,pageType),userId)
+
           val startPageRdd =startPageDf.map(e=>((e.getString(0),e.getString(1)),e.getString(2)))
 
           //aggregate

@@ -82,4 +82,6 @@ object LogTypes {
 
   val AREAINFO = "/log/medusa/temple/areaInfo/cityInfo/"
   val USERAREAOUTDIR = "/log/medusa/userAreaInfo/"
+
+  val MEDUSABOOTSTARTPAGE = "medusa-boot-startpage"
 }
