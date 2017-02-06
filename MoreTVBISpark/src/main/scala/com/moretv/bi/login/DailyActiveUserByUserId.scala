@@ -3,6 +3,7 @@ package com.moretv.bi.login
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
@@ -55,42 +56,51 @@ object DailyActiveUserByUserId extends BaseClass {
           cal.add(Calendar.DAY_OF_YEAR, -1)
           val loadDate1 = readFormat.format(cal.getTime)
           val sqlDate = cnFormat.format(cal.getTime)
+          val dayBefore = DateFormatUtils.toDateCN(loadDate, -2)
 
           val loginUserDb =
             DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG, loadDate)
               .select("mac")
 
+          val sqlMinMaxId =
+            s"SELECT min(id),max(id) FROM `mtv_account` WHERE openTime between '$sqlDate 00:00:00' and '$sqlDate 23:59:59'"
+
+          val sqlData = s"SELECT mac FROM `mtv_account` WHERE ID >= ? AND ID <= ? and left(openTime,10) = '$sqlDate'"
+
+          val newUserNum =
+            MySqlOps.getJdbcRDD(sc, DataBases.MORETV_TVSERVICE_MYSQL, sqlMinMaxId, sqlData, 50, rs => rs.getString(1))
+              .distinct().count
+
           val userInfoDb = DataIO.getDataFrameOps
             .getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT, loadDate1)
-            .select(to_date($"openTime").as("date"), $"user_id")
+            .select(to_date($"openTime").as("date"), $"mac")
 
-          val newUserInfo = userInfoDb.filter($"date" === sqlDate).select($"user_id")
-
-          val totalUserInfo = userInfoDb.filter($"date" <= sqlDate).select($"user_id")
-
+          val newUserInfo = userInfoDb.filter($"date" === sqlDate).select($"mac")
 
           val loginNum = loginUserDb.count //访问登录接口次数
 
           val userLoginNum = loginUserDb.distinct.count //访问登录接口人数
 
-          val newUserNum = newUserInfo.count //新增人数
-
           val activeNum = userLoginNum - newUserNum //活跃人数
 
-          val totalUserNum = totalUserInfo.count
+          val totalUserNumBefore =
+            util.select[Int]("select totaluser_num from login_detail where day = ?", dayBefore)(r => r.getInt(0)).head
 
+
+          val totalUserNum = totalUserNumBefore + newUserNum
           val year = cal.get(Calendar.YEAR)
           val month = cal.get(Calendar.MONTH) + 1
 
           println(year, month, sqlDate, totalUserNum, loginNum, userLoginNum, newUserNum, activeNum)
 
-          if (p.deleteOld) {
-            util.delete(deleteSql, sqlDate)
-          }
 
-          util.insert(insertSql,
-            year, month, sqlDate, totalUserNum, loginNum, userLoginNum, newUserNum, activeNum
-          )
+          //          if (p.deleteOld) {
+          //            util.delete(deleteSql, sqlDate)
+          //          }
+          //
+          //          util.insert(insertSql,
+          //            year, month, sqlDate, totalUserNum, loginNum, userLoginNum, newUserNum, activeNum
+          //          )
 
         })
 

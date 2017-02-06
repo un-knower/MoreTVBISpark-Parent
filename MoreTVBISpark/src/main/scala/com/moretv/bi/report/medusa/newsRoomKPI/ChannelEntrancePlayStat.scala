@@ -1,16 +1,14 @@
 package com.moretv.bi.report.medusa.newsRoomKPI
 
-import java.lang.{Long => JLong, Float => JFloat}
+import java.lang.{Float => JFloat, Long => JLong}
 import java.util.Calendar
 
-import scala.collection.mutable.{Map}
+import scala.collection.mutable.Map
 import com.moretv.bi.util._
-import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.{DataBases, LogTypes}
-import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.json.JSONObject
 
 /**
   * Created by witnes on 2016/5/16.
@@ -39,7 +37,7 @@ object ChannelEntrancePlayStat extends BaseClass {
 
   def main(args: Array[String]) {
 
-    ModuleClass.executor(this,args)
+    ModuleClass.executor(ChannelEntrancePlayStat, args)
 
   }
 
@@ -50,7 +48,7 @@ object ChannelEntrancePlayStat extends BaseClass {
 
         val sqlContext = new SQLContext(sc)
 
-        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+        val util = new DBOperationUtils("medusa")
 
         val startDate = p.startDate
         val cal = Calendar.getInstance
@@ -63,7 +61,7 @@ object ChannelEntrancePlayStat extends BaseClass {
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          val playviewInput = DataIO.getDataFrameOps.getPath(MERGER,LogTypes.PLAYVIEW,loadDate)
+          val playviewInput = s"/log/medusaAndMoretvMerger/$loadDate/playview"
 
           sqlContext.read.parquet(playviewInput)
 
@@ -76,7 +74,7 @@ object ChannelEntrancePlayStat extends BaseClass {
 
           val dfUser: DataFrame = sqlContext.sql(
             """
-              |select userId,pathMain,path,contentType,pathIdentificationFromPath,flag,duration
+              |select userId,pathMain,path,contentType,pathIdentificationFromPath,flag,cast(0 as Long)
               |  from log_data
               |  where event in ('startplay','playview')
             """.stripMargin

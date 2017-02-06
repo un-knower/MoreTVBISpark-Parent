@@ -2,6 +2,7 @@ package com.moretv.bi.temp.annual
 
 import java.lang.Math
 
+import com.moretv.bi.util.ParamsParseUtil
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
@@ -25,35 +26,65 @@ object RetentionSideStat extends BaseClass {
 
   override def execute(args: Array[String]): Unit = {
 
-    val q = sqlContext
-    import q.implicits._
+    ParamsParseUtil.parse(args) match {
+      case Some(p) => {
 
-    val halfYearUdf = udf((q: Int) => {
-      q match {
-        case 1 | 2 => 0
-        case 3 | 4 => 1
+        val q = sqlContext
+        import q.implicits._
+
+        val halfYearUdf = udf((q: Int) => {
+          q match {
+            case 1 | 2 => 0
+            case 3 | 4 => 1
+          }
+        })
+
+        val newUserPath = "/log/dbsnapshot/parquet/20170101/moretv_mtv_account"
+
+        val loadPath = "/log/moretvloginlog/parquet/{2016*,20170101}/loginlog"
+
+
+        val newUserDf = sqlContext.read.parquet(newUserPath)
+          .filter(to_date($"openTime").between("2016-01-01", "2016-08-31"))
+          .select($"mac", to_date($"openTime").as("date"), month($"openTime").as("month"))
+          .withColumn("startDate", add_months($"date", 1))
+          .withColumn("endDate", add_months($"date", 4))
+          .distinct
+          .drop($"date")
+
+
+        val baseDf = sqlContext.read.parquet(loadPath)
+          .filter($"mac".isNotNull)
+          .filter("date between '2016-01-01' and '2016-12-31'")
+          .select($"date", $"mac", month($"date").as("month"))
+
+        baseDf.as("b").join(newUserDf.as("n"),
+          $"b.mac" === $"n.mac" && $"b.month" === $"n.month")
+
+        baseDf
+          .groupBy($"mac", $"month")
+          .agg(max($"date").as("maxMDate"), min($"date").as("minMDate"))
+
+
+
+        baseDf
+          .groupBy($"mac", $"month")
+          .agg(max($"date").as("maxMDate"), min($"date").as("minMDate"))
+          .as("b").join(
+          newUserDf.as("n"),
+          $"b.mac" === $"n.mac" && $"b.month".between(month($"n.startDate"), month($"n.endDate"))
+            && $"b.maxMDate" < $"n.endDate" && $"b.minMDate" >= $"n.startDate"
+        )
+          .groupBy($"n.month")
+          .agg(countDistinct($"n.mac"))
+          .show(10, false)
+
+
       }
-    })
+      case None => {
 
-    val loadPath = "/log/moretvloginlog/parquet/{2015*,20160101}/loginlog"
-
-    val baseDf = sqlContext.read.parquet(loadPath)
-      .filter($"mac".isNotNull)
-      .filter("date between '2015-01-01' and '2015-12-31'")
-      .select(
-        month($"date").as("month"),
-        $"mac"
-      )
-      .distinct
-
-    threeMonthRetention(baseDf)
-
-    //println(halfYearRetention(baseDf.select($"halfYear", $"mac").distinct))
-
-    // userBackFlowRate(baseDf.select($"month", $"mac"))
-
-    // userSleepRate(baseDf.select($"month", $"mac"))
-
+      }
+    }
 
   }
 

@@ -42,6 +42,31 @@ object LiveCategoryStat extends BaseClass {
 
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
+
+        val categoryMatcher = udf((s: String) => {
+
+          if (s.contains("潮娱乐")) {
+            "潮娱乐"
+          }
+          else if (s.contains("黑科技")) {
+            "黑科技"
+          }
+          else if (s.contains("电竞风")) {
+            "电竞风"
+          }
+          else if (s.contains("漫生活")) {
+            "漫生活"
+          }
+          else if (s.contains("看现场")) {
+            "看现场"
+          }
+          else {
+            "其它"
+          }
+
+        })
+
+
         (0 until p.numOfDays).foreach(w => {
 
           val loadDate = DateFormatUtils.readFormat.format(cal.getTime)
@@ -50,9 +75,8 @@ object LiveCategoryStat extends BaseClass {
 
 
           val playDf = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogType.LIVE, loadDate)
-            .filter($"liveType" === "live" && $"date" === sqlDate)
-            .withColumn("category", LiveSationTree.categoryMatchUdf($"pathMain").as("category"))
-
+            .filter($"liveType" === "live" && $"date" === sqlDate && $"pathMain".isNotNull)
+            .withColumn("category", categoryMatcher($"pathMain").as("category"))
 
           val viewDf = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogType.TABVIEW, loadDate)
             .filter($"stationcode".isin(LiveSationTree.Live_First_Category: _*)
@@ -64,14 +88,13 @@ object LiveCategoryStat extends BaseClass {
             .agg(count($"userId").as("play_num"), countDistinct($"userId").as("play_user"))
             .as("t1")
             .join(
-              playDf.filter($"event" === "switchchannel" && $"date" === sqlDate)
+              playDf.filter($"event" === "switchchannel" && $"date" === sqlDate && $"duration".between(1,36000))
                 .groupBy($"category")
                 .agg(sum($"duration").as("duration"))
                 .as("t2"),
               $"t1.category" === $"t2.category"
             )
             .select($"t1.category", $"t2.duration", $"t1.play_num", $"t1.play_user")
-
 
           val viewDataset = viewDf.groupBy($"stationcode".as("category"))
             .agg(
@@ -84,7 +107,7 @@ object LiveCategoryStat extends BaseClass {
           }
 
           playDataset.as("p").join(viewDataset.as("v"), $"p.category" === $"v.category")
-            .select($"p.category", $"p.play_num", $"p.play_user", $"v.view_user", $"v.view_num", $"p.duration")
+            .select($"p.category", $"p.play_num", $"p.play_user", $"v.view_num", $"v.view_user", $"p.duration")
             .collect
             .foreach(e => {
               util.insert(

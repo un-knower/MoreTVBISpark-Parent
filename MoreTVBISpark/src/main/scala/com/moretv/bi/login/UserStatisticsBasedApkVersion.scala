@@ -5,15 +5,9 @@ import java.util.Calendar
 
 import org.apache.spark.sql.functions._
 import cn.whaley.sdk.dataexchangeio.DataIO
-import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil, SparkSetting}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
-
-import scala.collection.JavaConversions._
 
 /**
   * Created by zhangyu and xiajun on 2016/7/20.
@@ -99,8 +93,8 @@ object UserStatisticsBasedApkVersion extends BaseClass {
           }
 
           resDf.collect.foreach(e => {
-            println(sqlDate, e.getString(0), e.getLong(1), e.getLong(2), e.getLong(3))
-            //            util.insert(insertSql, sqlDate, e.getString(0), e.getLong(1), e.getLong(2), e.getLong(3))
+           // println(sqlDate, e.getString(0), e.getLong(1), e.getLong(2), e.getLong(3))
+            util.insert(insertSql, sqlDate, e.getString(0), e.getLong(1), e.getLong(2), e.getLong(3))
           }
           )
 

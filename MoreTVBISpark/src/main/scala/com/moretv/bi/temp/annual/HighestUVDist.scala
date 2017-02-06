@@ -40,7 +40,6 @@ object HighestUVDist extends BaseClass {
         import q.implicits._
 
 
-        Encoders
         val df = sqlContext.read.parquet(p.srcPath)
           .orderBy($"minuteId".asc)
           .map(e => (e.getString(1), e.getLong(0)))

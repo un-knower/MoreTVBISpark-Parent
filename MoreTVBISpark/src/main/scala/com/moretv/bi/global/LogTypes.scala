@@ -30,6 +30,7 @@ object LogTypes {
   val KEYEVENT_KEY = "keyEvent_KEY"
   val KEYEVENT_MENU = "keyEvent_MENU"
   val LIVE = "live"
+  val LIVEQOS = "liveqos"
   val LIVEBUTTON = "livebutton"
   val LIVECENTERVIEW = "livecenterview"
   val LOGIN_PROCESS = "login-process"

@@ -16,22 +16,10 @@ object LiveSationTree {
 
   val eSports = "电竞风"
 
-  val leisureLife = "慢生活"
+  val leisureLife = "漫生活"
 
   val others = "其它"
 
-
-  val categoryMatchUdf = udf(categoryMatch)
-
-  val categoryMatch = (s: String) => {
-
-    val re = s"(${live_First_Category_Str})".r
-
-    re findFirstMatchIn s match {
-      case Some(p) => p.group(1)
-      case None => others
-    }
-  }
 
   val Live_First_Category = List(
     freshEntertainment,
@@ -41,5 +29,6 @@ object LiveSationTree {
     leisureLife
   )
 
-  val live_First_Category_Str = Live_First_Category.mkString("|")
+
+
 }

@@ -80,30 +80,30 @@ object LiveSourceTypePlayStat extends BaseClass {
             util.delete(deleteSql2, sqlDate)
           }
 
+          println(sqlDate)
           // day
 
           baseDf.filter($"event" === "startplay")
             .groupBy($"date", $"sourceType")
-            .agg(count($"userId").as("vv"), count($"userId").as("uv"))
+            .agg(count($"userId").as("vv"), countDistinct($"userId").as("uv"))
             .as("t1")
             .join(
               baseDf.filter($"event" === "switchchannel" && $"duration".between(10, 36000))
-                .groupBy($"date", $"sourceType")
-                .agg(sum($"duration").as("duration")).as("t2"),
-              $"t1.date" === $"t2.date" && $"t1.sourceType" === $"t2.sourceType"
+                .groupBy($"sourceType")
+                .agg(sum($"duration").as("duration")).as("t2"), $"t1.sourceType" === $"t2.sourceType"
             )
-            .select($"t1.date", $"t1.sourceType", $"t1.vv", $"t1.uv", $"t2.duration")
+            .select($"t1.sourceType", $"t1.vv", $"t1.uv", $"t2.duration")
             .collect.foreach(e => {
-            util.insert(insertSql1, e.getString(0), e.getString(1), e.getLong(2), e.getLong(3), e.getLong(4))
+            util.insert(insertSql1, sqlDate, e.getString(0), e.getLong(1), e.getLong(2), e.getLong(3))
           })
 
           // hour
 
           baseDf.filter($"event" === "startplay")
-            .groupBy($"date", hour($"datetime").as("hour"), $"sourceType")
+            .groupBy(hour($"datetime").as("hour"), $"sourceType")
             .agg(countDistinct($"userId"))
             .collect.foreach(e => {
-            util.insert(insertSql2, e.getString(0), e.getInt(1), e.getString(2), e.getLong(3))
+            util.insert(insertSql2, sqlDate, e.getInt(0), e.getString(1), e.getLong(2))
           })
 
         })

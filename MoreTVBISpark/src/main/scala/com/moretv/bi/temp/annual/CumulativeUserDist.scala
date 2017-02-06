@@ -50,24 +50,24 @@ object CumulativeUserDist extends BaseClass {
 
 
         // cummulative User Product_Model Dist
-        //        val userProductModelDataset =
-        //          DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT, "20170101")
-        //            .filter(to_date($"openTime") < "2017-01-01" && $"mac".isNotNull && $"product_model".isNotNull)
-        //            .select("mac", "product_model")
-        //            .groupBy("product_model")
-        //            .agg(countDistinct($"mac"))
-        //            .collect
+        val userProductModelDataset =
+          DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT, "20170101")
+            .filter(to_date($"openTime") < "2017-01-01" && $"mac".isNotNull && $"product_model".isNotNull)
+            .select("mac", "product_model")
+            .groupBy("product_model")
+            .agg(countDistinct($"mac"))
+            .show(100,false)
 
 
-        DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT, "20170101")
-          .filter(to_date($"openTime") < "2017-01-01" && $"user_id".isNotNull)
-          .as("d").join(userAreaDb.as("u"), $"d.user_id" === $"u.user_id")
-          .select($"d.user_id", $"u.province")
-          .groupBy($"u.province")
-          .agg(count($"d.user_id"))
-          .collect.foreach(w => {
-          util.insert(insertSql1, "20161231", w.getString(0), w.getLong(1))
-        })
+//        DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT, "20170101")
+//          .filter(to_date($"openTime") < "2017-01-01" && $"user_id".isNotNull)
+//          .as("d").join(userAreaDb.as("u"), $"d.user_id" === $"u.user_id")
+//          .select($"d.user_id", $"u.province")
+//          .groupBy($"u.province")
+//          .agg(count($"d.user_id"))
+//          .collect.foreach(w => {
+//          util.insert(insertSql1, "20161231", w.getString(0), w.getLong(1))
+//        })
 
 
         //        val userProvinceDataSet =
