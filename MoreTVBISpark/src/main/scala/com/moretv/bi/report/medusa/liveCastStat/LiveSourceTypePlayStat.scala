@@ -53,6 +53,8 @@ object LiveSourceTypePlayStat extends BaseClass {
 
         val cal = Calendar.getInstance
 
+        cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))
+
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
         val typeFormat = udf((s: String) => {

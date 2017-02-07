@@ -158,7 +158,7 @@ object RetentionStepStat extends BaseClass {
     val loadDate = readFormat.format(calCopy.getTime)
     val sqlDate = sqlFormat.format(calCopy.getTime) //昨天日期
 
-    val dfRaw = DataIO.getDataFrameOps.getDF(sc, paramMap, DBSNAPSHOT, LogTypes.MTVACCOUNT, loadDate)
+    val dfRaw = DataIO.getDataFrameOps.getDF(sc, paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT, loadDate)
       .selectExpr(s"datediff('$sqlDate',openTime) as duration", "mac")
       .filter(s"duration in (${days.mkString(",")})")
       .distinct
