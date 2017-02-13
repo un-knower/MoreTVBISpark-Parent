@@ -56,7 +56,7 @@ object PromotionChannelDetail extends BaseClass {
 
           val dbTvService = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
           val pcSql =
-            """
+            s"""
               | SELECT ifnull(promotion_channel,'null') as pchannel, COUNT(DISTINCT mac) as new_num
               | FROM mtv_account
               | WHERE openTime BETWEEN '$day 00:00:00' AND '$day 23:59:59'
@@ -95,6 +95,7 @@ object PromotionChannelDetail extends BaseClass {
             db.insert(sqlInsert,
               new Integer(year), new Integer(month), day, promotionChannel, new Integer(newnum),
               new Integer(usernum.toInt), new Integer(loginnum.toInt))
+
           })
 
           dbTvService.destory()
