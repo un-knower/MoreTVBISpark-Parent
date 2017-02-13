@@ -53,7 +53,7 @@ object YunOSBasedPromotionChannel extends BaseClass {
 
           val activelogdate = DateFormatUtils.readFormat.format(cal2.getTime)
 
-          DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MTVACCOUNT, addlogdate)
+          DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT, addlogdate)
             .select("current_version", "openTime", "mac", "promotion_channel")
             .registerTempTable("addlog_data")
 

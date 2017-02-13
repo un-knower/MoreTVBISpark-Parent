@@ -37,7 +37,7 @@ object AdduserBasedApkVersionAndPromotionChannel extends BaseClass {
           val startTime = s"$addtimeday" + " " + "00:00:00"
           val endTime = s"$addtimeday" + " " + "23:59:59"
 
-          DataIO.getDataFrameOps.getDF(sc, p.paramMap, MORETV, LogTypes.MTVACCOUNT)
+          DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT)
             .select("current_version", "openTime", "mac", "promotion_channel")
             .registerTempTable("addlog_data")
 

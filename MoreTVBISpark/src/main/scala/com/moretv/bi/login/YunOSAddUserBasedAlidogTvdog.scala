@@ -40,7 +40,7 @@ object YunOSAddUserBasedAlidogTvdog extends BaseClass {
           val startTime = s"$timeday" + " " + "00:00:00"
           val endTime = s"$timeday" + " " + "23:59:59"
 
-          DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MTVACCOUNT, logdate)
+          DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT, logdate)
             .select("openTime", "current_version", "mac")
             .registerTempTable("log_data")
 
