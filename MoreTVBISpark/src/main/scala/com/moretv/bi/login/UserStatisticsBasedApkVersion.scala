@@ -3,11 +3,11 @@ package com.moretv.bi.login
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
-import org.apache.spark.sql.functions._
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.global.LogTypes
+import com.moretv.bi.util.ParamsParseUtil
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil, SparkSetting}
+import org.apache.spark.sql.functions._
 
 /**
   * Created by zhangyu and xiajun on 2016/7/20.
