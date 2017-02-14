@@ -283,19 +283,20 @@ object PathParser {
                 case UDFConstant.PATHIDENTIFICATION => {
                   // 在moretv中没有给pathproperty添加具体的信息，即没有给出actor所对应的具体内容，因此设为null；
                   // tag/subject/的信息可以给出
-                  if(path.contains("-subject-")){
-                    // 让subjectIndex从1开始表示
-                    val subjectIndex = path.split("-").indexOf("subject")+1
-                    if(subjectIndex==2){
-                      result = getSplitInfo(path,subjectIndex+2)
-                    }else {
-                      result = getSplitInfo(path,subjectIndex+1)
-                    }
-                  }else if(path.contains("-tag-")){
-                    // 取最后一次出现的tag的位置信息
-                    val tagIndex = path.split("-").lastIndexOf("tag")+1
-                    result = getSplitInfo(path,tagIndex+1)
-                  }
+//                  if(path.contains("-subject-")){
+//                    // 让subjectIndex从1开始表示
+//                    val subjectIndex = path.split("-").indexOf("subject")+1
+//                    if(subjectIndex==2){
+//                      result = getSplitInfo(path,subjectIndex+2)
+//                    }else {
+//                      result = getSplitInfo(path,subjectIndex+1)
+//                    }
+//                  }else if(path.contains("-tag-")){
+//                    // 取最后一次出现的tag的位置信息
+//                    val tagIndex = path.split("-").lastIndexOf("tag")+1
+//                    result = getSplitInfo(path,tagIndex+1)
+//                  }
+                  result = getSubjectCodeByPath(path,"moretv")
                 }
               }
             }

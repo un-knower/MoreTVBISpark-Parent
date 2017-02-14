@@ -1,0 +1,25 @@
+#====================== metis task ================================#
+0 6 * * * /app/bi/medusa/bin/shell/MetisBITask.sh
+
+#====================== moretv and whaley for activity task ========#
+30 8 * * * /app/bi/medusa/bin/shell/MoretvAndWhaleyForActivity.sh
+
+#======================== medusa upgrage task ==================#
+0 2 * * * /app/bi/medusa/bin/shell/MedusaBITask.sh
+40 7 * * * /app/bi/medusa/bin/shell/MedusaProductUpdateRun.sh
+30 7 * * * /app/bi/medusa/bin/shell/MedusaBISubjectRun.sh
+00 6 * * * /app/bi/medusa/bin/shell/MedusaMoretvLogMergerSpecialRun.sh
+
+#===================Moretv Spark Tasks=================#
+0 1 * * * /app/bi/medusa/bin/shell/MoretvBIDBTask.sh
+0 1 * * * /app/bi/medusa/bin/shell/MoretvBITask.sh
+0 8 * * * /app/bi/medusa/bin/shell/MoretvBILoginTask.sh
+0 9 * * * /app/bi/medusa/bin/shell/DayRetentionRate.sh
+30 9 * * 1 /app/bi/medusa/bin/shell/WeeklyActiveUser.sh
+45 9 1 * * /app/bi/medusa/bin/shell/MonthlyActiveUser.sh
+
+
+#===================Medusa Launcher Tasks===============#
+0 9 * * * /app/bi/medusa/bin/shell/MedusaLauncherBIAllRun.sh
+
+
