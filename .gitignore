@@ -15,6 +15,6 @@
 
 # output file
 
-
+.DS_Store
 
 /MoreTVBISpark/src/test/scala/PlayPathMatchTest.scala

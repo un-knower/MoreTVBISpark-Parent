@@ -1,15 +1,13 @@
 package com.moretv.bi.snapshot
 
-import java.sql.DriverManager
 import java.util.Calendar
 
 import cn.whaley.sdk.dataOps.MySqlOps
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.constant.{Database, Constants, Tables}
+import com.moretv.bi.constant.Tables
 import com.moretv.bi.util.ParamsParseUtil._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateFormatUtils, HdfsUtil}
-import org.apache.spark.rdd.JdbcRDD
 
 /**
   * Created by Will on 2016/6/3.
@@ -27,7 +25,8 @@ object DBSnapShot extends BaseClass {
         val s = sqlContext
         import s.implicits._
         val cal = Calendar.getInstance()
-        cal.add(Calendar.DAY_OF_MONTH, -1)
+        cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))
+        cal.add(Calendar.DAY_OF_MONTH,-1)
         val day = DateFormatUtils.readFormat.format(cal.getTime)
         val dayCN = DateFormatUtils.cnFormat.format(cal.getTime)
 
