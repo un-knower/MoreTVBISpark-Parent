@@ -12,7 +12,7 @@ import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 /**
  * Created by 陈佳星 on 2016/9/7.
  */
-object accumulateUser extends BaseClass {
+object AccumulateUser extends BaseClass {
   def main(args: Array[String]) {
     ModuleClass.executor(this,args)
   }
