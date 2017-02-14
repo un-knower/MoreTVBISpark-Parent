@@ -2,11 +2,10 @@ package com.moretv.bi.login
 
 import java.util.Calendar
 
-import org.apache.spark.sql.functions._
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.global.LogTypes
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil, SparkSetting}
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import org.apache.spark.storage.StorageLevel
 
 /**
@@ -37,7 +36,7 @@ object AdduserBasedApkVersionAndPromotionChannel extends BaseClass {
           val startTime = s"$addtimeday" + " " + "00:00:00"
           val endTime = s"$addtimeday" + " " + "23:59:59"
 
-          DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT)
+          DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT,addlogdate)
             .select("current_version", "openTime", "mac", "promotion_channel")
             .registerTempTable("addlog_data")
 
@@ -50,9 +49,9 @@ object AdduserBasedApkVersionAndPromotionChannel extends BaseClass {
                |
              """.stripMargin)
             .map(e => ( {
-              if (e.getString(0) == null) "null" else if (e.getString(0).isEmpty()) "kong" else e.getString(0)
+              if (e.getString(0) == null) "null" else if (e.getString(0).isEmpty) "kong" else e.getString(0)
             }, {
-              if (e.getString(1) == null) "null" else if (e.getString(1).isEmpty()) "kong" else e.getString(1)
+              if (e.getString(1) == null) "null" else if (e.getString(1).isEmpty) "kong" else e.getString(1)
             },
               e.getLong(2)))
             .persist(StorageLevel.MEMORY_AND_DISK)

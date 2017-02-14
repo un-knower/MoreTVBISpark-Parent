@@ -27,9 +27,10 @@ object ProductBrandPromotionChannelNewDist extends BaseClass{
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         val day = DateFormatUtils.toDateCN(p.startDate, -1)
+        val inputDate = DateFormatUtils.enDateAdd(p.startDate,-1)
         sqlContext.udf.register("getBrand",ProductModelUtils.getProductBrand _)
 
-        DataIO.getDataFrameOps.getDF(sc,p.paramMap,DBSNAPSHOT,LogTypes.MORETV_MTV_ACCOUNT).
+        DataIO.getDataFrameOps.getDF(sc,p.paramMap,DBSNAPSHOT,LogTypes.MORETV_MTV_ACCOUNT,inputDate).
           registerTempTable("log_data")
 
         val result = sqlContext.sql("select getBrand(product_model),promotion_channel,count(distinct mac) from log_data " +

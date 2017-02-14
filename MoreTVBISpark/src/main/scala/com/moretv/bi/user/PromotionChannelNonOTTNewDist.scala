@@ -28,7 +28,7 @@ object PromotionChannelNonOTTNewDist extends BaseClass{
         val day = DateFormatUtils.toDateCN(p.startDate, -1)
 
         DataIO.getDataFrameOps.
-          getDF(sc,p.paramMap,DBSNAPSHOT,LogTypes.MORETV_MTV_ACCOUNT).
+          getDF(sc,p.paramMap,DBSNAPSHOT,LogTypes.MORETV_MTV_ACCOUNT,inputDate).
           registerTempTable("log_data")
 
         val result = sqlContext.sql("select product_model,promotion_channel,mac from log_data " +
