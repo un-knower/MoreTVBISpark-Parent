@@ -49,6 +49,7 @@ object LogTypes {
   val POSITIONACCESS = "positionaccess"
   val SEARCH_TABVIEW = "search-tabview"
   val SEARCHENTRANCE = "searchEntrance"
+  val SEARCHENTRANCE2 = "medusa-search-clickResult"
   val SELECTACCOUNT = "selectaccount"
   val SPORTSLIVEDETAIL = "sportslivedetail"
   val SPORTSSUBSCRIBE = "sportssubscribe"
