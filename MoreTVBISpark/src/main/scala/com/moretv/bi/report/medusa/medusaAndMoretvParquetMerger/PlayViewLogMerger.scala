@@ -57,8 +57,12 @@ object PlayViewLogMerger extends BaseClass{
            val medusa_input_dir= DataIO.getDataFrameOps.getPath(MEDUSA,LogTypes.PLAY,inputDate)
            val moretv_input_dir= DataIO.getDataFrameOps.getPath(MORETV,LogTypes.PLAYVIEW,inputDate)
            val outputPath= DataIO.getDataFrameOps.getPath(MERGER,LogTypes.PLAY_VIEW_2_FILTER,inputDate)
+           println(medusa_input_dir)
+           println(moretv_input_dir)
            val medusaFlag = FilesInHDFS.IsInputGenerateSuccess(medusa_input_dir)
            val moretvFlag = FilesInHDFS.IsInputGenerateSuccess(moretv_input_dir)
+           println(medusaFlag)
+           println(moretvFlag)
 
            if(p.deleteOld){
              HdfsUtil.deleteHDFSFile(outputPath)
@@ -127,7 +131,7 @@ object PlayViewLogMerger extends BaseClass{
                s"pathParser('playview',path,'path','pathProperty') as pathPropertyFromPath, " +
                s"pathParser('playview',path,'path','pathIdentification') as pathIdentificationFromPath," +
                s"getSubjectCode(path,'moretv') as subjectCode," +
-               s"getSubjectNameBySid(path,'moretv') as subjectName,date as day" +
+               s"getSubjectNameBySid(path,'moretv') as subjectName,date as day," +
                s"'moretv' as flag from log_data_2"
 
              val mergerDf=sqlContext.sql(sqlSelectMoretv)

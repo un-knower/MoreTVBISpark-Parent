@@ -3,15 +3,9 @@ package com.moretv.bi.login
 import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
-import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.{DataBases, LogTypes}
-import cn.whaley.sdk.dataOps.MySqlOps
-import com.moretv.bi.account.AccountAccess._
+import com.moretv.bi.global.LogTypes
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil, SparkSetting}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.storage.StorageLevel
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 
 import scala.collection.JavaConversions._
 
@@ -53,29 +47,27 @@ object YunOSBasedPromotionChannel extends BaseClass {
 
           val activelogdate = DateFormatUtils.readFormat.format(cal2.getTime)
 
-          DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MTVACCOUNT, addlogdate)
+          DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT, addlogdate)
             .select("current_version", "openTime", "mac", "promotion_channel")
             .registerTempTable("addlog_data")
 
           val addmap = sqlContext.sql(
             s"""
-               |  select
-               |  case when promotion_channel is null then 'null'
-               |  case when promotion_channel = '' then '',count(distinct mac)
+               |  select promotion_channel,count(distinct mac)
                |  from addlog_data
                |  where openTime between '$startTime' and '$endTime'
                |  and (current_version like '%YunOS%' or current_version like 'Alibaba')
                |  group by promotion_channel
              """.stripMargin)
             .collectAsList
-            .map(e =>
-              ( {
-                if (e.getString(0) == null)
-                  "null"
-                else if (e.getString(0).isEmpty()) "kong"
-                else e.getString(0)
-              }, e.getLong(1)))
-            .toMap
+            .map(e =>{
+              val promotionChannel = e.getString(0)
+              val pm = if (promotionChannel == null)
+                "null"
+              else if (promotionChannel.isEmpty) "kong"
+              else promotionChannel
+              (pm,e.getLong(1))
+            }).toMap
 
           DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG)
             .select("version", "mac", "promotionChannel")

@@ -32,13 +32,14 @@ object ProductBrandDist extends BaseClass{
         val inputDateActive = p.startDate
 
         val day = DateFormatUtils.toDateCN(inputDateActive,-1)
+        val inputDate = DateFormatUtils.enDateAdd(inputDateActive,-1)
 
         sqlContext.udf.register("getBrand",ProductModelUtils.getProductBrand _)
 
         DataIO.getDataFrameOps.getDF(sc,p.paramMap,LOGINLOG,LogTypes.LOGINLOG).
           select("productModel","mac").
           registerTempTable("log_data")
-        DataIO.getDataFrameOps.getDF(sc,p.paramMap,DBSNAPSHOT,LogTypes.MORETV_MTV_ACCOUNT).
+        DataIO.getDataFrameOps.getDF(sc,p.paramMap,DBSNAPSHOT,LogTypes.MORETV_MTV_ACCOUNT,inputDate).
           select("openTime","product_model","mac").registerTempTable("log_data1")
 
         val resultActiveMap = sqlContext.sql("select getBrand(productModel),count(distinct mac) from log_data group by getBrand(productModel)").

@@ -28,7 +28,7 @@ object YunOSLoginUser extends BaseClass {
 
         val inputDate = p.startDate
 
-        val logRdd = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MORETV, LogTypes.LOGINLOG)
+        val logRdd = DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG)
           .select("version", "mac")
           .map(row => if (matchLog(row.getString(0))) row.getString(1) else null)
           .filter(_ != null).cache()

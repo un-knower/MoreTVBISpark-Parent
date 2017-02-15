@@ -2,12 +2,12 @@ package com.moretv.bi.report.medusa.liveCastStat
 
 import java.util.Calendar
 
+import cn.whaley.sdk.dataOps.MySqlOps
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.constant.LogType
 import com.moretv.bi.global.DataBases
-import com.moretv.bi.temp.annual.LiveUserStat._
-import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import org.apache.spark.sql.functions._
 
 /**
@@ -42,30 +42,24 @@ object LiveCategoryStat extends BaseClass {
 
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
+        // 获取直播站点树
+        val db = DataIO.getMySqlOps(DataBases.MORETV_CMS_MYSQL)
+        val url = db.prop.getProperty("url")
+        val driver = db.prop.getProperty("driver")
+        val user = db.prop.getProperty("user")
+        val password = db.prop.getProperty("password")
 
-        val categoryMatcher = udf((s: String) => {
+        val (min, max) = db.queryMaxMinID("mtv_program_site", "id")
+        db.destory()
 
-          if (s.contains("潮娱乐")) {
-            "潮娱乐"
-          }
-          else if (s.contains("黑科技")) {
-            "黑科技"
-          }
-          else if (s.contains("电竞风")) {
-            "电竞风"
-          }
-          else if (s.contains("漫生活")) {
-            "漫生活"
-          }
-          else if (s.contains("看现场")) {
-            "看现场"
-          }
-          else {
-            "其它"
-          }
+        //只保留跑任务时生效的分类
+        val sql = s"select code, name from mtv_program_site where contentType = 'webcast' AND STATUS = 1 AND ID >= ? AND ID <= ? "
 
-        })
+        val categorySqlRdd = MySqlOps.getJdbcRDD(sc, sql, "mtv_program_site",
+          r => (r.getString(1), r.getString(2)), driver, url, user, password, (min, max), 5)
 
+        val categoryDF = categorySqlRdd.toDF("code", "name")
+        // 获取直播站点树结束
 
         (0 until p.numOfDays).foreach(w => {
 
@@ -76,19 +70,25 @@ object LiveCategoryStat extends BaseClass {
 
           val playDf = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogType.LIVE, loadDate)
             .filter($"liveType" === "live" && $"date" === sqlDate && $"pathMain".isNotNull)
-            .withColumn("category", categoryMatcher($"pathMain").as("category"))
+            //.withColumn("category", categoryMatcher($"liveMenuCode").as("category"))
+            .as("play")
+            .join(categoryDF.as("category"),  $"play.liveMenuCode" === $"category.code")
+            .withColumnRenamed("name", "category")
 
+          //          val viewDf = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogType.TABVIEW, loadDate)
+          //            .filter($"stationcode".isin(LiveSationTree.Live_First_Category: _*)
+          //              && $"date" === sqlDate)
+
+          //TODO 此处未过滤类型
           val viewDf = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogType.TABVIEW, loadDate)
-            .filter($"stationcode".isin(LiveSationTree.Live_First_Category: _*)
-              && $"date" === sqlDate)
-
+            .filter($"date" === sqlDate)
 
           val playDataset = playDf.filter($"event" === "startplay")
             .groupBy($"category")
             .agg(count($"userId").as("play_num"), countDistinct($"userId").as("play_user"))
             .as("t1")
             .join(
-              playDf.filter($"event" === "switchchannel" && $"date" === sqlDate && $"duration".between(1,36000))
+              playDf.filter($"event" === "switchchannel" && $"date" === sqlDate && $"duration".between(1, 36000))
                 .groupBy($"category")
                 .agg(sum($"duration").as("duration"))
                 .as("t2"),
@@ -101,6 +101,8 @@ object LiveCategoryStat extends BaseClass {
               countDistinct($"userId").as("view_user"),
               count($"userId").as("view_num")
             )
+
+          System.out.println("before delete, p.deleteOld is " + p.deleteOld)
 
           if (p.deleteOld) {
             util.delete(deleteSql, sqlDate)

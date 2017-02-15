@@ -1,0 +1,5 @@
+执行命令：python check_tab_row.py 2-18.ini whaley_bi
+2-18.ini 是配置文件名，必须与PY文件在同一路径
+whaley_bi 为配置文件中[]的部分，其输出为同名的.log文件
+check_tab_row.log 存放着运行失败的表名，例如没有day字段等
+

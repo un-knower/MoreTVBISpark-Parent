@@ -35,7 +35,7 @@ object ProductModelNewDist extends BaseClass {
         val inputDate = DateFormatUtils.enDateAdd(p.startDate, -1)
         val day = DateFormatUtils.toDateCN(p.startDate, -1)
 
-        DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MTVACCOUNT)
+        DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT,inputDate)
           .registerTempTable("log_data")
 
         val result = sqlContext.sql("select product_model,count(distinct mac) from log_data " +
