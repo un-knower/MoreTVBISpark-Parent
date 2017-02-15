@@ -37,10 +37,12 @@ object AreaDist extends BaseClass {
         val activeRows = sqlContext.sql("select ip,count(distinct userId),count(userId) from active_data group by ip")
           .collectAsList()
 
-
+        sqlContext.udf.register("leftSub",(x:String,y:Int) => {
+          if(x != null) x.substring(0,10) else x
+        })
 
         val totalMap = DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT,yesterday).
-          filter(s"left(openTime,10) <= '$day' and ip is not null").
+          filter(s"leftSub(openTime,10) <= '$day' and ip is not null").
           select("ip","user_id")
           .distinct
           .map(row => {
@@ -51,7 +53,7 @@ object AreaDist extends BaseClass {
 
 
         val newMap =  DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT,yesterday).
-          filter(s"left(openTime,10) = '$day' and ip is not null").
+          filter(s"leftSub(openTime,10) = '$day' and ip is not null").
           select("ip","user_id")
           .distinct
           .map(row => {

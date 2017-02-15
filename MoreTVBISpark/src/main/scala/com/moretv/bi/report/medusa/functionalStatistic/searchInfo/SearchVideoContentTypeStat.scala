@@ -75,7 +75,8 @@ object SearchVideoContentTypeStat extends  BaseClass{
                       .filter("resultName is not null")
                       .filter("contentType is not null")*/
 
-          val df=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.CLICKSEARCHRESULT,loadDate).select("resultSid", "resultName", "contentType", "userId", "apkVersion")
+          val df=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.CLICKSEARCHRESULT,loadDate)
+            .select("resultSid", "resultName", "contentType", "userId", "apkVersion")
             .filter("resultSid is not null")
             .filter("resultName is not null")
             .filter("contentType is not null")

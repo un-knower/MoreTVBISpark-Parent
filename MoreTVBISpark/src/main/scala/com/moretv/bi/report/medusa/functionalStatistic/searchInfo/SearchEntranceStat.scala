@@ -68,7 +68,7 @@ object SearchEntranceStat extends BaseClass {
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          val df = DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MEDUSA, LogTypes.SEARCHENTRANCE, loadDate)
+          val df = DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MEDUSA, LogTypes.SEARCHENTRANCE2, loadDate)
             .filter($"date" === sqlDate)
             .select($"entrance", $"userId")
             .groupBy($"entrance")

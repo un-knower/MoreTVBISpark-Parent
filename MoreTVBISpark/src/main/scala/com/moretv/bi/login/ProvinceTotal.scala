@@ -2,10 +2,9 @@ package com.moretv.bi.login
 
 import java.lang.{Long => JLong}
 
-import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.{DataBases, LogTypes}
-import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.global.LogTypes
+import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
 /**
@@ -21,9 +20,9 @@ object ProvinceTotal extends BaseClass{
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
-        val inputDate = p.startDate
+        val inputDate = DateFormatUtils.enDateAdd(p.startDate,-1)
 
-        val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,DBSNAPSHOT,LogTypes.HELIOS_MTVACCOUNT)
+        val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,DBSNAPSHOT,LogTypes.HELIOS_MTVACCOUNT,inputDate)
           .select("ip","serial_number")
           .filter("serial_number is not null and ip is not null")
           .distinct()
