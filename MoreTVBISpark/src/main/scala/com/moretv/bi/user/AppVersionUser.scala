@@ -28,7 +28,7 @@ object AppVersionUser extends BaseClass{
         val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         val userNumMap = DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT,yesterday).
           filter(s"openTime <= '$day 23:59:59'").
-          select("ip","user_id").
+          select("current_version","user_id").
           map(row => {
             val version = row.getString(0)
             val mac = row.getString(1)
