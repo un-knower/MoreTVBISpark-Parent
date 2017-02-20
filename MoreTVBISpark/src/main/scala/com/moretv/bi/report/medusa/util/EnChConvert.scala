@@ -72,6 +72,7 @@ object EnChConvert {
               case "1_movie_tag_kehuan" => result="科学幻想"
               case "movie_yueyu" => result="粤语佳片"
               case "collect" => result="已收藏"
+              case "comic_erciyuan" => result="二次元"
               case _ => result=info
             }
           }
@@ -225,6 +226,8 @@ object EnChConvert {
               case "jilu_maoshu"=>result="猫叔推荐"
               case "jilu_douban"=>result="豆瓣高分"
               case "jilu_xingzhen"=> result="刑侦档案"
+              case "jilu_junshi" => result = "铁血军魂"
+              case "jilu_qiche" => result = "大话汽车"
               case _ => result=info
             }
           }
