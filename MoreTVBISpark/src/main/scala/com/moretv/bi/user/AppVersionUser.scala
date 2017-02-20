@@ -4,6 +4,7 @@ import java.lang.{Long => JLong}
 
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.report.medusa.medusaAndMoretvParquetMerger.PlayViewLogMerger._
 import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
@@ -16,6 +17,9 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 object AppVersionUser extends BaseClass{
 
   def main(args: Array[String]) {
+    config.set("spark.executor.memory", "5g").
+      set("spark.executor.cores", "5").
+      set("spark.cores.max", "100")
     ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
@@ -28,7 +32,7 @@ object AppVersionUser extends BaseClass{
         val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         val userNumMap = DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT,yesterday).
           filter(s"openTime <= '$day 23:59:59'").
-          select("ip","user_id").
+          select("current_version","user_id").
           map(row => {
             val version = row.getString(0)
             val mac = row.getString(1)
