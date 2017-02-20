@@ -42,24 +42,7 @@ object LiveCategoryStat extends BaseClass {
 
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
-        // 获取直播站点树
-        val db = DataIO.getMySqlOps(DataBases.MORETV_CMS_MYSQL)
-        val url = db.prop.getProperty("url")
-        val driver = db.prop.getProperty("driver")
-        val user = db.prop.getProperty("user")
-        val password = db.prop.getProperty("password")
-
-        val (min, max) = db.queryMaxMinID("mtv_program_site", "id")
-        db.destory()
-
-        //只保留跑任务时生效的分类
-        val sql = s"select code, name from mtv_program_site where contentType = 'webcast' AND STATUS = 1 AND ID >= ? AND ID <= ? "
-
-        val categorySqlRdd = MySqlOps.getJdbcRDD(sc, sql, "mtv_program_site",
-          r => (r.getString(1), r.getString(2)), driver, url, user, password, (min, max), 5)
-
-        val categoryDF = categorySqlRdd.toDF("code", "name")
-        // 获取直播站点树结束
+        val categoryDF = LiveOneLevelCategory.code2Name("webcast", sc)
 
         (0 until p.numOfDays).foreach(w => {
 
@@ -72,7 +55,7 @@ object LiveCategoryStat extends BaseClass {
             .filter($"liveType" === "live" && $"date" === sqlDate && $"pathMain".isNotNull)
             //.withColumn("category", categoryMatcher($"liveMenuCode").as("category"))
             .as("play")
-            .join(categoryDF.as("category"),  $"play.liveMenuCode" === $"category.code")
+            .join(categoryDF.as("category"), $"play.liveMenuCode" === $"category.code")
             .withColumnRenamed("name", "category")
 
           //          val viewDf = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogType.TABVIEW, loadDate)
