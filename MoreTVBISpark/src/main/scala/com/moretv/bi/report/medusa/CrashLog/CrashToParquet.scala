@@ -45,15 +45,15 @@ object CrashToParquet extends SparkSetting{
               json.optString("APP_VERSION_NAME"),
               json.optString("APP_VERSION_CODE"),json.optString("CRASH_KEY"),
               json.optString("STACK_TRACE"),json.optString("DATE_CODE"),
-              json.optString("PRODUCT_CODE"))
+              json.optString("PRODUCT_CODE"),json.optString("CUSTOM_JSON_DATA"))
           }).filter(e=>{e._6!=null && e._6!=""  && {if(e._7!=null) e._7.length<=20 else true}})
 
           // 所有的crash
           val logDF = logRdd.map(log => (insertDate,log._1,log._2,log._3.replace(":","").toUpperCase,log._4,log._5,log._6,log._7,log
-            ._8,DigestUtils.md5Hex(log._5),DigestUtils.md5Hex(log._6))).
+            ._8,DigestUtils.md5Hex(log._5),DigestUtils.md5Hex(log._6),log._9)).
             filter(data => !DevMacUtils.macFilter(data._2)).toDF("dayInfo","fileName","mac","appVersionName",
               "appVersionCode","crashKey","stackTrace","dateCode","productModel","crashKeyMD5",
-              "stackTraceMD5")
+              "stackTraceMD5","customJsonData")
           logDF.write.parquet(s"${outPath}${date}/")
         })
       }
