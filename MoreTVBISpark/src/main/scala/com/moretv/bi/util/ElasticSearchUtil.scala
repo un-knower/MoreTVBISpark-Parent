@@ -78,6 +78,31 @@ object ElasticSearchUtil {
     }
   }
 
+  def bulkCreateIndex1(list: util.ArrayList[Map[String, Object]], index: String, typeName: String) = {
+    try {
+      if (client == null) init
+      val bulkRequest = client.prepareBulk()
+      list.foreach(x => {
+        val xb = XContentFactory.jsonBuilder().startObject()
+        x.foreach(e => {
+          xb.field(e._1, if (e._2.isInstanceOf[Long]) {
+            e._2.toString.toLong
+          } else if (e._2.isInstanceOf[String]) {
+            e._2.toString
+          })
+        })
+        xb.endObject()
+        bulkRequest.add(client.prepareIndex(index, typeName).setSource(xb))
+      })
+      bulkRequest.get()
+    } catch {
+      case e: Exception =>
+        e.printStackTrace()
+    }
+  }
+
+
+
   /**
     *
     * @param index

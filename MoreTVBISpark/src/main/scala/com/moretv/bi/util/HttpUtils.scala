@@ -1,6 +1,6 @@
 package cn.whaley.bi.utils
 
-import org.apache.http.client.methods.HttpGet
+import org.apache.http.client.methods.{HttpDelete, HttpGet}
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 
@@ -19,5 +19,11 @@ object HttpUtils {
     }finally {
       response.close()
     }
+  }
+
+  def delete(url:String) = {
+    val httpClient = HttpClients.createDefault()
+    val httpDelete = new HttpDelete(url)
+    httpClient.execute(httpDelete)
   }
 }
