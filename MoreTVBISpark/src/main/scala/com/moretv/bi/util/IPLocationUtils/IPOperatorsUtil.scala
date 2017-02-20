@@ -7,9 +7,9 @@ import scala.collection.mutable.{ListBuffer, ArrayBuffer}
 import scala.io.Source
 
 /**
-  * Created by xia jun on 2016/7/22.
-  * For IP 运营商
-  */
+ * Created by xia jun on 2016/7/22.
+ * For IP 运营商
+ */
 object IPOperatorsUtil extends SparkSetting{
   private val IPISPMap = new mutable.HashMap[String,Array[String]]()
   private val IPArrayBuffer = new ArrayBuffer[String]()
@@ -32,10 +32,10 @@ object IPOperatorsUtil extends SparkSetting{
   }
 
   /**
-    * 获取ISP信息
-    * @param ip
-    * @return
-    */
+   * 获取ISP信息
+   * @param ip
+   * @return
+   */
   def getISPInfo(ip:String):String = {
     var result = "未知"
     val ipNew = completeIp(ip)
@@ -49,10 +49,10 @@ object IPOperatorsUtil extends SparkSetting{
   }
 
   /**
-    * 获取国家信息
-    * @param ip
-    * @return
-    */
+   * 获取国家信息
+   * @param ip
+   * @return
+   */
   def getCountry(ip:String):String = {
     val ipNew = completeIp(ip)
     var result = "未知"
@@ -66,10 +66,10 @@ object IPOperatorsUtil extends SparkSetting{
   }
 
   /**
-    * 获取省份信息
-    * @param ip
-    * @return
-    */
+   * 获取省份信息
+   * @param ip
+   * @return
+   */
   def getProvince(ip:String):String = {
     val ipNew = completeIp(ip)
     var result = "未知"
@@ -83,10 +83,10 @@ object IPOperatorsUtil extends SparkSetting{
   }
 
   /**
-    * 获取城市信息
-    * @param ip
-    * @return
-    */
+   * 获取城市信息
+   * @param ip
+   * @return
+   */
   def getCity(ip:String):String = {
     val ipNew = completeIp(ip)
     var result = "未知"
@@ -100,11 +100,11 @@ object IPOperatorsUtil extends SparkSetting{
   }
 
   /**
-    * 类二分查找
-    * @param iPArray
-    * @param ip
-    * @return
-    */
+   * 类二分查找
+   * @param iPArray
+   * @param ip
+   * @return
+   */
   def binarySearch(iPArray: Array[String],ip:String):Array[String] = {
     var low = 0
     var high = iPArray.length-1
@@ -116,7 +116,6 @@ object IPOperatorsUtil extends SparkSetting{
     }else if(iPArray(low) < ip && iPArray(high) > ip){
       while (low<=high){
         val middle = (low+high)/2
-        println(middle)
         if(high-low<=1){
           result = Array(iPArray(low),iPArray(high))
           low = high +100
@@ -145,10 +144,10 @@ object IPOperatorsUtil extends SparkSetting{
   }
 
   /**
-    * 补全IP
-    * @param ip
-    * @return
-    */
+   * 补全IP
+   * @param ip
+   * @return
+   */
   def completeIp(ip:String) = {
     val ipSplit = ip.split("\\.")
     val ipNewList = new ListBuffer[String]()
