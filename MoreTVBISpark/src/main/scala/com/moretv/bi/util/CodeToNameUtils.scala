@@ -14,7 +14,7 @@ object CodeToNameUtils {
    */
 //   var sidApplicationNameMap = Map[String,String]()
 //   var sidSubjectNameMap = Map[String,String]()
-//   var subjectName2CodeMap = Map[String,String]()
+//   lazy val subjectName2CodeMap = Map[String,String]()
 //   var thirdPaheNameMap = Map[String,String]()
 //   var subCodeToParentNameMap = Map[String,String]()
 //   var channelNameMap = Map[String,String]()
@@ -350,6 +350,10 @@ object CodeToNameUtils {
     }
 
     subChannelNameMap.getOrElse(code, null)
+  }
+
+  def getSubjectCodeMap:scala.collection.immutable.Map[String,String] = {
+    subjectName2CodeMap
   }
 
 }

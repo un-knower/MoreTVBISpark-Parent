@@ -4,8 +4,9 @@ import java.lang.{Long => JLong}
 import java.util
 import java.util.Calendar
 
-import cn.whaley.bi.utils.ElasticSearchUtil
+import cn.whaley.bi.utils.{ElasticSearchUtil, HttpUtils}
 import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.constant.Constants
 import com.moretv.bi.global.LogTypes
 import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
@@ -40,14 +41,14 @@ object EachVideoPlayInfo2ES extends BaseClass {
 
           val videoDf = sqlContext.sql(
             """
-              |select contentType,videoSid,count(userId),count(distinct userId)
+              |select contentType,videoSid,count(distinct userId),count(userId)
               | from log_data group by contentType,videoSid
             """.stripMargin)
 
 
           val episodeDf = sqlContext.sql(
             """
-              |select contentType, episodeSid, count(userId), count(distinct userId)
+              |select contentType, episodeSid, count(distinct userId), count(userId)
               |  from log_data group by contentType, episodeSid
             """.stripMargin)
 
@@ -56,28 +57,37 @@ object EachVideoPlayInfo2ES extends BaseClass {
           val episodeList = new util.ArrayList[util.Map[String, Object]]()
 
 
+          // 删除ES中旧数据
+          if(p.deleteOld){
+            val url = s"http://${Constants.ES_URL}/medusa/programPlay/_query?q=day:${insertDate}"
+            HttpUtils.delete(url)
+          }
 
           // 将数据插入ES
-          videoDf.collect.foreach(e => {
-            val resMap = new util.HashMap[String, Object]()
-            resMap.put("contentType", e.getString(0))
-            resMap.put("sid", e.getString(1))
-            resMap.put("title", ProgramRedisUtil.getTitleBySid(e.getString(1)).toString)
-            resMap.put("day", insertDate.toString)
-            resMap.put("userNum", new JLong(e.getLong(2)))
-            resMap.put("accessNum", new JLong(e.getLong(3)))
-            videoList.add(resMap)
+          videoDf.foreachPartition(rdd => {
+            rdd.foreach(e => {
+              val resMap = new util.HashMap[String, Object]()
+              resMap.put("contentType", e.getString(0))
+              resMap.put("sid", e.getString(1))
+              resMap.put("title", ProgramRedisUtil.getTitleBySid(e.getString(1)).toString)
+              resMap.put("day", insertDate.toString)
+              resMap.put("userNum", new JLong(e.getLong(2)))
+              resMap.put("accessNum", new JLong(e.getLong(3)))
+              videoList.add(resMap)
+            })
           })
 
-          episodeDf.collect.foreach(e => {
-            val resMap = new util.HashMap[String, Object]()
-            resMap.put("contentType", e.getString(0))
-            resMap.put("episodeSid", e.getString(1))
-            resMap.put("title", ProgramRedisUtil.getTitleBySid(e.getString(1)).toString)
-            resMap.put("day", insertDate.toString)
-            resMap.put("userNum", new JLong(e.getLong(2)))
-            resMap.put("accessNum", new JLong(e.getLong(3)))
-            episodeList.add(resMap)
+          episodeDf.foreachPartition(rdd =>{
+            rdd.foreach(e => {
+              val resMap = new util.HashMap[String, Object]()
+              resMap.put("contentType", e.getString(0))
+              resMap.put("episodeSid", e.getString(1))
+              resMap.put("title", ProgramRedisUtil.getTitleBySid(e.getString(1)).toString)
+              resMap.put("day", insertDate.toString)
+              resMap.put("userNum", new JLong(e.getLong(2)))
+              resMap.put("accessNum", new JLong(e.getLong(3)))
+              episodeList.add(resMap)
+            })
           })
 
 
