@@ -32,7 +32,7 @@ object ChannelEntrancePlayStat extends BaseClass {
 
   private val sourceRe1 = ("(classification|history|hotrecommend|search)").r
 
-  private val codeMap: Map[String, String] = CodeToNameUtils.getSubjectCodeMap
+  private val codeMap: scala.collection.immutable.Map[String, String] = CodeToNameUtils.getSubjectCodeMap
 
 
   def main(args: Array[String]) {

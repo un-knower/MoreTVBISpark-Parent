@@ -352,4 +352,8 @@ object CodeToNameUtils {
     subChannelNameMap.getOrElse(code, null)
   }
 
+
+  def getSubjectCodeMap():scala.collection.immutable.Map[String,String] = {
+    subjectName2CodeMap
+  }
 }
