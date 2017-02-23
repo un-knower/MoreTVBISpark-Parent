@@ -11,7 +11,7 @@ object LogTypes {
   val BACK = "back"
   val BUTTON = "button"
   val BUTTONCLICK = "buttonclick"
-  val CLICKSEARCHRESULT = "clickSearchResult"
+  val CLICKSEARCHRESULT = "medusa-search-clickResult"
   val COLLECT = "collect"
   val DELETECOLLECT = "deletecollect"
   val DETAIL = "detail"

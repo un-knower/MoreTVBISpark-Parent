@@ -10,6 +10,8 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.json.JSONObject
 
+import scala.collection.mutable
+
 /**
   * Created by witnes on 2016/5/16.
   * 统计维度：如果播放节目是属于subject，则按照专题code来归类，否则，按照contentType归类

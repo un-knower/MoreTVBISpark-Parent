@@ -85,11 +85,12 @@ object LiveQosStat extends BaseClass {
       val js = jsonArr.optJSONObject(idx)
       val sourceName = js.optString("videoSource")
       val sourceArr = js.optJSONArray("sourcecases")
-
-      (0 until sourceArr.length).foreach(dx => {
-        val code = sourceArr.optJSONObject(dx).getInt("playCode")
-        arrBuffer.append((sourceName, code))
-      })
+      if(sourceArr!=null){
+        (0 until sourceArr.length).foreach(dx => {
+          val code = sourceArr.optJSONObject(dx).getInt("playCode")
+          arrBuffer.append((sourceName, code))
+        })
+      }
     })
 
     arrBuffer.toArray
