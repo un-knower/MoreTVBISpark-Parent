@@ -36,7 +36,8 @@ object LiveOneLevelCategory {
 
     //只保留跑任务时生效的分类
     val sql =
-      s"select code, name from mtv_program_site where contentType = '$sourceType' AND STATUS = 1 AND ID >= ? AND ID <= ? "
+      s"select code as liveMenuCode, name as liveMenuName from mtv_program_site " +
+        s"where contentType = '$sourceType' AND STATUS = 1 AND ID >= ? AND ID <= ? "
 
     MySqlOps.getJdbcRDD(sc, sql, "mtv_program_site",
       r => (r.getString(1), r.getString(2)), driver, url, user, password, (min, max), 5)
