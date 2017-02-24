@@ -72,6 +72,8 @@ object EnChConvert {
               case "1_movie_tag_kehuan" => result="科学幻想"
               case "movie_yueyu" => result="粤语佳片"
               case "collect" => result="已收藏"
+              case "comic_erciyuan" => result="二次元"
+              case "movie_night" => result="午夜场"
               case _ => result=info
             }
           }
@@ -103,6 +105,7 @@ object EnChConvert {
               case "tv_shujia" => result="最强暑假档"
               case "tv_yuansheng" => result = "电视原声"
               case "tv_guowai_lianzai" => result = "海外同步"
+              case "tv_zhongbang" => result = "重磅追剧"
               case _ => result=info
             }
           }
@@ -135,6 +138,7 @@ object EnChConvert {
               case "wangzhanzizhi_zongyi" => result="最强笑点"
               case "yulebagua_zongyi" => result = "娱乐八卦"
               case "xiangsheng_zongyi" => result = "相声小品"
+              case "zongyi_wangpai" => result = "王牌综艺"
               case _ => result=info
             }
           }
@@ -177,6 +181,7 @@ object EnChConvert {
               case "1_comic_tag_qita" => result="其他分类"
               case "comic_guoman"=>result="国漫精选"
               case "comic_mingzuo"=>result="名作之壁"
+              case "comic_ciyuanjd" => result = "次元经典"
               case _ => result=info
             }
           }
@@ -225,6 +230,8 @@ object EnChConvert {
               case "jilu_maoshu"=>result="猫叔推荐"
               case "jilu_douban"=>result="豆瓣高分"
               case "jilu_xingzhen"=> result="刑侦档案"
+              case "jilu_junshi" => result = "铁血军魂"
+              case "jilu_qiche" => result = "大话汽车"
               case _ => result=info
             }
           }

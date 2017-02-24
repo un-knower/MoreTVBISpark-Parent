@@ -1,7 +1,9 @@
 package com.moretv.bi.util
 
-import scala.collection.mutable.{ListBuffer, Map}
 import java.sql.{Connection, DriverManager, ResultSet, Statement}
+
+import scala.collection.mutable
+import scala.collection.mutable.{ListBuffer, Map}
 
 /**
  * Created by laishun on 2015/7/17.
@@ -10,15 +12,24 @@ object CodeToNameUtils {
   /**
    * 定义一些map集合
    */
-   var sidApplicationNameMap = Map[String,String]()
-   var sidSubjectNameMap = Map[String,String]()
-   var subjectName2CodeMap = Map[String,String]()
-   var thirdPaheNameMap = Map[String,String]()
-   var subCodeToParentNameMap = Map[String,String]()
-   var channelNameMap = Map[String,String]()
-   var subChannelNameMap = Map[String,String]()
-   var sidProgramNameMap = Map[String,String]()
-   var sidProgramDurationMap = Map[String,String]()
+//   var sidApplicationNameMap = Map[String,String]()
+//   var sidSubjectNameMap = Map[String,String]()
+//   var subjectName2CodeMap = Map[String,String]()
+//   var thirdPaheNameMap = Map[String,String]()
+//   var subCodeToParentNameMap = Map[String,String]()
+//   var channelNameMap = Map[String,String]()
+//   var subChannelNameMap = Map[String,String]()
+//   var sidProgramNameMap = Map[String,String]()
+//   var sidProgramDurationMap = Map[String,String]()
+  lazy val sidApplicationNameMap = initSidMapInfo(url_tvservice3_1, sid2ApplicationNameMapSql)
+  lazy val sidSubjectNameMap = initSidMapInfo(url_tvservice3_1, sid2SubjectNameMapSql)
+  lazy val subjectName2CodeMap = initSidMapInfo(url_tvservice3_1, subjectName2CodeMapSql)
+  var thirdPaheNameMap = Map[String,String]()
+  var subCodeToParentNameMap = Map[String,String]()
+  var channelNameMap = Map[String,String]()
+  var subChannelNameMap = Map[String,String]()
+  lazy val sidProgramNameMap = initSidMapInfo(url_tvservice3_1,programSid2NameMapSql)
+  lazy val sidProgramDurationMap = initSidMapInfo(url_tvservice3_1,programSid2DurationMapSql)
   /**
    * 定义一些常量
    */
@@ -56,7 +67,6 @@ object CodeToNameUtils {
       rs.close
       stat.close
       conn.close
-      map
     }
     catch {
       case e: Exception => {
@@ -65,8 +75,26 @@ object CodeToNameUtils {
     }
   }
 
-  def getSubjectCodeMap: Map[String, String] = {
-    initSidMap(url_tvservice3_1, subjectName2CodeMapSql, subjectName2CodeMap)
+  /**
+    * 使用懒加载的方式进行初始化
+    */
+  private def initSidMapInfo(url:String,sql:String,userName:String = user,passwordStr:String = password) = {
+    Class.forName(driver)
+    val conn:Connection = DriverManager.getConnection(url,userName,passwordStr)
+    try{
+      val stat:Statement = conn.createStatement
+      val rs:ResultSet = stat.executeQuery(sql)
+      val map = new mutable.HashMap[String,String]()
+      while(rs.next()){
+        map.+= (rs.getString(1) -> rs.getString(2))
+      }
+      rs.close()
+      stat.close()
+      conn.close()
+      map.toMap
+    }finally {
+      conn.close()
+    }
   }
   /**
    * Function: obtain subject name by subject code
@@ -74,16 +102,16 @@ object CodeToNameUtils {
    * @return
    */
   def getSubjectNameBySid(sid: String):String ={
-    if(sidSubjectNameMap.isEmpty){
-      initSidMap(url_tvservice3_1, sid2SubjectNameMapSql, sidSubjectNameMap)
-    }
+//    if(sidSubjectNameMap.isEmpty){
+//      initSidMap(url_tvservice3_1, sid2SubjectNameMapSql, sidSubjectNameMap)
+//    }
     sidSubjectNameMap.getOrElse(sid,sid)
   }
 
-  def getAllSubjectName:Map[String,String] = {
-    if(sidSubjectNameMap.isEmpty){
-      initSidMap(url_tvservice3_1, sid2SubjectNameMapSql, sidSubjectNameMap)
-    }
+  def getAllSubjectName:collection.Map[String,String] = {
+//    if(sidSubjectNameMap.isEmpty){
+//      initSidMap(url_tvservice3_1, sid2SubjectNameMapSql, sidSubjectNameMap)
+//    }
     sidSubjectNameMap
   }
 
@@ -94,9 +122,9 @@ object CodeToNameUtils {
    */
 
   def getProgramNameBySid(sid:String):String = {
-    if(sidProgramNameMap.isEmpty){
-      initSidMap(url_tvservice3_1,programSid2NameMapSql,sidProgramNameMap)
-    }
+//    if(sidProgramNameMap.isEmpty){
+//      initSidMap(url_tvservice3_1,programSid2NameMapSql,sidProgramNameMap)
+//    }
     sidProgramNameMap.getOrElse(sid,"null")
   }
 
@@ -106,16 +134,16 @@ object CodeToNameUtils {
     * @return
     */
   def getSubjectCodeByName(name: String):String ={
-    if(subjectName2CodeMap.isEmpty){
-      initSidMap(url_tvservice3_1, subjectName2CodeMapSql, subjectName2CodeMap)
-    }
+//    if(subjectName2CodeMap.isEmpty){
+//      initSidMap(url_tvservice3_1, subjectName2CodeMapSql, subjectName2CodeMap)
+//    }
     subjectName2CodeMap.getOrElse(name,"null")
   }
 
-  def getAllSubjectCode():Map[String,String] = {
-    if(subjectName2CodeMap.isEmpty){
-      initSidMap(url_tvservice3_1, subjectName2CodeMapSql, subjectName2CodeMap)
-    }
+  def getAllSubjectCode():collection.Map[String,String] = {
+//    if(subjectName2CodeMap.isEmpty){
+//      initSidMap(url_tvservice3_1, subjectName2CodeMapSql, subjectName2CodeMap)
+//    }
     subjectName2CodeMap
   }
 
@@ -125,9 +153,9 @@ object CodeToNameUtils {
    * @return
    */
   def getApplicationNameBySid(sid: String):String ={
-    if(sidApplicationNameMap.isEmpty){
-      initSidMap(url_tvservice3_1, sid2ApplicationNameMapSql, sidApplicationNameMap)
-    }
+//    if(sidApplicationNameMap.isEmpty){
+//      initSidMap(url_tvservice3_1, sid2ApplicationNameMapSql, sidApplicationNameMap)
+//    }
     sidApplicationNameMap.getOrElse(sid,"null")
   }
 
@@ -199,9 +227,9 @@ object CodeToNameUtils {
   }
 
   def getProgramDurationFromSid(sid:String) ={
-    if(sidProgramDurationMap.isEmpty){
-      initSidMap(url_tvservice3_1,programSid2DurationMapSql,sidProgramDurationMap)
-    }
+//    if(sidProgramDurationMap.isEmpty){
+//      initSidMap(url_tvservice3_1,programSid2DurationMapSql,sidProgramDurationMap)
+//    }
     sidProgramDurationMap.getOrElse(sid,"null")
   }
 
@@ -324,4 +352,7 @@ object CodeToNameUtils {
     subChannelNameMap.getOrElse(code, null)
   }
 
+  def getSubjectCodeMap:scala.collection.immutable.Map[String,String] = {
+    subjectName2CodeMap
+  }
 }
