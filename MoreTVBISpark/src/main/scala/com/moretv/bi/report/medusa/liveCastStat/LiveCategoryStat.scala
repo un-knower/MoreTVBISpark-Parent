@@ -39,6 +39,7 @@ object LiveCategoryStat extends BaseClass {
         import q.implicits._
 
         val cal = Calendar.getInstance
+        cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))
 
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
@@ -47,21 +48,15 @@ object LiveCategoryStat extends BaseClass {
         (0 until p.numOfDays).foreach(w => {
 
           val loadDate = DateFormatUtils.readFormat.format(cal.getTime)
+
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
 
-//          val playDf = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogType.LIVE, loadDate)
-//            .filter($"liveType" === "live" && $"date" === sqlDate && $"pathMain".isNotNull)
-//            //.withColumn("category", categoryMatcher($"liveMenuCode").as("category"))
-//            .as("play")
-//            .join(categoryDF.as("category_log"), $"play.liveMenuCode" === $"category_log.code")
-//            .withColumnRenamed("name", "category")
-
           val df = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogType.LIVE, loadDate)
             .filter($"liveType" === "live" && $"date" === sqlDate && $"pathMain".isNotNull)
           val playDf = df
-            .join(categoryDF, df("liveMenuCode") === categoryDF("liveMenuCode"))
+            .join(categoryDF, df("liveMenuCode") === categoryDF("code"))
             .withColumnRenamed("name", "category")
 
           //          val viewDf = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogType.TABVIEW, loadDate)
@@ -101,6 +96,9 @@ object LiveCategoryStat extends BaseClass {
             .select($"p.category", $"p.play_num", $"p.play_user", $"v.view_num", $"v.view_user", $"p.duration")
             .collect
             .foreach(e => {
+              println(s"""${e.getString(0)}->${e.getLong(1)}->${e.getLong(2)}""")
+              println("==============")
+
               util.insert(
                 insertSql, sqlDate, e.getString(0), e.getLong(1), e.getLong(2), e.getLong(3), e.getLong(4), e.getLong(5)
               )

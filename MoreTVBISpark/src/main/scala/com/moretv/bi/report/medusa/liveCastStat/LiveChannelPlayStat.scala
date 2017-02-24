@@ -28,7 +28,7 @@ object LiveChannelPlayStat extends BaseClass {
   private val liveChannelPlayDayTable = "live_channel_day_play_stat"
 
   private val insertSqlForDayTable =
-    s"insert into $liveChannelPlayDayTable(${groupFields4DChannelPlay.mkString(",")}) values(${List.fill(groupFields4DChannelPlay.length)("?").mkString(",")})"
+    s"insert into $liveChannelPlayDayTable(${cube4DFields.mkString(",")}) values(${List.fill(cube4DFields.length)("?").mkString(",")})"
 
 
   private val deleteSqlForDayTable = s"delete from $liveChannelPlayDayTable where $DAY = ?"
@@ -57,7 +57,7 @@ object LiveChannelPlayStat extends BaseClass {
 
         val periodFillingWithStartEndUdf = udf[Seq[(Int, Int)], Int, Int, Int, Int](periodFillingWithStartEnd)
 
-        val categoryDF = LiveOneLevelCategory.code2Name("webcast", sc)
+        val categoryDF = LiveOneLevelCategory.code2Name("telecast", sc)
 
 
         (0 until p.numOfDays).foreach(w => {
@@ -87,7 +87,7 @@ object LiveChannelPlayStat extends BaseClass {
 
 
 
-          playDf.filter($"event" === "startplay")
+          val df1 = playDf.filter($"event" === "startplay")
             .groupBy(groupFields4D.map(w => col(w)): _*)
             .agg(count($"userId").as(VV), countDistinct($"userId").as(UV))
             .join(
@@ -96,7 +96,8 @@ object LiveChannelPlayStat extends BaseClass {
                 .agg(sum($"duration").as(DURATION)),
               groupFields4D
             )
-            .join(categoryDF, CATEGORYCODE :: Nil, "left_outer")
+            df1
+            .join(categoryDF, df1(LIVECATEGORYCODE) === categoryDF(CATEGORYCODE), "left_outer")
             .collect
             .foreach(w => {
               util.insert(
@@ -105,12 +106,13 @@ object LiveChannelPlayStat extends BaseClass {
             })
 
 
-          playDf
+          val df2 = playDf
             .filter($"event" === "startplay")
             .withColumn(HOUR, hour($"datetime")).withColumn(MINUTE, minute($"datetime"))
             .groupBy(groupFields4M.map(w => col(w)): _*)
             .agg(count($"userId").as(VV))
-            .join(categoryDF, CATEGORYCODE :: Nil, "left_outer")
+            df2
+            .join(categoryDF, df2(LIVECATEGORYCODE) === categoryDF(CATEGORYCODE), "left_outer")
             .collect
             .foreach(w => {
               channelMPlayList.add(w.getValuesMap(cube4MFieldsV))
@@ -119,7 +121,7 @@ object LiveChannelPlayStat extends BaseClass {
 
 
 
-          playDf.filter($"event" === "switchchannel" && $"duration".between(10, 36000))
+          val df3 = playDf.filter($"event" === "switchchannel" && $"duration".between(10, 36000))
             .withColumn("period",
               periodFillingWithStartEndUdf(
                 hour((unix_timestamp($"datetime") - $"duration").cast("timestamp")),
@@ -133,7 +135,8 @@ object LiveChannelPlayStat extends BaseClass {
             .withColumn(HOUR, $"period._2")
             .groupBy(groupFields4M.map(w => col(w)): _*)
             .agg(countDistinct($"userId").as(UV))
-            .join(categoryDF, CATEGORYCODE :: Nil, "left_outer")
+            df3
+            .join(categoryDF, df3(LIVECATEGORYCODE) === categoryDF(CATEGORYCODE), "left_outer")
             .foreach(w => {
               channel10MPlayList.add(w.getValuesMap(cube4MFieldsU))
             })

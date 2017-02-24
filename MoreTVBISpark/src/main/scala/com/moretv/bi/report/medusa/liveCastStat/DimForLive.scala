@@ -7,9 +7,9 @@ object DimForLive {
 
   /** Attributes **/
 
-  val CATEGORYCODE = "liveMenuCode"
+  val CATEGORYCODE = "code"
 
-  val CATEGORYNAME = "liveMenuName"
+  val CATEGORYNAME = "name"
 
 
   val PROGRAMENAME = "liveName"
@@ -25,6 +25,10 @@ object DimForLive {
 
   val MINUTE = "minute"
 
+  val LIVECATEGORYCODE = "liveMenuCode"
+
+  val LIVECATEGORYNAME = "liveMenuName"
+
 
   /** Metrics **/
 
@@ -37,15 +41,15 @@ object DimForLive {
   /** ***********************************************/
 
 
-  val groupFields4D = Array(DAY, SOURCETYPE, CATEGORYCODE, CHANNELSID, PROGRAMENAME)
+  val groupFields4D = Array(DAY, SOURCETYPE, LIVECATEGORYCODE, CHANNELSID, PROGRAMENAME)
 
-  val groupFields4M = Array(DAY, HOUR, MINUTE, SOURCETYPE, CATEGORYCODE, CHANNELSID, PROGRAMENAME)
+  val groupFields4M = Array(DAY, HOUR, MINUTE, SOURCETYPE, LIVECATEGORYCODE, CHANNELSID, PROGRAMENAME)
 
-  val groupFields4H = Array(DAY, HOUR, SOURCETYPE, CATEGORYCODE, CHANNELSID, PROGRAMENAME)
+  val groupFields4H = Array(DAY, HOUR, SOURCETYPE, LIVECATEGORYCODE, CHANNELSID, PROGRAMENAME)
 
   val groupFields4CodeName = Array(CATEGORYCODE, CATEGORYNAME)
 
-  val groupFields4DChannelPlay = Array(DAY, SOURCETYPE, CATEGORYNAME, CHANNELSID, PROGRAMENAME)
+  val groupFields4DChannelPlay = Array(DAY, SOURCETYPE, LIVECATEGORYNAME, CHANNELSID, PROGRAMENAME)
 
 
   val cube4DFields = groupFields4DChannelPlay ++ Array(UV, VV, DURATION)
