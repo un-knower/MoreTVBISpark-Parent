@@ -47,7 +47,7 @@ object DayRetentionRate extends BaseClass{
           val logUserID = userLog.select("mac").map(row => row.getString(0)).filter(_ != null).
             map(UserIdUtils.userId2Long).distinct().cache()
           Class.forName("com.mysql.jdbc.Driver")
-          val db = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
+          val db = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
           val driver = db.prop.getProperty("driver")
           val url = db.prop.getProperty("url")
           val user = db.prop.getProperty("user")

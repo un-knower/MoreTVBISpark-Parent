@@ -51,11 +51,17 @@ object LiveCategoryStat extends BaseClass {
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
 
-          val playDf = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogType.LIVE, loadDate)
+//          val playDf = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogType.LIVE, loadDate)
+//            .filter($"liveType" === "live" && $"date" === sqlDate && $"pathMain".isNotNull)
+//            //.withColumn("category", categoryMatcher($"liveMenuCode").as("category"))
+//            .as("play")
+//            .join(categoryDF.as("category_log"), $"play.liveMenuCode" === $"category_log.code")
+//            .withColumnRenamed("name", "category")
+
+          val df = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogType.LIVE, loadDate)
             .filter($"liveType" === "live" && $"date" === sqlDate && $"pathMain".isNotNull)
-            //.withColumn("category", categoryMatcher($"liveMenuCode").as("category"))
-            .as("play")
-            .join(categoryDF.as("category_log"), $"play.liveMenuCode" === $"category_log.code")
+          val playDf = df
+            .join(categoryDF, df("liveMenuCode") === categoryDF("liveMenuCode"))
             .withColumnRenamed("name", "category")
 
           //          val viewDf = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogType.TABVIEW, loadDate)
