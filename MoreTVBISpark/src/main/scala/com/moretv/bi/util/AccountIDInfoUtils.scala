@@ -2,6 +2,9 @@ package com.moretv.bi.util
 
 import java.sql.{Connection, DriverManager, ResultSet, Statement}
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
+
 import scala.collection.mutable.Map
 
 /**
@@ -19,12 +22,12 @@ object AccountIDInfoUtils {
     * 定义一些常量
     */
   val driver: String = "com.mysql.jdbc.Driver"
-  val user: String = "bi"
-  val password: String = "mlw321@moretv"
+  val db1 = DataIO.getMySqlOps(DataBases.MORETV_RECOMMEND_TVSERVICE_MYSQL)
+  val  user:String = db1.prop.getProperty("user")
+  val password:String = db1.prop.getProperty("password")
 
 
-  val url_ucenter_17: String = "jdbc:mysql://10.10.2.19:3306/tvservice?useUnicode=true&characterEncoding=utf-8&autoReconnect=true"
-
+  val url_ucenter_17: String = db1.prop.getProperty("url")
   val accountGenderSQL =
     """select a.moretvid,b.gender
       |from ucenter.bbs_ucenter_members as a join ucenter.bbs_ucenter_memberfields as b

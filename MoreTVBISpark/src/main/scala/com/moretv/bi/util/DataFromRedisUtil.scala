@@ -1,6 +1,8 @@
 package com.moretv.bi.util
 
-import redis.clients.jedis.{JedisPool, JedisPoolConfig,Protocol}
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
+import redis.clients.jedis.{JedisPool, JedisPoolConfig, Protocol}
 import org.json.JSONObject
 /**
  * Created by xia jun on 2016/9/4.
@@ -15,12 +17,16 @@ object DataFromRedisUtil {
    */
   val config:JedisPoolConfig = new JedisPoolConfig()       //创建redis的配置对象
   var metadataPool:JedisPool = null                        //创建redis的数据池
-  val metadata_host="10.10.1.3"                            //创建redis的host IP信息
-  val metadata_port= 6379                                  //创建redis的端口号信息
-  val mtv_subject_metadata_db=0                            //创建redis中的数据库
-  val mtv_channel_metadata_db = 1                          //创建redis中的数据库
-  val sailfish_sport_match_metadata_db = 2                 //创建redis中的数据库
-  val mtv_basecontent_metadata_db =3                       //创建redis中的数据库
+  val db0 = DataIO.getRedisOps(DataBases.REDIS_3_0)
+  val db1 = DataIO.getRedisOps(DataBases.REDIS_3_1)
+  val db2 = DataIO.getRedisOps(DataBases.REDIS_3_2)
+  val db3 = DataIO.getRedisOps(DataBases.REDIS_3_3)
+  val metadata_host=db0.prop.getProperty("metadata_host")                            //创建redis的host IP信息
+  val metadata_port= db0.prop.getProperty("metadata_port").toInt                                //创建redis的端口号信息
+  val mtv_subject_metadata_db=db0.prop.getProperty("metadata_db").toInt                            //创建redis中的数据库
+  val mtv_channel_metadata_db = db1.prop.getProperty("metadata_db").toInt                          //创建redis中的数据库
+  val sailfish_sport_match_metadata_db = db2.prop.getProperty("metadata_db").toInt                 //创建redis中的数据库
+  val mtv_basecontent_metadata_db =db3.prop.getProperty("metadata_db").toInt                       //创建redis中的数据库
 
 
   /**

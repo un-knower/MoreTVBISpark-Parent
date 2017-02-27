@@ -1,6 +1,10 @@
 package com.moretv.bi.util
 
 import java.util.{HashMap, Map}
+
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.constant.Database
+import com.moretv.bi.global.DataBases
 import org.json.JSONObject
 import redis.clients.jedis.{Jedis, JedisPool, JedisPoolConfig, Protocol}
 
@@ -12,9 +16,10 @@ class ProgramRedisUtils {
 
 	private val config = new JedisPoolConfig()
     private var metadataPool:JedisPool = null
-    private val metadata_host="10.10.2.17"
-    private val metadata_port=6379
-    private val metadata_db=0
+		private val db = DataIO.getRedisOps(DataBases.REDIS_17_0)
+    private val metadata_host=db.prop.getProperty("metadata_host")
+    private val metadata_port=db.prop.getProperty("metadata_port").toInt
+    private val metadata_db=db.prop.getProperty("metadata_db").toInt
     private var metadata_jedis:Jedis=null
 
 		config.setMaxTotal(10)

@@ -2,6 +2,9 @@ package com.moretv.bi.util
 
 import java.sql.{Connection, DriverManager, ResultSet, Statement}
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
+
 import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer, Map}
 
@@ -34,11 +37,15 @@ object CodeToNameUtils {
    * 定义一些常量
    */
    val driver:String = "com.mysql.jdbc.Driver"
-   val  user:String = "bi"
-   val password:String = "mlw321@moretv"
 
-   val url_tvservice3_1:String = "jdbc:mysql://10.10.2.19:3306/tvservice?useUnicode=true&characterEncoding=utf-8&autoReconnect=true"
-   val url_bi2_1:String = "jdbc:mysql://10.10.2.15:3306/bi?useUnicode=true&characterEncoding=utf-8&autoReconnect=true"
+  val db1 = DataIO.getMySqlOps(DataBases.MORETV_RECOMMEND_TVSERVICE_MYSQL)
+  val db2 = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
+  val  user:String = db1.prop.getProperty("user")
+  val password:String = db1.prop.getProperty("password")
+
+
+   val url_tvservice3_1:String = db1.prop.getProperty("url")
+   val url_bi2_1:String = db2.prop.getProperty("url")
 
    val sid2ApplicationNameMapSql:String = "SELECT sid,title FROM tvservice.mtv_application WHERE sid IS NOT NULL"
    val sid2SubjectNameMapSql:String = "SELECT code,name FROM tvservice.mtv_subject WHERE code IS NOT NULL"

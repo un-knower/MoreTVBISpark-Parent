@@ -2,6 +2,7 @@ package com.moretv.bi.util.IPLocationUtils
 
 import java.util
 
+import com.moretv.bi.constant.Constants
 import com.moretv.bi.util.HdfsUtil
 
 import scala.io.Source
@@ -17,7 +18,7 @@ object IPLocationDataUtil {
   }
 
   def load() {
-    val inputStream = HdfsUtil.getHDFSFileStream("/log/ipLocationData/ip_country.txt")
+    val inputStream = HdfsUtil.getHDFSFileStream(Constants.IP_AREA_PATH)
     val lines = Source.fromInputStream(inputStream).getLines()
     lines.foreach(line => {
       val lineSplit = line.split("\t")

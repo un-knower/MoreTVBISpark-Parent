@@ -1,5 +1,7 @@
 package com.moretv.bi.util
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
 import org.json.JSONObject
 import redis.clients.jedis.{JedisPool, JedisPoolConfig, Protocol}
 
@@ -23,9 +25,10 @@ object ProgramDurationUtil {
    */
   val config:JedisPoolConfig = new JedisPoolConfig()
   var metadataPool:JedisPool = null
-  val metadata_host="10.10.1.3"
-  val metadata_port= 6379
-  val metadata_db=3
+  val db = DataIO.getRedisOps(DataBases.REDIS_3_3)
+  val metadata_host=db.prop.getProperty("metadata_host")
+  val metadata_port= db.prop.getProperty("metadata_port").toInt
+  val metadata_db= db.prop.getProperty("metadata_db").toInt
 
   /**
    * 初始化Jedis对象

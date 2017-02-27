@@ -2,6 +2,9 @@ package com.moretv.bi.util
 
 import java.sql.{Connection, DriverManager, ResultSet, Statement}
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
+
 import scala.collection.mutable
 import scala.collection.mutable.Map
 
@@ -21,15 +24,16 @@ object LiveCodeToNameUtils {
    * 定义一些常量
    */
   val driver:String = "com.mysql.jdbc.Driver"
-  val  user:String = "bi"
-  val password:String = "mlw321@moretv"
+  val db1 = DataIO.getMySqlOps(DataBases.MORETV_RECOMMEND_TVSERVICE_MYSQL)
+  val  user:String = db1.prop.getProperty("user")
+  val password:String = db1.prop.getProperty("password")
 
-  val user1:String = "bislave"
-  val password1:String = "slave4bi@whaley"
+  val db2 = DataIO.getMySqlOps(DataBases.MORETV_CMS_MYSQL)
+  val user1:String = db2.prop.getProperty("user")
+  val password1:String = db2.prop.getProperty("password")
 
-
-  val url_tvservice_19:String = "jdbc:mysql://10.10.2.19:3306/tvservice?useUnicode=true&characterEncoding=utf-8&autoReconnect=true"
-  val url_mtv_cms_23:String = "jdbc:mysql://10.10.2.23:3306/mtv_cms?useUnicode=true&characterEncoding=utf-8&autoReconnect=true"
+  val url_tvservice_19:String = db1.prop.getProperty("url")
+  val url_mtv_cms_23:String = db2.prop.getProperty("url")
 
   val channelNameSql:String = "SELECT sid,station FROM tvservice.mtv_channel where sid is not null"
   val SportNameSql:String = "SELECT sid,title from mtv_cms.sailfish_sport_match where sid is not null"

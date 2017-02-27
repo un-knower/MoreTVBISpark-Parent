@@ -2,6 +2,9 @@ package com.moretv.bi.util
 
 import java.sql.{Connection, DriverManager, ResultSet, Statement}
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
+
 import scala.collection.mutable.Map
 
 /**
@@ -18,10 +21,11 @@ object OlympicMatchUtils {
    * 定义一些常量
    */
    val driver:String = "com.mysql.jdbc.Driver"
-   val user:String = "bislave"
-   val password:String = "slave4bi@whaley"
+   val db = DataIO.getMySqlOps(DataBases.MORETV_CMS_MYSQL)
+   val user:String = db.prop.getProperty("user")
+   val password:String = db.prop.getProperty("password")
 
-   val url_mtv_cms_23:String = "jdbc:mysql://10.10.2.23:3306/mtv_cms?useUnicode=true&characterEncoding=utf-8&autoReconnect=true"
+   val url_mtv_cms_23:String = db.prop.getProperty("url")
 
    val olympicMatchSql:String = "SELECT sid,league_id from mtv_cms.sailfish_sport_match where sid is not null"
 

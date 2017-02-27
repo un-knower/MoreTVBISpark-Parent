@@ -3,6 +3,7 @@ package com.moretv.bi.util
 import java.sql.{Connection, DriverManager, SQLException}
 import java.util.{List, Map}
 
+import com.moretv.bi.constant.{Constants, Database}
 import org.apache.commons.dbutils.{DbUtils, QueryRunner}
 import org.apache.commons.dbutils.handlers.{ArrayHandler, ArrayListHandler, MapListHandler}
 import org.apache.commons.lang.StringUtils
@@ -35,7 +36,7 @@ class DBOperationUtils(var url:String,user:String,password:String,database:Strin
     this(url,user,password,null)
 
   def this(database:String)=
-    this("jdbc:mysql://10.10.2.15:3306/@#@?useUnicode=true&characterEncoding=utf-8&autoReconnect=true","bi","mlw321@moretv",database)
+    this(s"jdbc:mysql://${Constants.HZ_15_HOST}:${Constants.HZ_MYSQL_PORT}/@#@?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",Database.DB_2_15_USER,Database.DB_2_15_PASSWORD,database)
 
 
 

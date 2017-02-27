@@ -3,6 +3,7 @@ package cn.whaley.bi.utils
 import java.net.InetAddress
 import java.util
 
+import com.moretv.bi.constant.Constants
 import org.elasticsearch.action.search.SearchType
 import org.elasticsearch.client.Client
 import org.elasticsearch.client.transport.TransportClient
@@ -10,6 +11,7 @@ import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.common.transport.InetSocketTransportAddress
 import org.elasticsearch.common.xcontent.XContentFactory
 import org.elasticsearch.index.query.QueryBuilders
+
 import scala.collection.JavaConversions._
 
 /**
@@ -22,8 +24,8 @@ object ElasticSearchUtil {
   def init = {
     val settings = Settings.settingsBuilder().put("cluster.name", "monitor").build()
     client = TransportClient.builder().settings(settings).build()
-      .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("10.10.1.9"), 9300))
-      .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("10.10.1.8"), 9300))
+      .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(Constants.HZ_9_HOST), Constants.HZ_ES_PORT))
+      .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(Constants.HZ_8_HOST), Constants.HZ_ES_PORT))
   }
 
   //关闭cient

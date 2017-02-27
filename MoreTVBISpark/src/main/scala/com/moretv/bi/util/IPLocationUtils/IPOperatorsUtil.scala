@@ -1,9 +1,12 @@
 package com.moretv.bi.util.IPLocationUtils
 
 import java.util
-import com.moretv.bi.util.{SparkSetting, HdfsUtil}
+
+import com.moretv.bi.constant.Constants
+import com.moretv.bi.util.{HdfsUtil, SparkSetting}
+
 import scala.collection.mutable
-import scala.collection.mutable.{ListBuffer, ArrayBuffer}
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.io.Source
 
 /**
@@ -16,7 +19,7 @@ object IPOperatorsUtil extends SparkSetting{
   private val IPArr  = load()
 
   def load() = {
-    val inputStream = HdfsUtil.getHDFSFileStream("/log/ipLocationData/mydata4vipday2.txt")
+    val inputStream = HdfsUtil.getHDFSFileStream(Constants.IP_ISP_PATH)
     val lines = Source.fromInputStream(inputStream).getLines()
     lines.foreach(line=>{
       val lineSplit = line.split("\t")

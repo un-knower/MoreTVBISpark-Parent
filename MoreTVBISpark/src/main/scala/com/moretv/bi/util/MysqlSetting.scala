@@ -2,14 +2,18 @@ package com.moretv.bi.util
 
 import java.sql.DriverManager
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
+
 /**
  * Created by mycomputer on 2015/3/27.
  */
 trait MysqlSetting {
   val driver = "com.mysql.jdbc.Driver"
-  val url = "jdbc:mysql://10.10.2.15:3306/bi?useUnicode=true&characterEncoding=utf-8&autoReconnect=true"
-  val username = "bi"
-  val password = "mlw321@moretv"
+  val db = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
+  val url = db.prop.getProperty("url")
+  val username = db.prop.getProperty("user")
+  val password = db.prop.getProperty("password")
   Class.forName(driver)
   val connection = DriverManager.getConnection(url, username, password)
   var statement = connection.createStatement()
