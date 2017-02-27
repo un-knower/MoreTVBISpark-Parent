@@ -26,10 +26,17 @@ object FuncForLive {
     val startMinuteF = startMinute / step * step
     val endMinuteF = endMinute / step * step
 
-    ((startHour :: Nil).cross(startMinuteF until 60 by step)).toList ++
-      ((startHour + 1 to endHour - 1 by 1).cross(0 until 60 by step)).toList ++
-      ((endHour :: Nil).cross(0 to endMinuteF by step)).toList
-
+    // Based on the hour info to deal with different case ...
+    if(endHour==startHour){
+      ((startHour :: Nil).cross(startMinuteF to endMinuteF by step)).toList
+    }else if(endHour-startHour==1){
+      ((startHour :: Nil).cross(startMinuteF until 60 by step)).toList ++
+        ((endHour :: Nil).cross(0 to endMinuteF by step)).toList
+    }else{
+      ((startHour :: Nil).cross(startMinuteF until 60 by step)).toList ++
+        ((startHour + 1 to endHour - 1 by 1).cross(0 until 60 by step)).toList ++
+        ((endHour :: Nil).cross(0 to endMinuteF by step)).toList
+    }
   }
 
 

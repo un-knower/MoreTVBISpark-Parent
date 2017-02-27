@@ -1,6 +1,7 @@
 package com.moretv.bi.report.medusa.liveCastStat
 
 import java.sql.Timestamp
+import java.util
 import java.util.ArrayList
 import java.util.Calendar
 
@@ -12,6 +13,7 @@ import com.moretv.bi.constant.{Constants, LogType}
 import com.moretv.bi.global.DataBases
 import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
+import org.apache.spark.storage.StorageLevel
 
 
 /**
@@ -35,6 +37,9 @@ object LiveChannelPlayStat extends BaseClass {
 
 
   def main(args: Array[String]) {
+    config.set("spark.executor.memory", "5g").
+      set("spark.executor.cores", "5").
+      set("spark.cores.max", "120")
     ModuleClass.executor(this, args)
   }
 
@@ -57,7 +62,9 @@ object LiveChannelPlayStat extends BaseClass {
 
         val periodFillingWithStartEndUdf = udf[Seq[(Int, Int)], Int, Int, Int, Int](periodFillingWithStartEnd)
 
-        val categoryDF = LiveOneLevelCategory.code2Name("telecast", sc)
+        val categoryDF = LiveOneLevelCategory.code2Name("webcast", sc).persist(StorageLevel.MEMORY_AND_DISK)
+
+        val categoreyTelecastDF = LiveOneLevelCategory.code2Name("telecast", sc).persist(StorageLevel.MEMORY_AND_DISK)
 
 
         (0 until p.numOfDays).foreach(w => {
@@ -67,26 +74,23 @@ object LiveChannelPlayStat extends BaseClass {
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
           if (p.deleteOld) {
-            val url1 = s"http://${Constants.ES_URL}/medusa/channelMinutePlay/_query?q=day:${sqlDate}"
-            val url2 = s"http://${Constants.ES_URL}/medusa/channel10MinutePlay/_query?q=day:${sqlDate}"
+            val url1 = s"http://${Constants.ES_URL}/medusa/channelMinutePlay/_query?q=date:${sqlDate}"
+            val url2 = s"http://${Constants.ES_URL}/medusa/channel10MinutePlay/_query?q=date:${sqlDate}"
+            val url3 = s"http://${Constants.ES_URL}/medusa/channelSidLiveInfo/_query?q=date:${sqlDate}"
 
             HttpUtils.delete(url1)
             HttpUtils.delete(url2)
-            util.delete(deleteSqlForDayTable, sqlDate)
-
+            HttpUtils.delete(url3)
           }
 
-          val channelMPlayList = new ArrayList[Map[String, Object]]()
 
-          val channel10MPlayList = new ArrayList[Map[String, Object]]()
-
-
-
+          // 直播播放量
           val playDf = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogType.LIVE, loadDate)
-            .filter($"liveType" === "live" && $"date" === sqlDate)
+            .filter($"liveType" === "live" && $"date" === sqlDate).persist(StorageLevel.MEMORY_AND_DISK_2)
 
 
 
+            // 统计全网直播和电台直播每个节目的总播放情况
           val df1 = playDf.filter($"event" === "startplay")
             .groupBy(groupFields4D.map(w => col(w)): _*)
             .agg(count($"userId").as(VV), countDistinct($"userId").as(UV))
@@ -96,31 +100,50 @@ object LiveChannelPlayStat extends BaseClass {
                 .agg(sum($"duration").as(DURATION)),
               groupFields4D
             )
+
+//          全网直播
             df1
-            .join(categoryDF, df1(LIVECATEGORYCODE) === categoryDF(CATEGORYCODE), "left_outer")
-            .collect
-            .foreach(w => {
-              util.insert(
-                insertSqlForDayTable, w.getValuesMap(cube4DFields).toArray: _*
-              )
+            .join(categoryDF, df1(LIVECATEGORYCODE) === categoryDF(CATEGORYCODE), "inner").
+              withColumnRenamed("code","liveMenuName")
+            .foreachPartition(partition=>{
+              val liveSidPlayList = new ArrayList[Map[String,Object]]()
+              partition.foreach(w => {
+                liveSidPlayList.add(w.getValuesMap(cube4DFields))
+              })
+              ElasticSearchUtil.bulkCreateIndex1(liveSidPlayList,"medusa","channelSidLiveInfo")
+            })
+//          电台直播
+          df1
+            .join(categoreyTelecastDF, df1(LIVECATEGORYCODE) === categoreyTelecastDF(CATEGORYCODE), "inner").
+            withColumnRenamed("code","liveMenuName")
+            .foreachPartition(partition=>{
+              val liveSidPlayList = new ArrayList[Map[String,Object]]()
+              partition.foreach(w => {
+                liveSidPlayList.add(w.getValuesMap(cube4DFields))
+              })
+              ElasticSearchUtil.bulkCreateIndex1(liveSidPlayList,"medusa","channelSidLiveInfo")
             })
 
 
+          //统计电台直播的自定义查询
           val df2 = playDf
             .filter($"event" === "startplay")
             .withColumn(HOUR, hour($"datetime")).withColumn(MINUTE, minute($"datetime"))
             .groupBy(groupFields4M.map(w => col(w)): _*)
             .agg(count($"userId").as(VV))
-            df2
-            .join(categoryDF, df2(LIVECATEGORYCODE) === categoryDF(CATEGORYCODE), "left_outer")
-            .collect
-            .foreach(w => {
-              channelMPlayList.add(w.getValuesMap(cube4MFieldsV))
+
+            df2.join(categoreyTelecastDF, df2(LIVECATEGORYCODE) === categoreyTelecastDF(CATEGORYCODE), "inner")
+            .repartition(3).foreachPartition(partition=>{
+              val channelMPlayList = new ArrayList[Map[String, Object]]()
+              partition.foreach(w => {
+                channelMPlayList.add(w.getValuesMap(cube4MFieldsV))
+              })
+              ElasticSearchUtil.bulkCreateIndex1(channelMPlayList, "medusa", "channelMinutePlay")
             })
 
 
 
-
+          // 统计电台直播和全网直播每隔10分钟的在线人数
           val df3 = playDf.filter($"event" === "switchchannel" && $"duration".between(10, 36000))
             .withColumn("period",
               periodFillingWithStartEndUdf(
@@ -131,22 +154,35 @@ object LiveChannelPlayStat extends BaseClass {
               )
             )
             .withColumn("period", explode($"period"))
-            .withColumn(MINUTE, $"period._1")
-            .withColumn(HOUR, $"period._2")
-            .groupBy(groupFields4M.map(w => col(w)): _*)
+            .withColumn(MINUTE, $"period._2")
+            .withColumn(HOUR, $"period._1")
+                      .groupBy(groupFields4M.map(w => col(w)): _*)
             .agg(countDistinct($"userId").as(UV))
+//          全网直播
             df3
-            .join(categoryDF, df3(LIVECATEGORYCODE) === categoryDF(CATEGORYCODE), "left_outer")
-            .foreach(w => {
+            .join(categoryDF, df3(LIVECATEGORYCODE) === categoryDF(CATEGORYCODE), "inner")
+            .repartition(3).foreachPartition(partition=>{
+              val channel10MPlayList = new ArrayList[Map[String, Object]]()
+              partition.foreach(w => {
+                channel10MPlayList.add(w.getValuesMap(cube4MFieldsU))
+              })
+              ElasticSearchUtil.bulkCreateIndex1(channel10MPlayList, "medusa", "channel10MinutePlay")
+            })
+//          电台直播
+          df3
+            .join(categoreyTelecastDF, df3(LIVECATEGORYCODE) === categoreyTelecastDF(CATEGORYCODE), "inner")
+            .repartition(3).foreachPartition(partition=>{
+            val channel10MPlayList = new ArrayList[Map[String, Object]]()
+            partition.foreach(w => {
               channel10MPlayList.add(w.getValuesMap(cube4MFieldsU))
             })
+            ElasticSearchUtil.bulkCreateIndex1(channel10MPlayList, "medusa", "channel10MinutePlay")
+          })
 
 
-
-
-          ElasticSearchUtil.bulkCreateIndex1(channelMPlayList, "medusa", "channelMinutePlay")
-          ElasticSearchUtil.bulkCreateIndex1(channelMPlayList, "medusa", "channel10MinutePlay")
-
+          categoryDF.unpersist()
+          categoreyTelecastDF.unpersist()
+          playDf.unpersist()
         })
 
       }

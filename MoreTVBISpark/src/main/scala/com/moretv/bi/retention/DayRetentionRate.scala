@@ -9,7 +9,7 @@ import com.moretv.bi.global.{DataBases, LogTypes}
 import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{ParamsParseUtil, SparkSetting, UserIdUtils}
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.JdbcRDD
 import java.sql.{DriverManager, Statement}
 
@@ -19,7 +19,10 @@ object DayRetentionRate extends BaseClass{
 
 
   def main(args: Array[String]) {
-    config.setAppName("DayRetentionRate")
+    config.setAppName("DayRetentionRate").
+      set("spark.executor.memory", "3g").
+      set("spark.executor.cores", "3").
+      set("spark.cores.max", "120")
     ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
@@ -55,6 +58,14 @@ object DayRetentionRate extends BaseClass{
           val connection = DriverManager.getConnection(url,user, password)
           val stmt = connection.createStatement()
 
+          // 创建插入数据库连接
+          val insertDB = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
+          val url1 = insertDB.prop.getProperty("url")
+          val user1 = insertDB.prop.getProperty("user")
+          val password1 = insertDB.prop.getProperty("password")
+          val connection1 = DriverManager.getConnection(url1,user1,password1)
+          val stmt1 = connection1.createStatement()
+
           for(j<- 0 until needToCalc.length){
             c.add(Calendar.DAY_OF_MONTH,-needToCalc(j))
             val date2 = format.format(c.getTime)
@@ -70,12 +81,12 @@ object DayRetentionRate extends BaseClass{
             val newUser = sqlRDD.count().toInt
             val retentionRate = retention.toDouble/newUser.toDouble
             if(p.deleteOld){
-              deleteSQL(date2,stmt)
+              deleteSQL(date2,stmt1)
             }
             if(j==0){
-              insertSQL(date2,newUser,retentionRate,stmt)
+              insertSQL(date2,newUser,retentionRate,stmt1)
             }else{
-              updateSQL(numOfDay(j),retentionRate,date2,stmt)
+              updateSQL(numOfDay(j),retentionRate,date2,stmt1)
             }
           }
           logUserID.unpersist()
