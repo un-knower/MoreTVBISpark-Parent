@@ -30,6 +30,8 @@ object EnChConvert {
               case "1_hot_tag_vicezhuanqu" => result="VICE专区"
               case "1_hot_tag_yinyuewudao" => result="音乐舞蹈"
               case "1_hot_tag_wuhuabamen" => result="五花八门"
+              case "hot_lanmu" => result="短视频栏目"
+              case "hot_dspzhuanti" => result="短视频专题"
               case _ => result=info
             }
           }
