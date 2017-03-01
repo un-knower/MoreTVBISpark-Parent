@@ -44,7 +44,7 @@ object ModuleClass {
       ExceptionManage.taskExecuteStore(op.getClass.getName,duration,executeTime)
     }catch {
       case e:Throwable =>{
-        SendMail.post(e,"[medusa]["+op.getClass.getName+"]["+executeTime+"]任务执行失败",emailArray)
+//        SendMail.post(e,"[medusa]["+op.getClass.getName+"]["+executeTime+"]任务执行失败",emailArray)
         if(alarmFlag){
           ExceptionManage.taskExceptionStore(op.getClass.getName,e,executeTime)
         }

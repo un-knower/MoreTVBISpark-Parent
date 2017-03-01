@@ -5,5 +5,5 @@ package com.moretv.bi.global
   */
 object SdkConfig {
 
-  val CONFIG_PATH = "hdfs://hans/test/config.json"
+  val CONFIG_PATH = "hdfs://hans/libs/config/bisdk-config.json"
 }
