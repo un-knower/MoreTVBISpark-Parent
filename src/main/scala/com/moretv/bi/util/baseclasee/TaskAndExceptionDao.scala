@@ -13,7 +13,10 @@ import com.moretv.bi.util.DBOperationUtils
  */
 object TaskAndExceptionDao {
 
-  private val db  = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+  val db  = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+  println(db.prop.getProperty("url"))
+  println(db.prop.getProperty("user"))
+  println(db.prop.getProperty("password"))
 
   /**
    * job执行过程中出现错误时候，保存该错误信息到数据库中

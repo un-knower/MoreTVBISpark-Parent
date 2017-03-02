@@ -21,9 +21,9 @@ import org.apache.spark.sql.SQLContext
 object PlayViewLogMergerFilter extends BaseClass{
   private val playNumLimit = 5000
   def main(args: Array[String]) {
-    config.set("spark.executor.memory", "5g").
-      set("spark.executor.cores", "5").
-      set("spark.cores.max", "100")
+//    config.set("spark.executor.memory", "5g").
+//      set("spark.executor.cores", "5").
+//      set("spark.cores.max", "100")
     ModuleClass.executor(this,args)
   }
 

@@ -23,9 +23,9 @@ import org.apache.spark.sql.SQLContext
   */
 object PlayViewLogMerger extends BaseClass{
   def main(args: Array[String]) {
-    config.set("spark.executor.memory", "5g").
-      set("spark.executor.cores", "5").
-      set("spark.cores.max", "100")
+//    config.set("spark.executor.memory", "5g").
+//      set("spark.executor.cores", "5").
+//      set("spark.cores.max", "100")
     ModuleClass.executor(this,args)
   }
 
