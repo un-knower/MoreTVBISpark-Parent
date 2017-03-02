@@ -19,7 +19,7 @@ class ProgramRedisUtils {
 		private val db = DataIO.getRedisOps(DataBases.REDIS_17_0)
     private val metadata_host=db.prop.getProperty("metadata_host")
     private val metadata_port=db.prop.getProperty("metadata_port").toInt
-    private val metadata_db=db.prop.getProperty("metadata_db").toInt
+    private val metadata_db=6
     private var metadata_jedis:Jedis=null
 
 		config.setMaxTotal(10)

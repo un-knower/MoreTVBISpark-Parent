@@ -75,6 +75,7 @@ object EachVideoPlayInfo2ES extends BaseClass {
               resMap.put("accessNum", new JLong(e.getLong(3)))
               videoList.add(resMap)
             })
+            ElasticSearchUtil.bulkCreateIndex(videoList, "medusa", "programPlay")
           })
 
           episodeDf.foreachPartition(rdd =>{
@@ -88,12 +89,13 @@ object EachVideoPlayInfo2ES extends BaseClass {
               resMap.put("accessNum", new JLong(e.getLong(3)))
               episodeList.add(resMap)
             })
+            ElasticSearchUtil.bulkCreateIndex(episodeList, "medusa", "prograplay")
           })
 
-
-          ElasticSearchUtil.bulkCreateIndex(videoList, "medusa", "programPlay")
-
-          ElasticSearchUtil.bulkCreateIndex(episodeList, "medusa", "prograplay")
+//
+//          ElasticSearchUtil.bulkCreateIndex(videoList, "medusa", "programPlay")
+//
+//          ElasticSearchUtil.bulkCreateIndex(episodeList, "medusa", "prograplay")
         })
         ElasticSearchUtil.close
       }

@@ -23,10 +23,10 @@ object DataFromRedisUtil {
   val db3 = DataIO.getRedisOps(DataBases.REDIS_3_3)
   val metadata_host=db0.prop.getProperty("metadata_host")                            //创建redis的host IP信息
   val metadata_port= db0.prop.getProperty("metadata_port").toInt                                //创建redis的端口号信息
-  val mtv_subject_metadata_db=db0.prop.getProperty("metadata_db").toInt                            //创建redis中的数据库
-  val mtv_channel_metadata_db = db1.prop.getProperty("metadata_db").toInt                          //创建redis中的数据库
-  val sailfish_sport_match_metadata_db = db2.prop.getProperty("metadata_db").toInt                 //创建redis中的数据库
-  val mtv_basecontent_metadata_db =db3.prop.getProperty("metadata_db").toInt                       //创建redis中的数据库
+  val mtv_subject_metadata_db=0                            //创建redis中的数据库
+  val mtv_channel_metadata_db = 1                          //创建redis中的数据库
+  val sailfish_sport_match_metadata_db = 2                //创建redis中的数据库
+  val mtv_basecontent_metadata_db =3                      //创建redis中的数据库
 
 
   /**

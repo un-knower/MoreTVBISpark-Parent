@@ -39,6 +39,9 @@ object CodeToNameUtils {
    val driver:String = "com.mysql.jdbc.Driver"
 
   val db1 = DataIO.getMySqlOps(DataBases.MORETV_RECOMMEND_TVSERVICE_MYSQL)
+  println("========Enter this class=========")
+  println(db1.prop)
+  println("=================")
   val db2 = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
   val  user:String = db1.prop.getProperty("user")
   val password:String = db1.prop.getProperty("password")

@@ -28,7 +28,7 @@ object ProgramDurationUtil {
   val db = DataIO.getRedisOps(DataBases.REDIS_3_3)
   val metadata_host=db.prop.getProperty("metadata_host")
   val metadata_port= db.prop.getProperty("metadata_port").toInt
-  val metadata_db= db.prop.getProperty("metadata_db").toInt
+  val metadata_db= 3
 
   /**
    * 初始化Jedis对象

@@ -45,7 +45,7 @@ object ModuleClass {
     }catch {
       case e:Throwable =>{
         SendMail.post(e,"[medusa]["+op.getClass.getName+"]["+executeTime+"]任务执行失败",emailArray)
-        println("==================")
+//        println("==================")
         println(TaskAndExceptionDao.db.prop.getProperty("url"))
         if(alarmFlag){
           ExceptionManage.taskExceptionStore(op.getClass.getName,e,executeTime)
