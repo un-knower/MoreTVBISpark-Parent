@@ -5,6 +5,7 @@ import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.report.medusa.dataAnalytics.DataAnalyticsPlayDistribution._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 import org.json.JSONObject
@@ -12,14 +13,15 @@ import org.json.JSONObject
 import scala.collection.mutable.ListBuffer
 
 /**
-  * Created by witnes on 9/7/16.
+  * Created by michael on 3/2/17.
+  *
+  * 统计用户观影时常分布(同一个用户观看同一个影片，总时间长度超过3个小时的时间分布)
+  *
   */
 
+object DataAnalyticsPlayDurationDistribution extends BaseClass {
 
-
-object DataAnalyticsPlayDistribution extends BaseClass {
-
-  private val tableName = "data_analytic_play_distribution"
+  private val tableName = "data_analytic_play_duration_distribution"
 
   def main(args: Array[String]): Unit = {
     ModuleClass.executor(DataAnalyticsPlayDistribution, args)
@@ -41,28 +43,40 @@ object DataAnalyticsPlayDistribution extends BaseClass {
             val deleteSql = s"delete from $tableName where day = ?"
             util.delete(deleteSql, insertDate)
           }
-          val insertSql = s"insert into $tableName(day,content_type,version,play_num,play_user,total_user) values(?,?,?,?,?,?)"
+          val insertSql = s"insert into $tableName(day,content_type,version,duration,play_user,total_user) values(?,?,?,?,?,?)"
           //临时没有该parquet文件,容错
           DataIO.getDataFrameOps.getDF(sc, p.paramMap, MORETV, LogTypes.PLAYVIEW).select("userId", "videoSid", "contentType",
-            "event", "apkVersion").unionAll(
+            "event", "apkVersion","duration").unionAll(
             DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogTypes.PLAY).select("userId", "videoSid", "contentType",
-              "event", "apkVersion")).registerTempTable("log_data")
+              "event", "apkVersion","duration")).registerTempTable("log_data")
+
+          /*
+            medusa退出play的event类型： 'selfend','userexit'，helios退出play的event类型：'playview'
+            duration>10800 [秒，表示三个小时]
+           */
+
+          /*统计在version,userId,videoSid纬度上，观看同一个影片时常超过3个小时的记录 */
           sqlContext.sql(
             """
-              |select contentType,getVersion(apkVersion) as version,userId,videoSid,count(userId) as playNum
+              |select contentType,getVersion(apkVersion) as version,userId,videoSid,sum(duration) as duration_sum
               |from log_data
-              |where event in ('startplay','playview')
+              |where event in ('selfend','userexit','playview')
               |group by contentType,getVersion(apkVersion) as version,userId,videoSid
+              |having duration_sum>10800
             """.stripMargin).registerTempTable("log_play")
+
+          /*统计在不同观看时常纬度上的用户数量分布*/
           sqlContext.sql(
             """
-              |select contentType,version,playNum,count(userId) as playUser
+              |select contentType,version,duration_sum,count(userId) as playUser
               |from log_play
-              |group by contentType,version,playNum
+              |group by contentType,version,duration_sum
             """.stripMargin).registerTempTable("log_play_distribution")
+
+          /*统计在不同观看时常纬度上的用户数量分布，附带特定duration_sum，特定playUser的总用户数信息*/
           sqlContext.sql(
             """
-              |select a.contentType,a.version,a.playNum,a.playUser,b.totalNum
+              |select a.contentType,a.version,a.duration_sum,a.playUser,b.totalNum
               |from log_play_distribution as a
               |join
               |(
@@ -88,6 +102,7 @@ object DataAnalyticsPlayDistribution extends BaseClass {
 
   /**
     * Get the version info
+    *
     * @param apkVersion
     * @return
     */
@@ -99,3 +114,18 @@ object DataAnalyticsPlayDistribution extends BaseClass {
     }
   }
 }
+
+/*
+2-15 machine
+* use medusa;
+CREATE TABLE `data_analytic_play_duration_distribution` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `day` varchar(20) NOT NULL DEFAULT '',
+  `version` varchar(2) NOT NULL DEFAULT '' COMMENT '版本信息：2/3',
+  `content_type` varchar(20) NOT NULL DEFAULT '' COMMENT '频道信息',
+  `duration` bigint(40) NOT NULL DEFAULT '0' COMMENT '单用户单节目播放时长',
+  `play_user` bigint(40) NOT NULL DEFAULT '0' COMMENT '单用户单节目播放量所对应的人数',
+  `total_user` bigint(40) NOT NULL DEFAULT '0' COMMENT '总人数',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8
+* */
