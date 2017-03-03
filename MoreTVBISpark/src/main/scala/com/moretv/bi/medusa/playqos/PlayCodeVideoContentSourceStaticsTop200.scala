@@ -4,7 +4,8 @@ import java.lang.{Long => JLong}
 import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.DataBases
+import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.medusa.playqos.EachVideoOfChannelPlayInfoTop200.{MERGER, sc, sqlContext}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil, ProgramRedisUtil}
 import org.json.JSONObject
@@ -17,9 +18,11 @@ import scala.collection.mutable.ListBuffer
 
 
 
-object PlayCodeVideoContentSourceStatics extends BaseClass {
+object PlayCodeVideoContentSourceStaticsTop200 extends BaseClass {
 
-  private val tableName = "medusa_video_content_type_playqos_playcode_source"
+  private val tableName = "medusa_video_content_type_playqos_playcode_source_top200"
+  private val arr = Array("movie","mv","sports","tv","hot","zongyi","comic","xiqu","jilu","kids")
+  private val limit = 200
 
   def main(args: Array[String]): Unit = {
     ModuleClass.executor(this,args)
@@ -29,6 +32,8 @@ object PlayCodeVideoContentSourceStatics extends BaseClass {
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
+        val tmpSqlContext = sqlContext
+        import tmpSqlContext.implicits._
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val cal = Calendar.getInstance
         val startDate = p.startDate
@@ -37,7 +42,15 @@ object PlayCodeVideoContentSourceStatics extends BaseClass {
         (0 until p.numOfDays).foreach(i => {
           val date = DateFormatUtils.readFormat.format(cal.getTime)
           val insertDate = DateFormatUtils.toDateCN(date,-1)
-          //临时没有该parquet文件,容错
+
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MERGER,LogTypes.PLAYVIEW,date).
+            select("userId","contentType","event","videoSid")
+            .registerTempTable("log_data")
+          sqlContext.sql("select contentType,videoSid,count(userId) as playNum" +
+            " from log_data where event in ('startplay','playview') and contentType in ('sports','mv','movie','tv','hot','zongyi'," +
+            "'comic','xiqu','jilu','kids') group by contentType,videoSid").toDF("contentType","videoSid","playNum").
+            registerTempTable("log_play_num")
+
           if(date.equals("20160815")){
             readPath = s"/log/medusa/parquet/20160814/playqos"
             cal.add(Calendar.DAY_OF_MONTH,-1)
@@ -45,28 +58,55 @@ object PlayCodeVideoContentSourceStatics extends BaseClass {
           else{
             readPath = s"/log/medusa/parquet/$date/playqos"
           }
-          println(readPath)
-
           val rdd = sqlContext.read.parquet(readPath).select("userId","date", "jsonLog")
             .map(e => (e.getString(0), e.getString(1),e.getString(2))).filter(_._2==insertDate)
+          rdd.flatMap(e=>getPlayCode(e._1,e._2,e._3)).toDF("userId","videoSid","day","source","playCode","contentType").
+            registerTempTable("log_playqos")
 
-          val tmpRdd = rdd.flatMap(e=>getPlayCode(e._1,e._2,e._3)).map(e=>((e._2,e._3,e._4,e._5,e._6),e._1)).cache()
-          val numRdd = tmpRdd.countByKey()
-          val sourceNum = tmpRdd.map(e=>((e._1._1,e._1._2,e._1._3,e._1._5),e._2)).countByKey()
-          tmpRdd.unpersist()
 
           if(p.deleteOld){
             val deleteSql = s"delete from $tableName where day = ?"
             util.delete(deleteSql,insertDate)
           }
-          val insertSql = s"insert into $tableName(day,videoSid,title,source,playcode,contentType,num,sourceNum) values(?,?,?,?,?,?,?,?)"
-          numRdd.foreach(i=>{
-            val key = (i._1._1,i._1._2,i._1._3,i._1._5)
-            val eachSourceNum = sourceNum.get(key) match {
-              case Some(e) => e
-              case None => 0L
-            }
-            util.insert(insertSql,insertDate,i._1._1,ProgramRedisUtil.getTitleBySid(i._1._1),i._1._3,new JLong(i._1._4),i._1._5,new JLong(i._2),new JLong(eachSourceNum))
+          val insertSql = s"insert into $tableName(day,videoSid,title,source,contentType,playcode,num,sourceNum) values(?,?,?,?,?,?,?,?)"
+
+          // Getting the playqos info
+
+          arr.foreach(contentType=>{
+            sqlContext.sql(
+              s"""
+                |select distinct contentType,videoSid,playNum
+                |from log_play_num
+                |where contentType = '${contentType}'
+                |order by playNum desc
+                |limit ${limit}
+              """.stripMargin).registerTempTable("log_videosid")
+
+            val numRdd = sqlContext.sql(
+              """
+                |select a.contentType,a.videoSid,a.source,a.playCode,count(a.userId)
+                |from log_playqos as a
+                |join log_videosid as b
+                |on a.contentType = b.contentType and a.videoSid = b.videoSid
+                |group by a.contentType,a.videoSid,a.source,a.playCode
+              """.stripMargin).map(e=>((e.getString(0),e.getString(1),e.getString(2)),(e.getLong(3),e.getLong(4))))
+
+            val sourceRdd = sqlContext.sql(
+              """
+                |select a.contentType,a.videoSid,a.source,count(a.userId)
+                |from log_playqos as a
+                |join log_play_num_content_type as b
+                |on a.contentType = b.contentType and a.videoSid = b.videoSid
+                |group by a.contentType,a.videoSid,a.source
+              """.stripMargin).map(e=>((e.getString(0),e.getString(1),e.getString(2)),e.getLong(3)))
+
+            numRdd.join(sourceRdd).foreachPartition(partition=>{
+              val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+              partition.foreach(rdd=>{
+                util.insert(insertSql,insertDate,rdd._1._2,ProgramRedisUtil.getTitleBySid(rdd._1._2),rdd._1._3,
+                  rdd._1._1,rdd._2._1._1,rdd._2._1._2,rdd._2._2)
+              })
+            })
           })
 
           cal.add(Calendar.DAY_OF_MONTH,-1)
