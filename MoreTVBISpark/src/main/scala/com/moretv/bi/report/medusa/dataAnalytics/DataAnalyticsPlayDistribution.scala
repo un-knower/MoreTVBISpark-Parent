@@ -52,7 +52,7 @@ object DataAnalyticsPlayDistribution extends BaseClass {
               |select contentType,getVersion(apkVersion) as version,userId,videoSid,count(userId) as playNum
               |from log_data
               |where event in ('startplay','playview')
-              |group by contentType,getVersion(apkVersion) as version,userId,videoSid
+              |group by contentType,getVersion(apkVersion),userId,videoSid
             """.stripMargin).registerTempTable("log_play")
           sqlContext.sql(
             """
@@ -62,7 +62,7 @@ object DataAnalyticsPlayDistribution extends BaseClass {
             """.stripMargin).registerTempTable("log_play_distribution")
           sqlContext.sql(
             """
-              |select a.contentType,a.version,a.playNum,a.playUser,b.totalNum
+              |select a.contentType,a.version,a.playNum,a.playUser,b.totalUser
               |from log_play_distribution as a
               |join
               |(
