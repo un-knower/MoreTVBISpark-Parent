@@ -89,7 +89,7 @@ object PlayCodeVideoContentSourceStaticsTop200 extends BaseClass {
                 |join log_videosid as b
                 |on a.contentType = b.contentType and a.videoSid = b.videoSid
                 |group by a.contentType,a.videoSid,a.source,a.playCode
-              """.stripMargin).map(e=>((e.getString(0),e.getString(1),e.getString(2)),(e.getLong(3),e.getLong(4))))
+              """.stripMargin).map(e=>((e.getString(0),e.getString(1),e.getString(2)),(e.getInt(3),e.getLong(4))))
 
             val sourceRdd = sqlContext.sql(
               """
