@@ -52,6 +52,7 @@ object DBSnapShot extends BaseClass {
         val moretvDF = moretvSqlRdd.toDF("id", "user_id", "mac", "openTime", "lastLoginTime", "ip", "product_model", "product_serial",
           "userType", "wifi_mac", "promotion_channel", "current_version", "origin_type", "sn")
 
+        //TODO 是否需要写到固定的常量类or通过SDK读取
         val outputPath = s"/log/dbsnapshot/parquet/$day/moretv_mtv_account"
 
         if (p.deleteOld) HdfsUtil.deleteHDFSFile(outputPath)

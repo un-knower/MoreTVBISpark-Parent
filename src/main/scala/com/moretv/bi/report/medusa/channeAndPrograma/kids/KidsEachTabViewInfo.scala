@@ -56,6 +56,7 @@ object KidsEachTabViewInfo extends BaseClass{
           val enterUserIdDate = DateFormatUtils.readFormat.format(calendar.getTime)
 
           /*拼接parquet数据源的完整路径*/
+          // TODO 修改路径
           val playDir =s"$medusaBaseDir/$date/tabview"
 
           /*获取 tabview DataFrame */

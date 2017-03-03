@@ -21,7 +21,7 @@ object KidsSongUVVV extends BaseClass with DateUtil{
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
-
+        //TODO 是否需要修改路径
         val path = "/mbi/parquet/playview/"+p.startDate+"/part-*"
         val df = sqlContext.read.load(path)
         val resultRDD = df.filter("path like '%kids_home-kids_songhome%'").select("date","videoSid","userId").map(e =>(e.getString(0),e.getString(1),e.getString(2))).

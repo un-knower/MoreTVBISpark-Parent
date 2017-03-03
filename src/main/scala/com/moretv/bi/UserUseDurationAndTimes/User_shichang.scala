@@ -1,12 +1,8 @@
 package com.moretv.bi.UserUseDurationAndTimes
 
-import java.text.SimpleDateFormat
-import java.util.Calendar
-
 import com.moretv.bi.util._
-import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
+import com.sun.xml.internal.bind.v2.TODO
 import org.apache.spark.storage.StorageLevel
 
 /**
@@ -21,6 +17,7 @@ object User_shichang extends BaseClass with DateUtil{
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
 
+        //TODO 是否需要写到固定的常量类or通过SDK读取
         val path = "/mbi/parquet/exit/"+p.startDate+"/part-*"
         val df = sqlContext.read.load(path)
         val resultRDD = df.select("date","duration","userId").map(e =>(e.getString(0),e.getInt(1),e.getString(2))).

@@ -31,6 +31,7 @@ object EachUserEachCrashAppearInfo extends BaseClass{
         val util = new DBOperationUtils("medusa")
         val inputDate = p.startDate
         val day = DateFormatUtils.toDateCN(inputDate)
+        // TODO 是否需要写到固定的常量类或者SDK读取
         val logRdd = sc.textFile(s"/log/medusa_crash/rawlog/${inputDate}/").map(log=>{
           val json = new JSONObject(log)
           (json.optString("fileName"),json.optString("MAC"),json.optString("APP_VERSION_NAME"),json.optString("APP_VERSION_CODE"),

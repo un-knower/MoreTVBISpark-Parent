@@ -24,6 +24,7 @@ object LiveDurationAnalytics1 extends SparkSetting{
         val startDate = p.startDate
 
 
+        //TODO 是否需要写到固定的常量类or通过SDK读取
         val medusaDir = "/log/medusa/parquet"
         val moretvDir = "/mbi/parquet"
 
@@ -37,6 +38,8 @@ object LiveDurationAnalytics1 extends SparkSetting{
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
           val enterUserIdDate = DateFormatUtils.readFormat.format(calendar.getTime)
+
+          //TODO 是否需要写到固定的常量类or通过SDK读取
 
           val medusaDailyActiveInput = s"$medusaDir/$date/live/"
           val moretvDailyActiveInput = s"$moretvDir/live/$date"

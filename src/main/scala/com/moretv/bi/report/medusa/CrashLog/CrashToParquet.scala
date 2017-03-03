@@ -34,6 +34,7 @@ object CrashToParquet extends SparkSetting{
           if(p.deleteOld){
             HdfsUtil.deleteHDFSFile(s"${outPath}${date}/")
           }
+          // TODO 是否需要写到固定的常量类或者SDK读取
           val logRdd = sc.textFile(s"/log/medusa_crash/rawlog/${date}/").map(log=>{
             var json = new JSONObject()
             try{

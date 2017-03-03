@@ -21,7 +21,7 @@ object Third_path_vv extends BaseClass with DateUtil{
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-
+        //TODO 是否需要修改路径
         //calculate log whose type is play
         val path = "/mbi/parquet/playview/" + p.startDate + "/part-*"
         val df = sqlContext.read.load(path)

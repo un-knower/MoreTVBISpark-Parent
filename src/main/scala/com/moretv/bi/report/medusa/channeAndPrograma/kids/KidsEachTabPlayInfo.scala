@@ -5,6 +5,10 @@ package com.moretv.bi.report.medusa.channeAndPrograma.kids
   */
 import java.util.Calendar
 import java.lang.{Long => JLong}
+
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.LogTypes
+import com.moretv.bi.report.medusa.channeAndPrograma.movie.EachChannelSubjectPlayInfo.{MERGER, sc}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
@@ -55,10 +59,8 @@ object KidsEachTabPlayInfo extends BaseClass {
           val enterUserIdDate = DateFormatUtils.readFormat.format(calendar.getTime)
 
           /*拼接parquet数据源的完整路径*/
-          val playDir = s"/log/medusaAndMoretvMerger/$loadDate/playview"
 
-          /*获取 play DataFrame */
-          sqlContext.read.parquet(playDir)
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MERGER,LogTypes.PLAYVIEW,loadDate)
             .filter("event in ('startplay','playview')")
             .registerTempTable("log")
 

@@ -1,4 +1,4 @@
-package com.moretv.bi.report.medusa.dataAnalytics
+package com.moretv.bi.medusa.playqos
 
 import java.lang.{Long => JLong}
 import java.util.Calendar
@@ -15,12 +15,12 @@ import scala.collection.mutable.ListBuffer
 
 
 
-object PlayCodeVideoSourceStatics extends BaseClass {
+object PlayCodeEachVideoSourceStatics extends BaseClass {
 
   private val tableName = "medusa_video_playqos_playcode_source"
 
   def main(args: Array[String]): Unit = {
-    ModuleClass.executor(PlayCodeVideoSourceStatics, args)
+    ModuleClass.executor(PlayCodeEachVideoSourceStatics, args)
   }
 
   override def execute(args: Array[String]): Unit = {

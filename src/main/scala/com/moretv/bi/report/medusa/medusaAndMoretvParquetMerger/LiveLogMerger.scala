@@ -22,12 +22,6 @@ import org.apache.spark.storage.StorageLevel
   */
 object LiveLogMerger extends BaseClass{
   def main(args: Array[String]) {
-//    config.set("spark.eventLog.enabled","true").
-//      set("spark.eventLog.dir","hdfs://hans/xiajun/spark-events").
-//      set("spark.speculation","true").
-//      set("spark.speculation.interval", "100").
-//      set("spark.speculation.quantile","0.75").
-//      set("spark.speculation.multiplier","1.5")
     ModuleClass.executor(this,args)
   }
    override def execute(args: Array[String]) {

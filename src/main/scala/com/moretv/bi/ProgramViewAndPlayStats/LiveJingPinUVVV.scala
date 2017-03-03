@@ -22,7 +22,7 @@ object LiveJingPinUVVV extends BaseClass with DateUtil{
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
 
-
+        //TODO 是否需要修改路径
         val path = "/mbi/parquet/playview/"+p.startDate+"/part-*"
         val df = sqlContext.read.load(path)
         val resultRDD = df.filter("path like '%jingpin%'").select("date","path","userId").map(e =>(e.getString(0),e.getString(1),e.getString(2))).

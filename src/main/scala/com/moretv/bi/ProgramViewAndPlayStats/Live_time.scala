@@ -23,7 +23,7 @@ object Live_time extends BaseClass with DateUtil{
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
 
-
+        //TODO 是否需要修改路径
         val path = "/mbi/parquet/live/"+p.startDate
         val df = sqlContext.read.load(path)
         val resultRDD = df.select("date","channelSid","duration").map(e =>(e.getString(0),e.getString(1),e.getInt(2).toLong)).

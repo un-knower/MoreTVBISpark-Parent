@@ -51,6 +51,7 @@ object RetentionStat extends BaseClass {
           val endDate = DateFormatUtils.readFormat.format(cal.getTime)
           cal.add(Calendar.DAY_OF_YEAR, -30)
           val startDate = DateFormatUtils.cnFormat.format(cal.getTime)
+          //TODO 是否需要写到固定的常量类or通过SDK读取
           val loadNewAddedPath = s"/log/dbsnapshot/parquet/$endDate/moretv_mtv_account"
 
           val dfBase = sqlContext.read.parquet(loadNewAddedPath)
@@ -77,6 +78,7 @@ object RetentionStat extends BaseClass {
                 end = DateFormatUtils.cnFormat.format(cal.getTime)
                 cal.add(Calendar.DAY_OF_YEAR, 1) //loadPath : T+1
                 val nextDay = DateFormatUtils.readFormat.format(cal.getTime)
+                //TODO 是否需要写到固定的常量类or通过SDK读取
                 val nextPath = s"/log/moretvloginlog/parquet/$nextDay/loginlog"
                 loadPaths.+=(nextPath)
               })

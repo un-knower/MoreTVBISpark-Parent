@@ -130,6 +130,7 @@ object RetentionStepStat extends BaseClass {
         (1 to day).foreach(days => {
 
           val nextDay = readFormat.format(calCopy.getTime)
+          //TODO 是否需要写到固定的常量类or通过SDK读取
           val nextPath = s"/log/moretvloginlog/parquet/$nextDay/loginlog"
           loadPaths.+=(nextPath)
           calCopy.add(Calendar.DAY_OF_YEAR, -1) //loadPath : T+1

@@ -20,9 +20,6 @@ import com.moretv.bi.medusa.util.ParquetDataStyle.ALL_CRASH_INFO
 object CrashTrendsByVersionProductCrashKey extends BaseClass{
 
   def main(args: Array[String]) {
-    config.set("spark.executor.memory", "5g").
-      set("spark.executor.cores", "5").
-      set("spark.cores.max", "100")
     ModuleClass.executor(this,args)
   }
 
@@ -35,6 +32,7 @@ object CrashTrendsByVersionProductCrashKey extends BaseClass{
 
         val inputDate = p.startDate
         val day = DateFormatUtils.toDateCN(inputDate)
+        //TODO 是否需要写到固定的常量类or通过SDK读取
         val inputPath=p.paramMap.getOrElse("inputPath",s"/log/crash/metadata/#{date}_extraction.log")
           .replace("#{date}",inputDate)
 

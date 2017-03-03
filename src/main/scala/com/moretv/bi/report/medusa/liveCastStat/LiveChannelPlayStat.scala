@@ -37,9 +37,6 @@ object LiveChannelPlayStat extends BaseClass {
 
 
   def main(args: Array[String]) {
-    config.set("spark.executor.memory", "5g").
-      set("spark.executor.cores", "5").
-      set("spark.cores.max", "120")
     ModuleClass.executor(this, args)
   }
 

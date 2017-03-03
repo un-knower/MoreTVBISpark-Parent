@@ -24,6 +24,7 @@ object BaiduYunUVVVPV extends BaseClass with DateUtil{
 
 
         //calculate log whose type is play
+        //TODO 是否需要修改路径
         val path = "/mbi/parquet/{playview,interview}/" + p.startDate + "/part-*"
         val df = sqlContext.read.load(path).persist(StorageLevel.MEMORY_AND_DISK)
         val playRDD = df.filter("logType='playview' and path like '%home-baidu_cloud%'").select("date","userId").map(e => (e.getString(0), e.getString(1))).

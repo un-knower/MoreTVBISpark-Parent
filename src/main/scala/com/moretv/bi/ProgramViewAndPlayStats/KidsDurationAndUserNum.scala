@@ -22,7 +22,7 @@ object KidsDurationAndUserNum extends BaseClass with DateUtil{
       case Some(p) =>{
 
 
-
+        //TODO 是否需要修改路径
         val path = "/mbi/parquet/interview/"+p.startDate+"/part-*"
         val df = sqlContext.read.load(path)
         val resultRDD = df.filter("event = 'exit' and path in ('home-kids_home','thirdparty_1-kids_home'," +

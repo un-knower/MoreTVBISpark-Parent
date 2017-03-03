@@ -16,9 +16,6 @@ import org.apache.spark.SparkContext
 object YunOSLoginUser extends BaseClass{
   val re = "MoreTV[\\w\\.]+(Alibaba|YunOS)".r
   def main(args: Array[String]) {
-    config.set("spark.executor.memory", "2g").
-      set("spark.cores.max", "30").
-      set("spark.storage.memoryFraction", "0.6")
     ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {

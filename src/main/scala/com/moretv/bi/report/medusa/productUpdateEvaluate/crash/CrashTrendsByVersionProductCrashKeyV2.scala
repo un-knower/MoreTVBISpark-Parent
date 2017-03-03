@@ -25,6 +25,7 @@ object CrashTrendsByVersionProductCrashKeyV2 extends SparkSetting{
         val inputDate = p.startDate
         val day = DateFormatUtils.toDateCN(inputDate)
 
+        //TODO 是否需要写到固定的常量类or通过SDK读取
         // 过滤掉stack_trace没有值/空的情形
         val logRdd = sc.textFile(s"/log/medusa_crash/rawlog/${inputDate}/").map(log=>{
           var json = new JSONObject()

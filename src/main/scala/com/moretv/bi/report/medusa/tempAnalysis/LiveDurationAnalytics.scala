@@ -21,6 +21,7 @@ object LiveDurationAnalytics extends SparkSetting{
       implicit val sqlContext = new SQLContext(sc)
       val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
       val time = args(0)
+      //TODO 是否需要写到固定的常量类or通过SDK读取
       val dir = s"/log/medusaAndMoretvMerger/$time/live"
       sqlContext.read.parquet(dir).select("duration","userId","event","liveType").registerTempTable("log")
       val df = sqlContext.sql("select duration,count(userId),count(distinct userId) from log where event = 'switchchannel'" +

@@ -38,6 +38,7 @@ object CrashTrendsByVersionProductCrashKey extends BaseClass  {
 
         // 过滤掉stack_trace没有值/空的情形
 
+        //TODO 是否需要写到固定的常量类or通过SDK读取
         val inputPath=p.paramMap.getOrElse("inputPath","/log/medusa_crash/rawlog/#{date}/")
         val logPath=inputPath.replace("#{date}",inputDate)
         val logRdd = sc.textFile(logPath).map(log=>{

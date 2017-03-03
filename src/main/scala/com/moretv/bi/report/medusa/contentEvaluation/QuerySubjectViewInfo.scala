@@ -23,12 +23,6 @@ object QuerySubjectViewInfo extends BaseClass {
   private val regex="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu)([0-9]+)""".r
   private val subjectInfoMap = CodeToNameUtils.getAllSubjectCode()
   def main(args: Array[String]) {
-    config.set("spark.executor.memory", "5g").
-      set("spark.executor.cores", "5").
-      set("spark.cores.max", "100").
-      set("spark.default.parallelism", "40").
-      set("spark.sql.shuffle.partitions", "400").
-      set("spark.cores.max", "100")
     ModuleClass.executor(this,args)
   }
 

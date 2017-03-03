@@ -1,4 +1,4 @@
-package com.moretv.bi.temp
+package com.moretv.bi.dbOperation
 
 import org.json.JSONObject
 import redis.clients.jedis.{JedisPool, JedisPoolConfig, Protocol}
@@ -64,6 +64,8 @@ object ProgramRedisUtil {
       title
     } catch {
       case e:Exception => sid
+    } finally {
+      destroy()
     }
   }
 

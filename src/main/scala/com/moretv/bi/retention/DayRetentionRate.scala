@@ -19,10 +19,6 @@ object DayRetentionRate extends BaseClass{
 
 
   def main(args: Array[String]) {
-    config.setAppName("DayRetentionRate").
-      set("spark.executor.memory", "3g").
-      set("spark.executor.cores", "3").
-      set("spark.cores.max", "120")
     ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {

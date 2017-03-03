@@ -50,6 +50,7 @@ object ChannelProductActiveStat extends BaseClass {
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
+          //TODO 是否需要写到固定的常量类or通过SDK读取
           val inputPath=p.paramMap.getOrElse("inputPath","/log/moretvloginlog/parquet/#{date}/loginlog")
           val loadPath = inputPath.replace("#{date}",loadDate)
 

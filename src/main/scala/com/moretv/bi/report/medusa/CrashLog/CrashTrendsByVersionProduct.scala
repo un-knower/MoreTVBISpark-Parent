@@ -27,6 +27,7 @@ object CrashTrendsByVersionProduct extends BaseClass{
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val inputDate = p.startDate
         val day = DateFormatUtils.toDateCN(inputDate)
+        // TODO 是否需要写到固定的常量类或者SDK读取
         val inputPath=p.paramMap.getOrElse("inputPath",s"/log/crash/metadata/#{date}_extraction.log").replace("#{date}",inputDate)
 
         val logRdd = sc.textFile(inputPath).map(log=>{

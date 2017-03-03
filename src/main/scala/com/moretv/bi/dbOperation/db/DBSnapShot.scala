@@ -1,4 +1,4 @@
-package com.moretv.bi.temp.db
+package com.moretv.bi.dbOperation.db
 
 import java.sql.DriverManager
 import java.util.Calendar

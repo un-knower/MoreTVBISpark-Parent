@@ -112,6 +112,7 @@ object ProductModelUserStat extends BaseClass {
         startDateFormat = year + "-" + currentMonth + "-" + "01"
         endDateForamt = year + "-" + currentMonth + "-" + endOfMonth
 
+        //TODO 是否需要写到固定的常量类or通过SDK读取
         val inputPath=p.paramMap.getOrElse("inputPath","/log/moretvloginlog/parquet/#{date}/loginlog")
         val loadPathTemplate =inputPath.replace("#{date}",loadDateFormat)
 

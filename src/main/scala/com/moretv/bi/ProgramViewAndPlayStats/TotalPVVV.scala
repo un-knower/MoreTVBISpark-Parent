@@ -19,7 +19,7 @@ object TotalPVVV extends BaseClass with DateUtil{
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
-
+        //TODO 是否需要修改路径
         //calculate log whose type is play
         val playPath = "/mbi/parquet/playview/" + p.startDate
         val df_play = sqlContext.read.load(playPath)

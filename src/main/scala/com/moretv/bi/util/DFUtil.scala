@@ -69,7 +69,7 @@ object DFUtil extends SparkSetting{
     
     val df = getDFByDate(logType,startDate,numOfDays,mode)(sqlContext)
 
-    //The temp table name was log_data.So the sql should be written like 'select ... from log_data where ...'.
+    //The dbOperation table name was log_data.So the sql should be written like 'select ... from log_data where ...'.
     df.registerTempTable("log_data")
     sqlContext.sql(sql)
   }

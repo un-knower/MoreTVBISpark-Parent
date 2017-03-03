@@ -30,6 +30,7 @@ object AccumulateUser extends BaseClass {
           val insertDate = DateFormatUtils.toDateCN(date, 0)
           calendar.add(Calendar.DAY_OF_MONTH, -1)
 
+          //TODO 是否需要写到固定的常量类or通过SDK读取
           val inputPath = p.paramMap.getOrElse("inputPath", "/log/dbsnapshot/parquet/#{date}/moretv_mtv_account")
           val newUserInput =inputPath.replace("#{date}",date)
           sqlContext.read.parquet(newUserInput).registerTempTable("log_data")

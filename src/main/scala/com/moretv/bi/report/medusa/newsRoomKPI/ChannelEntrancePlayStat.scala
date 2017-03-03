@@ -3,6 +3,10 @@ package com.moretv.bi.report.medusa.newsRoomKPI
 import java.lang.{Float => JFloat, Long => JLong}
 import java.util.Calendar
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.LogTypes
+import com.moretv.bi.report.medusa.newsRoomKPI.EachChannelPlayInfo.{MERGER, sqlContext}
+
 import scala.collection.mutable.Map
 import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
@@ -63,11 +67,9 @@ object ChannelEntrancePlayStat extends BaseClass {
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          val playviewInput = s"/log/medusaAndMoretvMerger/$loadDate/playview"
-
-          sqlContext.read.parquet(playviewInput)
-
-            .filter("path is not null or pathMain is not null")
+          //TODO 是否需要写到固定的常量类or通过SDK读取
+          DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MERGER,LogTypes.PLAYVIEW).
+            filter("path is not null or pathMain is not null")
             .select(
               "event", "userId", "pathMain", "path", "contentType", "pathIdentificationFromPath", "flag", "duration"
             )

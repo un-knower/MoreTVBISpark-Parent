@@ -20,9 +20,6 @@ object YunOSNewUser extends BaseClass{
   val seriesArray = Array("Alibaba","YunOS")
 
   def main(args: Array[String]) {
-    config.set("spark.executor.memory", "2g").
-      set("spark.cores.max", "30").
-      set("spark.storage.memoryFraction", "0.6")
     ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
