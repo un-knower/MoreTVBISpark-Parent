@@ -95,7 +95,7 @@ object PlayCodeVideoContentSourceStaticsTop200 extends BaseClass {
               """
                 |select a.contentType,a.videoSid,a.source,count(a.userId)
                 |from log_playqos as a
-                |join log_play_num_content_type as b
+                |join log_videosid as b
                 |on a.contentType = b.contentType and a.videoSid = b.videoSid
                 |group by a.contentType,a.videoSid,a.source
               """.stripMargin).map(e=>((e.getString(0),e.getString(1),e.getString(2)),e.getLong(3)))
