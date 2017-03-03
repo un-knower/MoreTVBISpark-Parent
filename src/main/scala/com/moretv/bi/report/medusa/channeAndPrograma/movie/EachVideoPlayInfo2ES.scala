@@ -52,11 +52,6 @@ object EachVideoPlayInfo2ES extends BaseClass {
               |  from log_data group by contentType, episodeSid
             """.stripMargin)
 
-          val videoList = new util.ArrayList[util.Map[String, Object]]()
-
-          val episodeList = new util.ArrayList[util.Map[String, Object]]()
-
-
           // 删除ES中旧数据
           if(p.deleteOld){
             val url = s"http://${Constants.ES_URL}/medusa/programPlay/_query?q=day:${insertDate}"
@@ -65,11 +60,12 @@ object EachVideoPlayInfo2ES extends BaseClass {
 
           // 将数据插入ES
           videoDf.foreachPartition(rdd => {
+            val videoList = new util.ArrayList[util.Map[String, Object]]()
             rdd.foreach(e => {
               val resMap = new util.HashMap[String, Object]()
               resMap.put("contentType", e.getString(0))
               resMap.put("sid", e.getString(1))
-              resMap.put("title", ProgramRedisUtil.getTitleBySid(e.getString(1)).toString)
+              resMap.put("title", e.getString(1))
               resMap.put("day", insertDate.toString)
               resMap.put("userNum", new JLong(e.getLong(2)))
               resMap.put("accessNum", new JLong(e.getLong(3)))
@@ -78,24 +74,20 @@ object EachVideoPlayInfo2ES extends BaseClass {
             ElasticSearchUtil.bulkCreateIndex(videoList, "medusa", "programPlay")
           })
 
-          episodeDf.foreachPartition(rdd =>{
-            rdd.foreach(e => {
-              val resMap = new util.HashMap[String, Object]()
-              resMap.put("contentType", e.getString(0))
-              resMap.put("episodeSid", e.getString(1))
-              resMap.put("title", ProgramRedisUtil.getTitleBySid(e.getString(1)).toString)
-              resMap.put("day", insertDate.toString)
-              resMap.put("userNum", new JLong(e.getLong(2)))
-              resMap.put("accessNum", new JLong(e.getLong(3)))
-              episodeList.add(resMap)
-            })
-            ElasticSearchUtil.bulkCreateIndex(episodeList, "medusa", "prograplay")
-          })
-
-//
-//          ElasticSearchUtil.bulkCreateIndex(videoList, "medusa", "programPlay")
-//
-//          ElasticSearchUtil.bulkCreateIndex(episodeList, "medusa", "prograplay")
+//          episodeDf.foreachPartition(rdd =>{
+//            val episodeList = new util.ArrayList[util.Map[String, Object]]()
+//            rdd.foreach(e => {
+//              val resMap = new util.HashMap[String, Object]()
+//              resMap.put("contentType", e.getString(0))
+//              resMap.put("episodeSid", e.getString(1))
+//              resMap.put("title", ProgramRedisUtil.getTitleBySid(e.getString(1)).toString)
+//              resMap.put("day", insertDate.toString)
+//              resMap.put("userNum", new JLong(e.getLong(2)))
+//              resMap.put("accessNum", new JLong(e.getLong(3)))
+//              episodeList.add(resMap)
+//            })
+//            ElasticSearchUtil.bulkCreateIndex(episodeList, "medusa", "prograplay")
+//          })
         })
         ElasticSearchUtil.close
       }
