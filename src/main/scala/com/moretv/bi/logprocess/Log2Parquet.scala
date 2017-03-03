@@ -20,10 +20,10 @@ import com.moretv.bi.constant.LogType._
 object Log2Parquet extends BaseClass{
 
   def main(args: Array[String]) {
-    config.set("spark.executor.memory", "60g").
-      set("spark.cores.max", "220").
-      set("spark.memory.storageFraction","0.3").
-      set("spark.executor.cores","20")
+//    config.set("spark.executor.memory", "60g").
+//      set("spark.cores.max", "220").
+//      set("spark.memory.storageFraction","0.3").
+//      set("spark.executor.cores","20")
     ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]){

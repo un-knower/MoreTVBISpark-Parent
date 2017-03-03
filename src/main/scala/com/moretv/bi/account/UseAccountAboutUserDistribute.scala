@@ -1,20 +1,11 @@
 package com.moretv.bi.account
 
-import java.sql.DriverManager
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.regex.Pattern
-
-import com.moretv.bi.user.UserAgeStatistics._
-import com.moretv.bi.util._
-import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.{DataBases, LogTypes}
 import cn.whaley.sdk.dataOps.MySqlOps
+import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.constant.Tables
+import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import org.apache.spark.SparkContext
-import org.apache.spark.rdd.JdbcRDD
-import org.apache.spark.sql.SQLContext
 
 /**
   * Created by Will on 2015/4/18.

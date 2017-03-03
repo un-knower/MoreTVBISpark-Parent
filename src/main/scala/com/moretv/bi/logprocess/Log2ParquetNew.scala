@@ -24,16 +24,16 @@ object Log2ParquetNew extends BaseClass {
   val outDir = "/mbi/parquet/"
 
   def main(args: Array[String]) {
-    config.set("spark.executor.memory", "15g").
-      set("spark.cores.max", numCores.toString).
-      set("spark.memory.storageFraction","0.3").
-      set("spark.executor.cores","5").
-      set("spark.serializer", "org.apache.spark.serializer.KryoSerializer").
-      set("spark.kryo.registrator", "com.moretv.bi.apart.MyRegistrator").
-      set("spark.speculation","true").
-      set("spark.speculation.multiplier","1.4").
-      set("spark.speculation.interval","1000").
-      set("spark.scheduler.mode","FIFO")
+//    config.set("spark.executor.memory", "15g").
+//      set("spark.cores.max", numCores.toString).
+//      set("spark.memory.storageFraction","0.3").
+//      set("spark.executor.cores","5").
+//      set("spark.serializer", "org.apache.spark.serializer.KryoSerializer").
+//      set("spark.kryo.registrator", "com.moretv.bi.apart.MyRegistrator").
+//      set("spark.speculation","true").
+//      set("spark.speculation.multiplier","1.4").
+//      set("spark.speculation.interval","1000").
+//      set("spark.scheduler.mode","FIFO")
     ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {

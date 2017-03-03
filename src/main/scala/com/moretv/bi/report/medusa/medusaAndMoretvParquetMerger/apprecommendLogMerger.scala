@@ -59,11 +59,17 @@ object apprecommendLogMerger extends BaseClass{
 
              val meudsaColumnsName = medusaDf.columns.toList.mkString(",")
              val moretvColumnsName = moretvDf.columns.toList.mkString(",")
+             println("=================")
+             println(meudsaColumnsName)
+             println(moretvColumnsName)
              medusaDf.registerTempTable("log_data_1")
              moretvDf.registerTempTable("log_data_2")
 
              val sqlSelectMedusa = s"select $meudsaColumnsName,'medusa' as flag from log_data_1"
              val sqlSelectMoretv = s"select $moretvColumnsName,date as day,'moretv' as flag from log_data_2"
+
+             println(sqlSelectMedusa)
+             println(sqlSelectMoretv)
              val json1 = sqlContext.sql(sqlSelectMedusa).toJSON
              val json2 = sqlContext.sql(sqlSelectMoretv).toJSON
              val mergerJson = json1.union(json2)
@@ -72,6 +78,7 @@ object apprecommendLogMerger extends BaseClass{
              //val moretvDf = sqlContext.read.parquet(s"$moretv_input_dir")
              val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MORETV,LogTypes.APP_RECOMMEND,inputDate)
              val moretvColumnsName = moretvDf.columns.toList.mkString(",")
+             println(moretvColumnsName)
              moretvDf.registerTempTable("log_data_2")
              val sqlSelectMoretv = s"select $moretvColumnsName,date as day,'moretv' as flag from log_data_2"
              sqlContext.sql(sqlSelectMoretv).write.parquet(outputPath)
@@ -79,6 +86,8 @@ object apprecommendLogMerger extends BaseClass{
              //val medusaDf = sqlContext.read.parquet(s"$medusa_input_dir")
              val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.APPACCESS,inputDate)
              val meudsaColumnsName = medusaDf.columns.toList.mkString(",")
+             println("=================")
+             println(meudsaColumnsName)
              medusaDf.registerTempTable("log_data_1")
              val sqlSelectMedusa = s"select $meudsaColumnsName,'medusa' as flag from log_data_1"
              sqlContext.sql(sqlSelectMedusa).write.parquet(outputPath)

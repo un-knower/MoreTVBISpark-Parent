@@ -1,12 +1,9 @@
 package com.moretv.bi.kidslogin
 
-import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import cn.whaley.sdk.dataOps.MySqlOps
+import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
 
 import scala.collection.JavaConversions._
 
@@ -70,10 +67,6 @@ object KidsPromotionChannelDetail extends BaseClass {
           val newnum = pcMap.getOrElse(promotionChannel, 0)
           db.insert(sqlInsert, new Integer(year), new Integer(month), day, promotionChannel, new Integer(newnum), new Integer(usernum.toInt), new Integer(loginnum.toInt))
         })
-
-        println("userNums size: " + userNums.size)
-        println("pcMap size: " + pcMap.size)
-        println("pcMap intersection userNums: " + pcMap.keySet.intersect(userNums.keySet).size)
 
         dbTvService.destory()
         db.destory()

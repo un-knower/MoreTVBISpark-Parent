@@ -1,18 +1,12 @@
 package com.moretv.bi.account
 
-import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.lang.{Long => JLong}
-import org.apache.spark.sql.functions._
+
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.{DataBases, LogTypes}
-import cn.whaley.sdk.dataOps.MySqlOps
-import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util._
-import org.apache.spark.sql.catalyst.expressions.CaseWhen
-import org.apache.spark.storage.StorageLevel
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
+import org.apache.spark.sql.functions._
 
 /**
   * Created by laishun on 15/10/9.

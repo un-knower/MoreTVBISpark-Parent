@@ -19,9 +19,9 @@ object Log2ParquetForActivityNew extends BaseClass{
   //private val regex = "\\w{1,30}".r
 
   def main(args: Array[String]) {
-    config.set("spark.executor.memory", "3g").
-      set("spark.cores.max", "100").
-      set("spark.storage.memoryFraction", "0.6")
+//    config.set("spark.executor.memory", "3g").
+//      set("spark.cores.max", "100").
+//      set("spark.storage.memoryFraction", "0.6")
     ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
