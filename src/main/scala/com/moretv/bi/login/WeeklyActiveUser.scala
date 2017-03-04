@@ -65,8 +65,6 @@ object WeeklyActiveUser extends BaseClass {
 
     val format = new SimpleDateFormat("yyyyMMdd")
     val cal = Calendar.getInstance()
-    cal.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
-    val sunday = format.format(cal.getTime)
     cal.add(Calendar.WEEK_OF_YEAR, offset)
     cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
     val monday = format.format(cal.getTime)
@@ -80,8 +78,11 @@ object WeeklyActiveUser extends BaseClass {
     val friday = format.format(cal.getTime)
     cal.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY)
     val saturday = format.format(cal.getTime)
+    cal.add(Calendar.WEEK_OF_YEAR,1)
+    cal.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
+    val sunday = format.format(cal.getTime)
 
-    Array(monday, tuesday, wednesday, thursday, friday, saturday, sunday)
+    Array(monday, tuesday, wednesday, thursday, friday, saturday,sunday)
 
   }
 }

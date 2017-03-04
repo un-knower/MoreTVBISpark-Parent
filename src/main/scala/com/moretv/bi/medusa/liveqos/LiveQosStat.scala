@@ -4,11 +4,9 @@ import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import com.moretv.bi.dbOperation.annual.PlayContentTypeStat._
-import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types.ArrayType
 import org.json.JSONArray
 
 import scala.collection.mutable.ArrayBuffer

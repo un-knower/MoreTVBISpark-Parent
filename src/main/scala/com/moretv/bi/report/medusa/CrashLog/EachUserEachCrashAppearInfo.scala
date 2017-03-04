@@ -6,6 +6,8 @@ package com.moretv.bi.report.medusa.CrashLog
  */
 import java.lang.{Long => JLong}
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
 import com.moretv.bi.medusa.util.DevMacUtils
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{ParamsParseUtil, _}
@@ -17,9 +19,6 @@ object EachUserEachCrashAppearInfo extends BaseClass{
 
 
   def main(args: Array[String]) {
-    config.set("spark.executor.memory", "5g").
-      set("spark.executor.cores", "5").
-      set("spark.cores.max", "100")
     ModuleClass.executor(EachUserEachCrashAppearInfo,args)
   }
 
@@ -28,7 +27,7 @@ object EachUserEachCrashAppearInfo extends BaseClass{
       case Some(p) =>{
         val s = sqlContext
         import s.implicits._
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val inputDate = p.startDate
         val day = DateFormatUtils.toDateCN(inputDate)
         // TODO 是否需要写到固定的常量类或者SDK读取

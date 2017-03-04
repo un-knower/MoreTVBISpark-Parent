@@ -61,9 +61,12 @@ object EachSubjectPlayInfo extends BaseClass {
           val mergerInfoRdd = medusaInfoRdd union moretvInfoRdd
 
           val typeInfoRdd = mergerInfoRdd.filter(_._1 != null).persist(StorageLevel.MEMORY_AND_DISK)
-          val eachSubjectPlayNumMap = typeInfoRdd.map(x => ((x._1, x._2), 1l)).reduceByKey(_ + _).collectAsMap()
-          val eachSubjectPlayUserMap = typeInfoRdd.distinct().map(x => ((x._1, x._2), 1l)).reduceByKey(_ + _).collectAsMap()
-          val mergerRdd = eachSubjectPlayNumMap.map(e => (e._1._1, e._1._2, e._2, eachSubjectPlayUserMap(e._1)))
+//          val eachSubjectPlayNumMap = typeInfoRdd.map(x => ((x._1, x._2), 1l)).reduceByKey(_ + _).collectAsMap()
+//          val eachSubjectPlayUserMap = typeInfoRdd.distinct().map(x => ((x._1, x._2), 1l)).reduceByKey(_ + _).collectAsMap()
+          val eachSubjectPlayNumMap = typeInfoRdd.map(x => ((x._1, x._2), 1l)).reduceByKey(_ + _)
+          val eachSubjectPlayUserMap = typeInfoRdd.distinct().map(x => ((x._1, x._2), 1l)).reduceByKey(_ + _)
+          val mergerRdd = eachSubjectPlayNumMap.join(eachSubjectPlayUserMap).map(e=>(e._1._1,e._1._2,e._2._1,e._2._2))
+//          val mergerRdd = eachSubjectPlayNumMap.map(e => (e._1._1, e._1._2, e._2, eachSubjectPlayUserMap(e._1)))
 
           if (p.deleteOld) {
             val deleteSql = "delete from medusa_each_subject_play_info where day=?"
@@ -72,8 +75,11 @@ object EachSubjectPlayInfo extends BaseClass {
           val sqlInsert = "insert into medusa_each_subject_play_info(day,channel,subject_code,subject_title,play_num," +
             "play_user) values (?,?,?,?,?,?)"
 
-          mergerRdd.foreach(e => {
-            util.insert(sqlInsert, insertDate, e._1, e._2, CodeToNameUtils.getSubjectNameBySid(e._2), new JLong(e._3), new JLong(e._4))
+          mergerRdd.foreachPartition(partition=> {
+            val util1 = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+            partition.foreach(e => {
+              util1.insert(sqlInsert, insertDate, e._1, e._2, CodeToNameUtils.getSubjectNameBySid(e._2), new JLong(e._3), new JLong(e._4))
+            })
           })
 
           typeInfoRdd.unpersist()

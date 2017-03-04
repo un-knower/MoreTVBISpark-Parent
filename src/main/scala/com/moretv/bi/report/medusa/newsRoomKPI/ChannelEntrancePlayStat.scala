@@ -4,7 +4,7 @@ import java.lang.{Float => JFloat, Long => JLong}
 import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.LogTypes
+import com.moretv.bi.global.{DataBases, LogTypes}
 import com.moretv.bi.report.medusa.newsRoomKPI.EachChannelPlayInfo.{MERGER, sqlContext}
 
 import scala.collection.mutable.Map
@@ -54,7 +54,7 @@ object ChannelEntrancePlayStat extends BaseClass {
 
         val sqlContext = new SQLContext(sc)
 
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
         val startDate = p.startDate
         val cal = Calendar.getInstance

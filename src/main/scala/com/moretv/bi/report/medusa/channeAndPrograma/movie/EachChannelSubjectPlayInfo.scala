@@ -60,9 +60,12 @@ object EachChannelSubjectPlayInfo extends BaseClass{
 
           val mergerInfoRdd = medusaInfoRdd union moretvInfoRdd
 
-          val eachTypeSubjectPlayNumMap=mergerInfoRdd.map(x => (x._1,1l)).reduceByKey(_ + _).collectAsMap()
-          val eachTypeSubjectPlayUserMap=mergerInfoRdd.distinct().map(x => (x._1,1l)).reduceByKey(_ + _).collectAsMap()
-          val mergerRdd=eachTypeSubjectPlayNumMap.map(e=>(e._1,e._2,eachTypeSubjectPlayUserMap(e._1)))
+//          val eachTypeSubjectPlayNumMap=mergerInfoRdd.map(x => (x._1,1l)).reduceByKey(_ + _).collectAsMap()
+//          val eachTypeSubjectPlayUserMap=mergerInfoRdd.distinct().map(x => (x._1,1l)).reduceByKey(_ + _).collectAsMap()
+//          val mergerRdd=eachTypeSubjectPlayNumMap.map(e=>(e._1,e._2,eachTypeSubjectPlayUserMap(e._1)))
+          val eachTypeSubjectPlayNumMap=mergerInfoRdd.map(x => (x._1,1l)).reduceByKey(_ + _)
+          val eachTypeSubjectPlayUserMap=mergerInfoRdd.distinct().map(x => (x._1,1l)).reduceByKey(_ + _)
+          val mergerRdd=eachTypeSubjectPlayNumMap.join(eachTypeSubjectPlayUserMap).map(e=>(e._1,e._2._1,e._2._2))
 
           if(p.deleteOld){
             val deleteSql="delete from medusa_channel_subject_play_info where day=?"
@@ -70,7 +73,7 @@ object EachChannelSubjectPlayInfo extends BaseClass{
           }
           val sqlInsert = "insert into medusa_channel_subject_play_info(day,channel_name,play_num,play_user) values (?,?,?,?)"
 
-          mergerRdd.foreach(e=>{
+          mergerRdd.collect.foreach(e=>{
             util.insert(sqlInsert,insertDate,e._1,new JLong(e._2),new JLong(e._3))
           })
 

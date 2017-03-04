@@ -46,11 +46,7 @@ class ProgramRedisUtils {
 				val jsonObject =new JSONObject(metadata)
 				val map:Map[String, String] = new HashMap[String, String]()
 				fieldNames.foreach(filedName => {
-					val jsonArray = jsonObject.getJSONArray(filedName.toString)
-					var fieldValue:String = null
-					if(jsonArray != null && jsonArray.length() > 0){
-						fieldValue=jsonArray.get(0).toString()
-					}
+					val fieldValue = jsonObject.getString(filedName.toString)
 					map.put(filedName.toString, fieldValue)
 				})
 				map
@@ -66,7 +62,7 @@ class ProgramRedisUtils {
 				if (metadata == null || "nil" == metadata) null
 				else {
 					val jsonObject = new JSONObject(metadata)
-					var title = jsonObject.getJSONArray(ProgramRedisUtil.TITLE).get(0).toString
+					var title = jsonObject.getString(ProgramRedisUtil.TITLE)
 					if (title != null) {
 						title = title.replace("'", "")
 						title = title.replace("\t", " ")
