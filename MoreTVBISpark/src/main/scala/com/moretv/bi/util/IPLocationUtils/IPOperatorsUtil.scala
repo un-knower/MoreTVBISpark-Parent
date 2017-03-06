@@ -163,4 +163,22 @@ object IPOperatorsUtil extends SparkSetting{
     })
     ipNewList.toArray.mkString(".")
   }
+
+  /**
+    * 获取真实IP，取forwardedIp的第一个IP
+    *
+    * @param forwardedIp
+    * @param remoteIp
+    * @return
+    */
+  def getIPInfo(forwardedIp: String, remoteIp: String) = {
+    if (forwardedIp != null & forwardedIp != "") {
+      if (forwardedIp.contains(",")) {
+
+        forwardedIp.split(",")(0)
+      } else forwardedIp
+    } else {
+      remoteIp
+    }
+  }
 }
