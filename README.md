@@ -1,4 +1,16 @@
 
+测试环境:
+运行机器：2-17 machine
+运行目录：/script/bi/medusa/xiajun/BI_REFACTOR/MoreTVBISpark-1.0.0-SNAPSHOT-bin/bin
+运行脚本
+上传本地编译脚本:
+
+cd /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/distribution/target/MoreTVBISpark-1.0.0-SNAPSHOT-bin/lib/
+scp -rC MoreTVBISpark-1.0.0-SNAPSHOT.jar spark@bigdata-computing-02-017:/script/bi/medusa/xiajun/BI_REFACTOR/MoreTVBISpark-1.0.0-SNAPSHOT-bin/lib/
+
+
+
+
 use dw_fact_medusa;
 CREATE EXTERNAL TABLE fact_medusa_play(
    dim_web_location_sk         BIGINT,

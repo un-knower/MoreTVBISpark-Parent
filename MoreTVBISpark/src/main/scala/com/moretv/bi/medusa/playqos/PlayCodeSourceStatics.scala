@@ -6,7 +6,7 @@ import java.util.Calendar
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.DataBases
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil, ProgramRedisUtil}
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import org.json.JSONObject
 
 import scala.collection.mutable.ListBuffer
@@ -17,9 +17,9 @@ import scala.collection.mutable.ListBuffer
 
 
 
-object PlayCodeVideoContentSourceStatics extends BaseClass {
+object PlayCodeSourceStatics extends BaseClass {
 
-  private val tableName = "medusa_video_content_type_playqos_playcode_source"
+  private val tableName = "medusa_playqos_playcode_source"
 
   def main(args: Array[String]): Unit = {
     ModuleClass.executor(this,args)
@@ -50,23 +50,23 @@ object PlayCodeVideoContentSourceStatics extends BaseClass {
           val rdd = sqlContext.read.parquet(readPath).select("userId","date", "jsonLog")
             .map(e => (e.getString(0), e.getString(1),e.getString(2))).filter(_._2==insertDate)
 
-          val tmpRdd = rdd.flatMap(e=>getPlayCode(e._1,e._2,e._3)).map(e=>((e._2,e._3,e._4,e._5,e._6),e._1)).cache()
+          val tmpRdd = rdd.flatMap(e=>getPlayCode(e._1,e._2,e._3)).map(e=>((e._3,e._4,e._5),e._1)).cache()
           val numRdd = tmpRdd.countByKey()
-          val sourceNum = tmpRdd.map(e=>((e._1._1,e._1._2,e._1._3,e._1._5),e._2)).countByKey()
-          tmpRdd.unpersist()
+          val sumNum = tmpRdd.map(e=>e._2).count()
+          val sourceNum = tmpRdd.map(e=>((e._1._1,e._1._2),e._2)).countByKey()
 
           if(p.deleteOld){
-            val deleteSql = s"delete from $tableName where day = ?"
+            val deleteSql = s"delete $tableName where day = ?"
             util.delete(deleteSql,insertDate)
           }
-          val insertSql = s"insert into $tableName(day,videoSid,title,source,playcode,contentType,num,sourceNum) values(?,?,?,?,?,?,?,?)"
+          val insertSql = s"insert into $tableName(day,videoSid,source,playcode,num,sourceNum,totalNum) values(?,?,?,?,?,?,?)"
           numRdd.foreach(i=>{
-            val key = (i._1._1,i._1._2,i._1._3,i._1._5)
+            val key = (i._1._1,i._1._2)
             val eachSourceNum = sourceNum.get(key) match {
               case Some(e) => e
               case None => 0L
             }
-            util.insert(insertSql,insertDate,i._1._1,ProgramRedisUtil.getTitleBySid(i._1._1),i._1._3,new JLong(i._1._4),i._1._5,new JLong(i._2),new JLong(eachSourceNum))
+            util.insert(insertSql,insertDate,"All",i._1._2,new JLong(i._1._3),new JLong(i._2),new JLong(eachSourceNum),new JLong(sumNum))
           })
 
           cal.add(Calendar.DAY_OF_MONTH,-1)
@@ -89,13 +89,12 @@ object PlayCodeVideoContentSourceStatics extends BaseClass {
     */
   def getPlayCode(userId: String,  day: String, str: String) = {
 
-    val res = new ListBuffer[(String, String, String,String, Int,String)]()
+    val res = new ListBuffer[(String, String, String,String, Int)]()
 
     try {
       val jsObj = new JSONObject(str)
 
       val videoSid = jsObj.optString("videoSid")
-      val contentType = jsObj.optString("contentType")
       val playqosArr = jsObj.optJSONArray("playqos")
 
       if (playqosArr != null) {
@@ -108,7 +107,7 @@ object PlayCodeVideoContentSourceStatics extends BaseClass {
           if (sourcecases != null) {
             (0 until sourcecases.length).foreach(w => {
               val sourcecase = sourcecases.optJSONObject(w)
-              res.+=((userId,videoSid,day,source,groupCode(sourcecase.optInt("playCode")),contentType))
+              res.+=((userId,videoSid,day,source,groupCode(sourcecase.optInt("playCode"))))
             })
           }
         })
@@ -116,7 +115,7 @@ object PlayCodeVideoContentSourceStatics extends BaseClass {
     }
     catch {
       case ex: Exception => {
-        res.+=((userId, "", day,"", 0,""))
+        res.+=((userId, "", day,"", 0))
         //throw ex
       }
     }
