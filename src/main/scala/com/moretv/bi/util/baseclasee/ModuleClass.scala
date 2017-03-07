@@ -11,7 +11,7 @@ import com.moretv.bi.util.ParamsParseUtil
  */
 object ModuleClass {
 
-  private val emailArray = Array("app-bigdata@whaley.cn")
+  private val emailArray = Array("xia.jun@whaley.cn")
   private val timeFormat = new SimpleDateFormat("yyyy-MM-dd")
   /**
    * Function:this method is a standard module to execute task
