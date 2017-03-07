@@ -21,7 +21,6 @@ object TencentVideoPlayNum extends BaseClass{
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-        println(this.getClass.getName)
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
         val calendar = Calendar.getInstance()
@@ -40,7 +39,7 @@ object TencentVideoPlayNum extends BaseClass{
             " from log_data where videoSid is not null and event in ('startplay','playview') and contentType in ('movie','tv','zongyi'," +
             "'comic','jilu','kids') group by contentType,videoSid").registerTempTable("log_play_num")
 
-          sqlContext.read.load("/log/temp/parquet/20170303/mtv_tencent").registerTempTable("mtv_tencent")
+          sqlContext.read.load(s"/log/temp/parquet/$startDate/mtv_tencent").registerTempTable("mtv_tencent")
 
           val result = sqlContext.sql("select a.contentType,sum(a.play_num) as play_num ,sum(a.play_user) as play_user from log_play_num a join mtv_tencent b on " +
             "a.videoSid = b.sid group by a.contentType").collect()
