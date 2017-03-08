@@ -38,7 +38,7 @@ object DataAnalyticsPlayPseudoUserIdDistribution extends BaseClass {
             println(s"deleteSql is $deleteSql")
             util.delete(deleteSql, insertDate)
           }
-          val insertSql = s"insert into $tableName(day,apkVersion_productModel_promotionChannel,dimension_count,total_count) values(?,?,?,?)"
+          val insertSql = s"insert into $tableName(day,apkVersion_productModel_promotionChannel,dimension_count,total_user) values(?,?,?,?)"
           println(s"insertSql is $insertSql")
           //临时没有该parquet文件,容错
           DataIO.getDataFrameOps.getDF(sc, p.paramMap, MORETV, LogTypes.PLAYVIEW).select("userId", "apkVersion", "productModel",
@@ -51,33 +51,34 @@ object DataAnalyticsPlayPseudoUserIdDistribution extends BaseClass {
           println("result0.collect().size:"+result0.collect().head)
 
           /*统计同一个userId，但是apkVersion,productModel,promotionChannel不同的userId*/
-          sqlContext.sql(
-            """
-              |select distinct userId
-              |from (select userId,
-              |             count(distinct concat(apkVersion,productModel,promotionChannel)) as total_count
-              |      from log_data
-              |      group by userId
-              |      having total_count>1
-              |      ) as tmp_table
-            """.stripMargin).registerTempTable("user_table")
-
-          //for test
+          sqlStr="""
+            |select distinct userId
+            |from (select userId,
+            |             count(distinct concat(apkVersion,productModel,promotionChannel)) as total_count
+            |      from log_data
+            |      group by userId
+            |      having total_count>1
+            |      ) as tmp_table
+          """.stripMargin
+          println(sqlStr)
+          sqlContext.sql(sqlStr).registerTempTable("user_table")
           val result1=sqlContext.sql("select count(1) from user_table")
-          println("result1.collect().size:"+result1.collect().head.getLong(0))
+          val total_user=result1.collect().head.getLong(0)
+          println(s"total_user:$total_user")
 
           /*统计同一个userId，但是apkVersion,productModel,promotionChannel不同，
             apkVersion,productModel,promotionChannel的分布情况*/
           sqlStr="""
-            |select concat(apkVersion,'|',productModel,'|',promotionChannel) as apkVersion_productModel_promotionChannel
-            |       count(userId) as dimension_count
+            |select substring(concat(apkVersion,'|',productModel,'|',promotionChannel),1,100) as apkVersion_productModel_promotionChannel,
+            |       count(a.userId) as dimension_count
             |from log_data a join user_table b on a.userId=b.userId
             |group by concat(apkVersion,'|',productModel,'|',promotionChannel)
           """.stripMargin
+          println(sqlStr)
           sqlContext.sql(sqlStr).foreachPartition(partition => {
             val util1 = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
             partition.foreach(rdd => {
-              util1.insert(insertSql, insertDate, rdd.getString(0), rdd.getLong(1),0)
+              util1.insert(insertSql, insertDate, rdd.getString(0), rdd.getLong(1),total_user)
             })
           })
           cal.add(Calendar.DAY_OF_MONTH, -1)
@@ -96,7 +97,7 @@ object DataAnalyticsPlayPseudoUserIdDistribution extends BaseClass {
 CREATE TABLE `data_analytic_play_pseudo_userid_distribution` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `day` varchar(20) NOT NULL DEFAULT '',
-  `apkVersion_productModel_promotionChannel` varchar(20) NOT NULL DEFAULT '' COMMENT 'apkVersion|productModel|promotionChannel',
+  `apkVersion_productModel_promotionChannel` varchar(100) NOT NULL DEFAULT '' COMMENT 'apkVersion|productModel|promotionChannel',
   `dimension_count` bigint(40) NOT NULL DEFAULT '0' COMMENT 'apkVersion_productModel_promotionChannel组合维度的人数之和',
   `total_user` bigint(40) NOT NULL DEFAULT '0' COMMENT '总人数',
   PRIMARY KEY (`id`)
