@@ -60,11 +60,14 @@ object EachVideoPlayInfo2ES extends BaseClass {
           // 删除ES中旧数据
           if(p.deleteOld){
             val url = s"http://${Constants.ES_URL}/medusa/programPlay/_query?q=day:${insertDate}"
+            val url1 = s"http://${Constants.ES_URL}/medusa/prograplay/_query?q=day:${insertDate}"
             HttpUtils.delete(url)
+            HttpUtils.delete(url1)
           }
 
           // 将数据插入ES
           videoDf.foreachPartition(rdd => {
+            val videoList = new util.ArrayList[util.Map[String, Object]]()
             rdd.foreach(e => {
               val resMap = new util.HashMap[String, Object]()
               resMap.put("contentType", e.getString(0))
@@ -75,9 +78,11 @@ object EachVideoPlayInfo2ES extends BaseClass {
               resMap.put("accessNum", new JLong(e.getLong(3)))
               videoList.add(resMap)
             })
+            ElasticSearchUtil.bulkCreateIndex(videoList, "medusa", "programPlay")
           })
 
           episodeDf.foreachPartition(rdd =>{
+            val episodeList = new util.ArrayList[util.Map[String, Object]]()
             rdd.foreach(e => {
               val resMap = new util.HashMap[String, Object]()
               resMap.put("contentType", e.getString(0))
@@ -88,12 +93,8 @@ object EachVideoPlayInfo2ES extends BaseClass {
               resMap.put("accessNum", new JLong(e.getLong(3)))
               episodeList.add(resMap)
             })
+            ElasticSearchUtil.bulkCreateIndex(episodeList, "medusa", "prograplay")
           })
-
-
-          ElasticSearchUtil.bulkCreateIndex(videoList, "medusa", "programPlay")
-
-          ElasticSearchUtil.bulkCreateIndex(episodeList, "medusa", "prograplay")
         })
         ElasticSearchUtil.close
       }
