@@ -1,8 +1,6 @@
 package com.moretv.bi.report.medusa.dataAnalytics
 
-import java.lang.{Long => JLong}
 import java.util.Calendar
-
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
@@ -11,13 +9,12 @@ import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 /**
   * Created by michael on 3/8/17.
   *
-  * 统计相同videoSid，但videoName不同的记录中，videoSid对应不同videoName的数量分布
+  * 统计相同videoSid，但videoName不同的记录中，这类videoSid的总的播放量
   * 备注：只有medusa版本有videoName，只统计medusa版本日志
-  *
   */
-object DataAnalyticsPlayPseudoVideoSidDistribution extends BaseClass {
+object DataAnalyticsPlayPseudoVideoSidDistribution2 extends BaseClass {
 
-  private val tableName = "data_analytic_play_pseudo_videoSid_distribution"
+  private val tableName = "data_analytic_play_pseudo_videoSid_distribution2"
 
   def main(args: Array[String]): Unit = {
     ModuleClass.executor(this, args)
@@ -39,24 +36,32 @@ object DataAnalyticsPlayPseudoVideoSidDistribution extends BaseClass {
             println(s"deleteSql is $deleteSql")
             util.delete(deleteSql, insertDate)
           }
-          val insertSql = s"insert into $tableName(day,videoSid,total_count) values(?,?,?)"
+          val insertSql = s"insert into $tableName(day,total_count) values(?,?)"
           println(s"insertSql is $insertSql")
           DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogTypes.PLAY).select("videoSid", "videoName").registerTempTable("log_data")
           val thresholdValue=100
           sqlStr=s"""
-                   |select substring(videoSid,1,100) as videoSid,
+                   |select distinct videoSid
+                   |from (select substring(videoSid,1,100) as videoSid,
                    |       count(distinct videoName) as total_count
                    |      from log_data
                    |      group by videoSid
                    |      having total_count>$thresholdValue
+                   |     ) as tmp_table
                  """.stripMargin
           println(sqlStr)
-          sqlContext.sql(sqlStr).foreachPartition(partition => {
-            val util1 = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
-            partition.foreach(rdd => {
-              util1.insert(insertSql, insertDate, rdd.getString(0), rdd.getLong(1))
-            })
-          })
+          sqlContext.sql(sqlStr).registerTempTable("videoSid_table")
+
+          DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogTypes.PLAY).select("videoSid","event").registerTempTable("play_base_table")
+          sqlStr="""
+                   |select count(b.videoSid) as total_count
+                   |from videoSid_table a join play_base_table b on a.videoSid=b.videoSid
+                   |where b.event ='startplay'
+                 """.stripMargin
+          println(sqlStr)
+          val total_count=sqlContext.sql(sqlStr).collect().head.getLong(0)
+          val util1 = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+          util1.insert(insertSql, insertDate,total_count)
           cal.add(Calendar.DAY_OF_MONTH, -1)
         })
       }
@@ -71,11 +76,10 @@ object DataAnalyticsPlayPseudoVideoSidDistribution extends BaseClass {
 /*
 2-15 machine mysql ,create table
 * use medusa;
-CREATE TABLE `data_analytic_play_pseudo_videoSid_distribution` (
+CREATE TABLE `data_analytic_play_pseudo_videoSid_distribution2` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `day` varchar(20) NOT NULL DEFAULT '',
-  `videoSid` varchar(100) NOT NULL DEFAULT '' COMMENT 'videoSid',
-  `total_count` bigint(40) NOT NULL DEFAULT '0' COMMENT 'videoName不同的个数',
+  `total_count` bigint(40) NOT NULL DEFAULT '0' COMMENT 'videoId有不同videoName的播放次数',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8
 * */
@@ -96,7 +100,7 @@ if [ $# -lt 1 ]; then
 fi
 
 one_day=$1
-main_class="com.moretv.bi.report.medusa.dataAnalytics.DataAnalyticsPlayPseudoVideoSidDistribution"
+main_class="com.moretv.bi.report.medusa.dataAnalytics.DataAnalyticsPlayPseudoVideoSidDistribution2"
 echo ""
 cd /script/bi/medusa/xiajun/BI_REFACTOR/MoreTVBISpark-1.0.0-SNAPSHOT-bin/bin
 sh submit.sh ${main_class} --startDate ${one_day} --deleteOld true
