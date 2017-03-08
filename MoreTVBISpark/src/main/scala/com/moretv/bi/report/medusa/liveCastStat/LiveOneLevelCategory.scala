@@ -41,7 +41,7 @@ object LiveOneLevelCategory {
 
     MySqlOps.getJdbcRDD(sc, sql, "mtv_program_site",
       r => (r.getString(1), r.getString(2)), driver, url, user, password, (min, max), 5)
-      .toDF(groupFields4CodeName: _*)
+      .toDF(groupFields4Category: _*)
 
   }
 
