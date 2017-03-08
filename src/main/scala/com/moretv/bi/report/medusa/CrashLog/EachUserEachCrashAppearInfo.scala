@@ -33,24 +33,18 @@ object EachUserEachCrashAppearInfo extends BaseClass{
           val deleteSql = "delete from tmp_crash_info where day = ?"
           util.delete(deleteSql,day)
         }
-//        DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.CRASH_LOG,inputDate).select(
-//          "MAC","APP_VERSION_NAME","APP_VERSION_NAME","ANDROID_VERSION","STACK_TRACE","DATE_CODE","PRODUCT_CODE","CUSTOM_JSON_DATA"
-//        ).map(e=>(e.getString(0),e.getString(1),e.getString(2),e.getString(3),e.getString(4),e.getString(5),e.getString(6),e.getString(7))).
-//          map(log => (log._1.replace(":",""),log._2,log._3,log._4,log._5,log._6,log._7,log._8))
-//          .filter(data => !DevMacUtils.macFilter(data._1)).map(e=>((DigestUtils.md5Hex(e._5),e._1,e._7,e._6),1)).
-//          countByKey().foreach(e=>{
-//          util.insert(insertSql,day,e._1._1,e._1._2,e._1._3,e._1._4,new JLong(e._2))
-//        })
-
         DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.CRASH_LOG,inputDate).select(
           "MAC","STACK_TRACE","DATE_CODE","PRODUCT_CODE"
-        ).map(e=>(e.getString(0),e.getString(1),e.getString(2),e.getString(3))).
-          map(log => (log._1.replace(":",""),log._2,log._3,log._4))
-          .filter(data => !DevMacUtils.macFilter(data._1)).filter(_._1!=null).filter(_._2!=null).filter(_._3!=null).
-          filter(_._4!=null)
-          .map(e=>((DigestUtils.md5Hex(e._2),e._1,e._4,e._3),1)).
-          countByKey().foreach(e=>{
-          util.insert(insertSql,day,e._1._1,e._1._2,e._1._3,e._1._4,new JLong(e._2))
+        ).filter("MAC is not null").map(e=>(e.getString(0).replace(":",""),e.getString(1),e.getString(2),e.getString(3))).
+          filter(data => !DevMacUtils.macFilter(data._1)).
+          map(e=>((DigestUtils.md5Hex(e._2),e._1,e._4,e._3),1)).
+          countByKey().
+          foreach(e=>{
+            try{
+              util.insert(insertSql,day,e._1._1,e._1._2,e._1._3,e._1._4,new JLong(e._2))
+            }catch {
+              case e:Exception => {}
+            }
         })
 
 
