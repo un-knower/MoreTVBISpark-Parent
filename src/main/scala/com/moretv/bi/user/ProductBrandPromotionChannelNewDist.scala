@@ -37,7 +37,7 @@ object ProductBrandPromotionChannelNewDist extends BaseClass{
           s"where openTime between '$day 00:00:00' and '$day 23:59:59' group by getBrand(product_model),promotion_channel").
           collectAsList()
 
-        val db = DataIO.getMySqlOps("moretv_medusa_mysql")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         if(p.deleteOld){
           val sqlDelete = "delete from product_brand_promotion_channel_new_dist where day = ?"
           db.delete(sqlDelete,day)

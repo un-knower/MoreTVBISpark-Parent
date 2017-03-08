@@ -3,7 +3,7 @@ package com.moretv.bi.login
 import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.LogTypes
+import com.moretv.bi.global.{DataBases, LogTypes}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 
@@ -28,7 +28,7 @@ object YunOSBasedPromotionChannel extends BaseClass {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
-        val util = DataIO.getMySqlOps("moretv_medusa_mysql")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
 
         val cal1 = Calendar.getInstance()

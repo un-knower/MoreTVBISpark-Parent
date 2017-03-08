@@ -1,7 +1,7 @@
 package com.moretv.bi.login
 
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.LogTypes
+import com.moretv.bi.global.{DataBases, LogTypes}
 import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
@@ -62,7 +62,7 @@ object AreaDist extends BaseClass {
           .countByKey
 
 
-        val db = DataIO.getMySqlOps("moretv_eagletv_mysql")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_EAGLETV_MYSQL)
         if (p.deleteOld) {
           val sqlDelete = "delete from login_detail where day = ?"
           db.delete(sqlDelete, day)

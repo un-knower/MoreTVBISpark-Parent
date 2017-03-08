@@ -49,7 +49,7 @@ object PromotionChannelTotalDist extends BaseClass{
             s"where openTime <= '$day 23:59:59' group by promotion_channel").
             collectAsList()
 
-          val db = DataIO.getMySqlOps("moretv_medusa_mysql")
+          val db = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
           if(p.deleteOld){
             val sqlDelete = "delete from promotion_channel_total_dist where day = ?"
             db.delete(sqlDelete,day)

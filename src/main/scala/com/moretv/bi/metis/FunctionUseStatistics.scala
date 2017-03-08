@@ -24,7 +24,7 @@ object FunctionUseStatistics extends BaseClass {
   override def execute(args: Array[String]): Unit = {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-        val util = DataIO.getMySqlOps("metis_bi_mysql")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
 
         val calendar = Calendar.getInstance()
         val startDay = p.startDate

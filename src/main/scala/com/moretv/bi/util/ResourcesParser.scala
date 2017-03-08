@@ -59,4 +59,11 @@ object ResourcesParser {
   def validate(line:String) = {
     !line.startsWith("#") && line.contains("=") && !line.endsWith("=")
   }
+
+
+  /**
+    * Getting resources file from classload
+    */
+
+
 }

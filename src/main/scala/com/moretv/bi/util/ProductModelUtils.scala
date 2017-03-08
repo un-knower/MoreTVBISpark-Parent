@@ -4,6 +4,9 @@ import java.io.File
 
 import org.apache.spark.SparkFiles
 
+import scala.collection.mutable.ListBuffer
+import scala.io.Source
+
 /**
   * Created by Will on 2016/2/23.
   */
@@ -11,8 +14,40 @@ object ProductModelUtils {
   val rootDir = SparkFiles.getRootDirectory()
   private val NON_OTT = s"${rootDir}/non_ott.properties"
   private val PRODUCT_BRAND_MAP = s"${rootDir}/product_brand_map.properties"
-  val brandMap = ResourcesParser.getMapConf(PRODUCT_BRAND_MAP)
-  val nonOttList = ResourcesParser.getListConf(NON_OTT)
+  val file = new File(PRODUCT_BRAND_MAP)
+  val brandMap = if(file.exists()){ResourcesParser.getMapConf(PRODUCT_BRAND_MAP)} else {
+    val in = this.getClass.getClassLoader.getResourceAsStream("product_brand_map.properties")
+    val lines = Source.fromInputStream(in).getLines()
+    var lineNum = 0
+    lines.map(line => {
+      lineNum += 1
+      if(ResourcesParser.validate(line)){
+        val Array(key,value) = line.toString.split("=")
+        (key.trim, value.trim)
+      }else {
+        null
+      }
+    }).filter(_!=null).toMap
+  }
+  val nonOttList = if(file.exists()){
+     ResourcesParser.getListConf(NON_OTT)
+  }else{
+    val in1 = this.getClass.getClassLoader.getResourceAsStream("non_ott.properties")
+    val lines1 = Source.fromInputStream(in1).getLines()
+    var lineNum1 = 0
+    lines1.map(line => {
+      lineNum1 += 1
+      if(ResourcesParser.validate(line)){
+        val Array(key,value) = line.toString.split("=")
+        (key.trim, value.trim)
+      }else {
+        null
+      }
+    }).filter(_!=null).toList
+
+
+  }
+
   @deprecated
   def getBrand(productModel:String) = {
     if(productModel == null) "NULL"

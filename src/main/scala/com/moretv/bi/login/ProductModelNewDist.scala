@@ -42,7 +42,7 @@ object ProductModelNewDist extends BaseClass {
           s"where openTime between '$day 00:00:00' and '$day 23:59:59' group by product_model")
           .collectAsList()
 
-        val db = DataIO.getMySqlOps("moretv_eagletv_mysql")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_EAGLETV_MYSQL)
         if (p.deleteOld) {
           val sqlDelete = "delete from Device_Terminal_added where day = ?"
           db.delete(sqlDelete, day)

@@ -5,6 +5,7 @@ import java.util.Calendar
 import cn.whaley.sdk.dataOps.MySqlOps
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.constant.Tables
+import com.moretv.bi.global.DataBases
 import com.moretv.bi.util.ParamsParseUtil._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateFormatUtils, HdfsUtil}
@@ -30,7 +31,7 @@ object DBSnapShot extends BaseClass {
         val day = DateFormatUtils.readFormat.format(cal.getTime)
         val dayCN = DateFormatUtils.cnFormat.format(cal.getTime)
 
-        val db = DataIO.getMySqlOps("moretv_tvservice_mysql")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
         val url = db.prop.getProperty("url")
         val driver = db.prop.getProperty("driver")
         val user = db.prop.getProperty("user")

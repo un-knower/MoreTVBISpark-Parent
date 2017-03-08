@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.LogTypes
+import com.moretv.bi.global.{DataBases, LogTypes}
 import com.moretv.bi.util.ParamsParseUtil
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.sql.functions._
@@ -50,7 +50,7 @@ object UserStatisticsBasedApkVersion extends BaseClass {
             }
           }
         })
-        val util = DataIO.getMySqlOps("moretv_medusa_mysql")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val cal = Calendar.getInstance
 
         (0 until p.numOfDays).foreach(i => {

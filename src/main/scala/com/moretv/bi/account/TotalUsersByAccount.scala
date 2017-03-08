@@ -28,7 +28,7 @@ object TotalUsersByAccount extends BaseClass with QueryMaxAndMinIDUtil {
           .map(e => e.getString(0))
           .distinct
 
-        val db = DataIO.getMySqlOps("moretv_bi_mysql")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         val url = db.prop.getProperty("url")
         val driver = db.prop.getProperty("driver")
         val user = db.prop.getProperty("user")

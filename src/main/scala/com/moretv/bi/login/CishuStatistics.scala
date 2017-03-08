@@ -55,7 +55,7 @@ object CishuStatistics extends BaseClass {
           (version, cishu)
         }).countByValue()
 
-        val db = DataIO.getMySqlOps("moretv_eagletv_mysql")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_EAGLETV_MYSQL)
         val day = DateFormatUtils.toDateCN(inputDate, -1)
         if (p.deleteOld) {
           val sqlDelete = "delete from cishu_tongji where day = ?"

@@ -29,7 +29,7 @@ object YunOSActiveUserBasedAlidogTvdog extends BaseClass {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
-        val util = DataIO.getMySqlOps("moretv_medusa_mysql")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
         val cal = Calendar.getInstance()
         cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))

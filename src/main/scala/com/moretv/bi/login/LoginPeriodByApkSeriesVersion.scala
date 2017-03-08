@@ -41,7 +41,7 @@ object LoginPeriodByApkSeriesVersion extends BaseClass {
           "group by getPeriod(datetime),version").collectAsList()
 
 
-        val db = DataIO.getMySqlOps("moretv_bi_mysql")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
         val day = DateFormatUtils.toDateCN(inputDate, -1)
         if (p.deleteOld) {
           val sqlDelete = "delete from login_period_version_distribution where day = ?"

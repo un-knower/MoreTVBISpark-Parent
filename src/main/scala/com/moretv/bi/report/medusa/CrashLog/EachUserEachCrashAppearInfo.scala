@@ -37,7 +37,6 @@ object EachUserEachCrashAppearInfo extends BaseClass{
             json.optString("ANDROID_VERSION"),json.optString("STACK_TRACE"),json.optString("DATE_CODE"),
             json.optString("PRODUCT_CODE"),json.optString("CUSTOM_JSON_DATA"))
         })
-        println(System.currentTimeMillis())
         val filterRdd = logRdd.repartition(28).map(log => (log._1,log._2.replace(":",""),log._3,log._4,log._5,log._6,log._7,log._8,log._9))
           .filter(data => !DevMacUtils.macFilter(data._2))
 

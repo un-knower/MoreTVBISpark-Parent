@@ -38,7 +38,7 @@ object PromotionChannelNonOTTNewDist extends BaseClass{
             if(!ProductModelUtils.isOtt(productModel)) (row.getString(1),row.getString(2)) else null
           }).filter(_!=null).distinct().countByKey()
 
-        val db = DataIO.getMySqlOps("moretv_medusa_mysql")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         if(p.deleteOld){
           val sqlDelete = "delete from promotion_channel_non_ott_new_dist where day = ?"
           db.delete(sqlDelete,day)

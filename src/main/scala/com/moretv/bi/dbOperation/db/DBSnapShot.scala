@@ -4,6 +4,7 @@ import java.sql.DriverManager
 import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
 import com.moretv.bi.util.ParamsParseUtil._
 import com.moretv.bi.util.{DateFormatUtils, HdfsUtil, SparkSetting}
 import org.apache.spark.SparkContext
@@ -54,7 +55,10 @@ object DBSnapShot extends SparkSetting{
         })*/
 
 
-        val db = DataIO.getMySqlOps("moretv_tvservice_mysql")
+        val db = DataIO.getMySqlOps(DataBases.MORETV_TVSERVICE_MYSQL)
+        val url = db.prop.getProperty("url")
+        val user = db.prop.getProperty("user")
+        val password = db.prop.getProperty("password")
         (0 until p.numOfDays).foreach(e=>{
           val day = DateFormatUtils.readFormat.format(cal.getTime)
           val dayCN = DateFormatUtils.cnFormat.format(cal.getTime)
@@ -62,8 +66,7 @@ object DBSnapShot extends SparkSetting{
           db.destory()
           val moretvSqlRdd = new JdbcRDD(sc, ()=>{
             Class.forName("com.mysql.jdbc.Driver")
-            DriverManager.getConnection("jdbc:mysql://10.10.2.15:3306/tvservice?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
-            "bi", "mlw321@moretv")
+            DriverManager.getConnection(url,user, password)
           },
           "SELECT id,user_id,mac,openTime,lastLoginTime,ip,product_model,product_serial, " +
           "userType,wifi_mac,promotion_channel,current_version,origin_type,sn " +
