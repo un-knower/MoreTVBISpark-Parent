@@ -14,7 +14,7 @@ import scala.collection.mutable.ListBuffer
   * Created by witnes on 3/8/17.
   */
 object PlayCodeEpisodeContentSourceStatTop200 extends BaseClass {
-  private val tableName = "medusa_video_content_type_playqos_playcode_source_top200"
+  private val tableName = "medusa_episode_content_type_playqos_playcode_source_top200"
   private val arr = Array("movie", "mv", "sports", "tv", "hot", "zongyi", "comic", "xiqu", "jilu", "kids")
   private val limit = 200
 
