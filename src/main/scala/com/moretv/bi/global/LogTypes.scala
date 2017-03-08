@@ -85,4 +85,6 @@ object LogTypes {
   val USERAREAOUTDIR = "/log/medusa/userAreaInfo/"
 
   val MEDUSABOOTSTARTPAGE = "medusa-boot-startpage"
+
+  val CRASH_LOG = "crashlog"
 }
