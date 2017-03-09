@@ -1,5 +1,7 @@
 package com.moretv.bi.UserUseDurationAndTimes
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
 import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.sun.xml.internal.bind.v2.TODO
@@ -25,7 +27,7 @@ object User_shichang extends BaseClass with DateUtil{
         val userNum = resultRDD.distinct().countByKey()
         val accessNum = resultRDD.countByKey()
 
-        val util = new DBOperationUtils("eagletv")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_EAGLETV_MYSQL)
         //delete old data
         if(p.deleteOld) {
           val date = DateFormatUtils.toDateCN(p.startDate, -1)
