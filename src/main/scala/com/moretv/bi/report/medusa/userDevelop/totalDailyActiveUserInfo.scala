@@ -51,6 +51,11 @@ object totalDailyActiveUserInfo extends BaseClass{
           val sqlInsert = "insert into medusa_user_develop_total_active_user_info(day,active_user) values " +
             "(?,?)"
 
+          if(p.deleteOld){
+            val sqlDelete = s"delete from medusa_user_develop_total_active_user_info where day = ?"
+            util.delete(sqlDelete,insertDate)
+          }
+
           totalActiveUser.collect().foreach(e=>{
             util.insert(sqlInsert,insertDate,new JLong(e))
           })
