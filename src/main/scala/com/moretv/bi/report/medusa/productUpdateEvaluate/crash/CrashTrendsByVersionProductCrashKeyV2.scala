@@ -33,7 +33,7 @@ object CrashTrendsByVersionProductCrashKeyV2 extends SparkSetting{
 
         val logRdd = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.CRASH_LOG,inputDate).select("MAC","APP_VERSION_NAME",
         "APP_VERSION_CODE","CRASH_KEY","STACK_TRACE","DATE_CODE","PRODUCT_CODE").map(e=>(e.getString(0),
-          e.getString(1).replace(":",""),,e.getString(2),
+          e.getString(1).replace(":",""),e.getString(2),
         e.getString(3),e.getString(4),e.getString(5),e.getString(6))).
           filter(e=>{e._5!=null && e._5!=""  && {if(e._6!=null) e._6.length<=20 else true}})
 
