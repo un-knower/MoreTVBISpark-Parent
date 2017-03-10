@@ -17,12 +17,16 @@ object LauncherClickByCityInfo extends BaseClass{
   private val importCityA = Array("""'深圳'""","""'沈阳'""","""'南京'""","""'成都'""").mkString(",")
   private val importCityB = Array("""'大连'""","""'长沙'""","""'武汉'""","""'青岛'""","""'杭州'""","""'天津'""","""'重庆'""",
                                   """'西安'""","""'苏州'""","""'宁波'""","""'合肥'""","""'济南'""","""'昆明'""").mkString(",")
+  private val citiesArr = Array("上海","北京","广州","深圳","沈阳","南京","成都","大连","长沙","武汉","青岛","杭州","天津","重庆",
+                                "西安","苏州","宁波","合肥","济南","昆明")
   def main(args: Array[String]) {
     ModuleClass.executor(this,args)
   }
 
   override def execute(args: Array[String]) = {
     sqlContext.udf.register("getContentType", getContentType _)
+    val sqlContextTmp = sqlContext
+    import sqlContextTmp.implicits._
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         val areaDir = s"${LogTypes.USERAREAOUTDIR}20170309/userArea/"
@@ -31,7 +35,9 @@ object LauncherClickByCityInfo extends BaseClass{
         val insertSql1 = "insert into tmp_ams_subject_view_by_city_info(day,content_type,city_type,city,num) values(?,?,?,?,?)"
         val deleteSql = "delete from tmp_ams_launcher_click_by_city_info where day=?"
         val deleteSql1 = "delete from tmp_ams_subject_view_by_city_info where day=?"
-        sqlContext.read.load(areaDir).registerTempTable("log_data")
+        sqlContext.read.load(areaDir).select("user_id","city").map(e=>(e.getString(0),e.getString(1))).
+          map(e=>(e._1,if(citiesArr.contains(e._2)) e._2 else "其他")).toDF("user_id","city")
+          .registerTempTable("log_data")
         val cal = Calendar.getInstance()
         cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))
         (0 until p.numOfDays).foreach(i=>{
@@ -57,7 +63,11 @@ object LauncherClickByCityInfo extends BaseClass{
               |when b.city in (${importCityA}) then '重点城市A' when b.city in (${importCityB}) then '重点城市B' else '其他' end,
               |b.city
             """.stripMargin).map(e=>(e.getString(0),e.getString(1),e.getString(2),e.getString(3),e.getLong(4))).collect().foreach(e=>{
-            util.insert(insertSql,insertDay,e._1,e._2,e._3,e._4,e._5)
+            try{
+              util.insert(insertSql,insertDay,e._1,e._2,e._3,e._4,e._5)
+            }catch {
+              case e:Exception =>
+            }
           })
 
           sqlContext.sql(
@@ -68,12 +78,16 @@ object LauncherClickByCityInfo extends BaseClass{
               |from log_data2 as a
               |join log_data as b
               |on a.userId = b.user_id
-              |where a.event = 'enter'
+              |where a.event = 'enter' and a.subjectCode is not null
               |group by getContentType(a.subjectCode),case when b.city in (${keyCity}) then '核心城市'
               |when b.city in (${importCityA}) then '重点城市A' when b.city in (${importCityB}) then '重点城市B' else '其他' end,
               |b.city
             """.stripMargin).map(e=>(e.getString(0),e.getString(1),e.getString(2),e.getLong(3))).collect().foreach(e=>{
-            util.insert(insertSql1,insertDay,e._1,e._2,e._3,e._4)
+            try{
+              util.insert(insertSql1,insertDay,e._1,e._2,e._3,e._4)
+            }catch {
+              case e:Exception =>
+            }
           })
         })
 
