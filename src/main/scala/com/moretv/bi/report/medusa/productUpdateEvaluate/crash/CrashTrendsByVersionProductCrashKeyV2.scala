@@ -6,7 +6,10 @@ package com.moretv.bi.report.medusa.productUpdateEvaluate.crash
 
 import java.lang.{Long => JLong}
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.LogTypes
 import com.moretv.bi.medusa.util.DevMacUtils
+import com.moretv.bi.report.medusa.CrashLog.EachUserEachCrashAppearInfo.{MEDUSA, sc}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.spark.SparkContext
@@ -27,22 +30,17 @@ object CrashTrendsByVersionProductCrashKeyV2 extends SparkSetting{
 
         //TODO 是否需要写到固定的常量类or通过SDK读取
         // 过滤掉stack_trace没有值/空的情形
-        val logRdd = sc.textFile(s"/log/medusa_crash/rawlog/${inputDate}/").map(log=>{
-          var json = new JSONObject()
-          try{
-            json = new JSONObject(log)
-          }catch{
-            case e:Exception=>{println(log)}
-          }
 
-            (json.optString("fileName"),json.optString("MAC"),json.optString("APP_VERSION_NAME").replace(":",""),json.optString("APP_VERSION_CODE"),
-              json.optString("CRASH_KEY"),json.optString("STACK_TRACE"),json.optString("DATE_CODE"),json.optString("PRODUCT_CODE"))
-        }).filter(e=>{e._6!=null && e._6!=""  && {if(e._7!=null) e._7.length<=20 else true}})
+        val logRdd = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.CRASH_LOG,inputDate).select("MAC","APP_VERSION_NAME",
+        "APP_VERSION_CODE","CRASH_KEY","STACK_TRACE","DATE_CODE","PRODUCT_CODE").map(e=>(e.getString(0),
+          e.getString(1).replace(":",""),,e.getString(2),
+        e.getString(3),e.getString(4),e.getString(5),e.getString(6))).
+          filter(e=>{e._5!=null && e._5!=""  && {if(e._6!=null) e._6.length<=20 else true}})
 
         // 内存溢出的crash
         logRdd.map(log => (log._1,log._2,log._3,log._4,log._5,log._6,log
-          ._7,log._8,DigestUtils.md5Hex(log._5),DigestUtils.md5Hex(log._6))).filter(data => !DevMacUtils.macFilter(data._2)).filter(_._5.contains("java.lang." +
-          "OutOfMemoryError")).toDF("fileName","Mac","App_version_name","App_version_code",
+          ._7,DigestUtils.md5Hex(log._4),DigestUtils.md5Hex(log._5))).filter(data => !DevMacUtils.macFilter(data._1)).filter(_._4.contains("java.lang." +
+          "OutOfMemoryError")).toDF("Mac","App_version_name","App_version_code",
             "Crash_key","Stack_trace","Date_code","Product_code","Crash_key_md5",
             "Stack_trace_md5").registerTempTable("log_data_oom")
         sqlContext.sql(
@@ -57,8 +55,8 @@ object CrashTrendsByVersionProductCrashKeyV2 extends SparkSetting{
 
         // 空指针的crash
         logRdd.map(log => (log._1,log._2,log._3,log._4,log._5,log._6,log
-          ._7,log._8,DigestUtils.md5Hex(log._5),DigestUtils.md5Hex(log._6))).filter(data => !DevMacUtils.macFilter(data._2)).filter(_._5.contains("java" +
-          ".lang.NullPointerException")).toDF("fileName","Mac","App_version_name","App_version_code",
+          ._7,DigestUtils.md5Hex(log._4),DigestUtils.md5Hex(log._5))).filter(data => !DevMacUtils.macFilter(data._1)).filter(_._4.contains("java" +
+          ".lang.NullPointerException")).toDF("Mac","App_version_name","App_version_code",
             "Crash_key","Stack_trace","Date_code","Product_code","Crash_key_md5",
             "Stack_trace_md5").registerTempTable("log_data_nlp")
         sqlContext.sql(
@@ -71,9 +69,8 @@ object CrashTrendsByVersionProductCrashKeyV2 extends SparkSetting{
           """.stripMargin).toDF("Mac","App_version_name","App_version_code","Date_code","Product_code",
             "Crash_key_md5","Stack_trace_md5","num").filter("num<=1000").registerTempTable("crashInfo5")
         // 所有的crash
-        logRdd.map(log => (log._1,log._2,log._3,log._4,log._5,log._6,log._7,log
-          ._8,DigestUtils.md5Hex(log._5),DigestUtils.md5Hex(log._6))).
-          filter(data => !DevMacUtils.macFilter(data._2)).toDF("fileName","Mac","App_version_name","App_version_code",
+        logRdd.map(log => (log._1,log._2,log._3,log._4,log._5,log._6,log._7,DigestUtils.md5Hex(log._4),DigestUtils.md5Hex(log._5))).
+          filter(data => !DevMacUtils.macFilter(data._2)).toDF("Mac","App_version_name","App_version_code",
             "Crash_key","Stack_trace","Date_code","Product_code","Crash_key_md5",
             "Stack_trace_md5").registerTempTable("log_data")
 

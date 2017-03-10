@@ -109,7 +109,7 @@ object DayRetentionRate extends BaseClass{
   }
 
   def deleteSQL(date:String,stmt:Statement) = {
-    val sql = s"DELETE FROM bi.`user_retetion_day` WHERE DAT = ${date}"
+    val sql = s"DELETE FROM bi.`user_retetion_day` WHERE DAY = ${date}"
     stmt.execute(sql)
   }
 }
