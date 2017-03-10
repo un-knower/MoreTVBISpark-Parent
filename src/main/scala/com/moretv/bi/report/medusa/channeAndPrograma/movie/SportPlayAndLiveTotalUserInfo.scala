@@ -29,8 +29,7 @@ object SportPlayAndLiveTotalUserInfo extends BaseClass{
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
 
-
-        (0 until p.numOfDays).foreach(i=>{
+      (0 until p.numOfDays).foreach(i=>{
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
@@ -45,15 +44,14 @@ object SportPlayAndLiveTotalUserInfo extends BaseClass{
           val totalUserRdd=sportLiveUserRdd.union(sportPlayUserRdd)
           val totalUserNum=totalUserRdd.distinct().count()
 
-
+          if (p.deleteOld) {
+            val oldSql = s"delete from medusa_channel_play_and_live_user_sport_info where day = '$insertDate'"
+            util.delete(oldSql)
+          }
 
           val sqlInsert = "insert into medusa_channel_play_and_live_user_sport_info(day,total_user) values (?,?)"
 
           util.insert(sqlInsert,insertDate,new JLong(totalUserNum))
-
-
-
-
 
         })
 
