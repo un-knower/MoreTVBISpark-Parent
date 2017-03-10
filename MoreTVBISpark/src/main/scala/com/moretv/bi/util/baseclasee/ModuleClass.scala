@@ -48,6 +48,7 @@ object ModuleClass {
         if(alarmFlag){
           ExceptionManage.taskExceptionStore(op.getClass.getName,e,executeTime)
         }
+        throw e
       }
     }finally{
       op.destroy()
