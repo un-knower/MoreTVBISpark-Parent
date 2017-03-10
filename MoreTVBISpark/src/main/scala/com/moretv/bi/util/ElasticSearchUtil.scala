@@ -81,31 +81,35 @@ object ElasticSearchUtil {
   }
 
   def bulkCreateIndex1(list: util.ArrayList[Map[String, Object]], index: String, typeName: String) = {
+    try {
+      if (client == null) init
+      val bulkRequest = client.prepareBulk()
 
-    if (client == null) init
-    val bulkRequest = client.prepareBulk()
-
-    list.foreach(x => {
-      val xb = XContentFactory.jsonBuilder().startObject()
-      x.foreach(e => {
-        val key = e._1
-        val value = e._2
-        xb.field(key,
-          if (value != null) {
-            if (e._2.isInstanceOf[Long]) {
-              e._2.toString.toLong
+      list.foreach(x => {
+        val xb = XContentFactory.jsonBuilder().startObject()
+        x.foreach(e => {
+          val key = e._1
+          val value = e._2
+          xb.field(key,
+            if (value != null) {
+              if (e._2.isInstanceOf[Long]) {
+                e._2.toString.toLong
+              } else {
+                e._2.toString
+              }
             } else {
-              e._2.toString
+              "unknown"
             }
-          } else {
-            "unknown"
-          }
-        )
+          )
+        })
+        xb.endObject()
+        bulkRequest.add(client.prepareIndex(index, typeName).setSource(xb))
       })
-      xb.endObject()
-      bulkRequest.add(client.prepareIndex(index, typeName).setSource(xb))
-    })
-    bulkRequest.get()
+      bulkRequest.get()
+    } catch {
+      case e: Exception =>
+        e.printStackTrace()
+    }
   }
 
   def bulkDeleteDocs(index: String, typeName: String, queryKey: String, queryVal: String) = {
