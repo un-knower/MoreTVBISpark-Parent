@@ -7,10 +7,6 @@ object DimForLive {
 
   /** Attributes **/
 
-  val CATEGORYCODE = "code"
-
-  val CATEGORYNAME = "name"
-
 
   val PROGRAMENAME = "liveName"
 
@@ -44,21 +40,34 @@ object DimForLive {
 
   /** ***********************************************/
 
+  /** time sourcetype category channel uv vv duration**/
 
   val groupFields4D = Array(DAY, SOURCETYPE, LIVECATEGORYCODE, CHANNELSID, PROGRAMENAME)
 
-  val groupFields4M = Array(DAY, HOUR, MINUTE, SOURCETYPE, LIVECATEGORYCODE, CHANNELSID, PROGRAMENAME)
-
   val groupFields4H = Array(DAY, HOUR, SOURCETYPE, LIVECATEGORYCODE, CHANNELSID, PROGRAMENAME)
 
-  val groupFields4CodeName = Array(CATEGORYCODE, CATEGORYNAME)
-
-  val groupFields4DChannelPlay = Array(DAY, SOURCETYPE, LIVECATEGORYCODE,LIVECATEGORYNAME, CHANNELSID, PROGRAMENAME)
+  val groupFields4M = Array(DAY, HOUR, MINUTE, SOURCETYPE, LIVECATEGORYCODE, CHANNELSID, PROGRAMENAME)
 
 
-  val cube4DFields = groupFields4DChannelPlay ++ Array(UV, VV, DURATION)
+  val groupFields4Category = Array(LIVECATEGORYCODE, LIVECATEGORYNAME)
 
-  val cube4MFieldsU = groupFields4M ++ Array(UV,CATEGORYNAME)
+  val groupFields4DAttr = Array(DAY, SOURCETYPE, LIVECATEGORYCODE,LIVECATEGORYNAME, CHANNELSID, PROGRAMENAME)
 
-  val cube4MFieldsV = groupFields4M ++ Array(CATEGORYNAME,VV)
+
+  val cube4DFieldsUVD = groupFields4DAttr ++ Array(UV, VV, DURATION)
+
+  val cube4MFieldsU = groupFields4M ++ Array(LIVECATEGORYNAME,UV)
+
+  val cube4MFieldsV = groupFields4M ++ Array(LIVECATEGORYNAME,VV)
+
+
+  /**  ES Source Info **/
+
+  val ES_INDEX = "medusa"
+
+  val ES_TYPE_M = "channelMinutePlay"
+
+  val ES_TYPE_10M = "channel10MinutePlay"
+
+  val ES_TYPE_D = "channelDayPlay"
 }
