@@ -58,7 +58,7 @@ object PlayCodeVideoSourceStatics extends BaseClass {
           val sourceNum = tmpRdd.map(e=>((e._1._1,e._1._2),e._2)).countByKey()
 
           if(p.deleteOld){
-            val deleteSql = s"delete $tableName where day = ?"
+            val deleteSql = s"delete from $tableName where day = ?"
             util.delete(deleteSql,insertDate)
           }
           val insertSql = s"insert into $tableName(day,videoSid,source,playcode,num,sourceNum,totalNum) values(?,?,?,?,?,?,?)"
