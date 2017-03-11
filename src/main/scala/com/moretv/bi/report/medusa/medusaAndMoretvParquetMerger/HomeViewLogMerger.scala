@@ -83,7 +83,7 @@ object HomeViewLogMerger extends BaseClass{
 
              val medusaColNames = medusaDf.columns.toList.mkString(",")
              medusaDf.registerTempTable("log_data_1")
-             val sqlSelectMedusa = s"select$medusaColNames,'medusa' as flag  from log_data_1"
+             val sqlSelectMedusa = s"select $medusaColNames,'medusa' as flag  from log_data_1"
              sqlContext.sql(sqlSelectMedusa).write.parquet(outputPath)
            }
            cal.add(Calendar.DAY_OF_MONTH, -1)
