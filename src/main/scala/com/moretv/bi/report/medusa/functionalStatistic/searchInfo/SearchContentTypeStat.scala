@@ -61,7 +61,7 @@ object SearchContentTypeStat extends BaseClass{
             cal.add(Calendar.DAY_OF_MONTH,-1)
             val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-            val df=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.CLICKSEARCHRESULT,loadDate)
+            val df=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.SEARCH_CLICKRESULT,loadDate)
               .select("userId","contentType")
               .filter("contentType is not null")
             val rdd = df.map(e=>(e.getString(1),e.getString(0)))
