@@ -15,11 +15,11 @@ import org.apache.spark.sql.functions._
 
 object SearchEntranceResultStat extends BaseClass {
 
-  private val tableName = "search_entrance_result_dist"
+  private val tableName = "search_entrance_tabview_click_dist"
 
-  private val fields = "day,entrance,contentType,pv,uv"
+  private val fields = Array("day", "search_entrance", "tab_contentType", "click_contentType", "enter_num", "tabview_num", "click_num")
 
-  private val insertSql = s"insert into $tableName($fields) values(?,?,?,?,?)"
+  private val insertSql = s"insert into $tableName(${fields.mkString(",")}) values(?,?,?,?,?,?,?)"
 
   private val deleteSql = s"delete from $tableName where day = ?"
 
@@ -33,16 +33,6 @@ object SearchEntranceResultStat extends BaseClass {
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-
-        val withNull = udf((s: String) => {
-          s match {
-            case _ => if (s == null) {
-              "null"
-            } else {
-              s
-            }
-          }
-        })
 
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
@@ -58,19 +48,46 @@ object SearchEntranceResultStat extends BaseClass {
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          val df = DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MEDUSA, LogTypes.CLICKSEARCHRESULT, loadDate)
-            .filter($"date" === sqlDate)
-            .select(withNull($"entrance").as("entrance"), withNull($"contentType").as("contentType"), $"userId")
-            .groupBy($"entrance", $"contentType")
-            .agg(count($"userId").as("pv"), countDistinct($"userId").as("uv"))
-
           if (p.deleteOld) {
             util.delete(s"delete from $tableName where day = ?", sqlDate)
           }
 
-          df.collect.foreach(w => {
-            util.insert(insertSql, sqlDate, w.getString(0), w.getString(1), w.getLong(2), w.getLong(3))
-          })
+
+          val entranceDf = DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MEDUSA, LogTypes.SEARCH_ENTRANCE, loadDate)
+            .filter($"date" === sqlDate)
+            .groupBy($"date", $"entrance")
+            .agg(count($"userId").as("enter_num"))
+
+
+          val tabviewDf = DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MEDUSA, LogTypes.SEARCH_TABVIEW, loadDate)
+            .filter($"date" === sqlDate)
+            .groupBy($"date", $"entrance", $"tabName")
+            .agg(count($"userId").as("tabview_num"))
+
+
+
+          val clickDf = DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MEDUSA, LogTypes.SEARCH_CLICKRESULT, loadDate)
+            .filter($"date" === sqlDate)
+            .groupBy($"date", $"entrance", $"tabName", $"contentType")
+            .agg(count($"userId").as("click_num"))
+
+
+
+          entranceDf.join(tabviewDf, "date" :: "entrance" :: Nil)
+            .join(clickDf, "date" :: "tabName" :: "entrance" :: Nil)
+            .withColumnRenamed("date", "day").withColumnRenamed("entrance", "search_entrance")
+            .withColumnRenamed("tabName", "tab_contentType").withColumnRenamed("contentType", "click_contentType")
+            .select(fields.map(col(_)): _*)
+            .collect
+            .foreach(w => {
+
+              util.insert(insertSql,
+
+                w.getString(0), w.getString(1), w.getString(2), w.getString(3), w.getLong(4), w.getLong(5), w.getLong(6)
+              )
+
+            })
+
 
         })
       }

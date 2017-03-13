@@ -11,7 +11,8 @@ object LogTypes {
   val BACK = "back"
   val BUTTON = "button"
   val BUTTONCLICK = "buttonclick"
-  val CLICKSEARCHRESULT = "medusa-search-clickResult"
+
+
   val COLLECT = "collect"
   val DELETECOLLECT = "deletecollect"
   val DETAIL = "detail"
@@ -47,9 +48,11 @@ object LogTypes {
   val PLAYQOS = "playqos"
   val PLAYVIEW = "playview"
   val POSITIONACCESS = "positionaccess"
-  val SEARCH_TABVIEW = "search-tabview"
-  val SEARCHENTRANCE = "searchEntrance"
-  val SEARCHENTRANCE2 = "medusa-search-clickResult"
+
+  val SEARCH_TABVIEW = "medusa-search-tabview"
+  val SEARCH_CLICKRESULT = "medusa-search-clickResult"
+  val SEARCH_ENTRANCE = "medusa-search-entrance-clickResult"
+
   val SELECTACCOUNT = "selectaccount"
   val SPORTSLIVEDETAIL = "sportslivedetail"
   val SPORTSSUBSCRIBE = "sportssubscribe"

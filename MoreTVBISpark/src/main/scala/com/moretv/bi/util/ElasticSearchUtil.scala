@@ -85,14 +85,23 @@ object ElasticSearchUtil {
     try {
       if (client == null) init
       val bulkRequest = client.prepareBulk()
+
       list.foreach(x => {
         val xb = XContentFactory.jsonBuilder().startObject()
         x.foreach(e => {
-          xb.field(e._1, if (e._2.isInstanceOf[Long]) {
-            e._2.toString.toLong
-          } else if (e._2.isInstanceOf[String]) {
-            e._2.toString
-          })
+          val key = e._1
+          val value = e._2
+          xb.field(key,
+            if (value != null) {
+              if (e._2.isInstanceOf[Long]) {
+                e._2.toString.toLong
+              } else {
+                e._2.toString
+              }
+            } else {
+              "unknown"
+            }
+          )
         })
         xb.endObject()
         bulkRequest.add(client.prepareIndex(index, typeName).setSource(xb))
@@ -104,7 +113,13 @@ object ElasticSearchUtil {
     }
   }
 
+  def bulkDeleteDocs(index: String, typeName: String, queryKey: String, queryVal: String) = {
 
+    val url = s"http://${Constants.ES_URL}/$index/$typeName/_query?q=$queryKey:${queryVal}"
+
+    HttpUtils.delete(url)
+
+  }
 
   /**
     *
