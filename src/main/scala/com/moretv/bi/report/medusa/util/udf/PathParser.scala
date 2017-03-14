@@ -458,6 +458,47 @@ object PathParser {
     result
   }
 
+  /**
+    *  medusa:从pathSpecial路径中获取subject code,如果pathSpecial没有包含subject code,使用subject name去数据库查询获得subject code
+    *         subject-新闻头条-hot11 -> hot11
+    *         subject-儿歌一周热播榜  ->儿歌一周热播榜 -> subject code[from mysql db]
+    *  moretv：从path里获得subject code
+    */
+  def getSubjectCodeByPathETL(path:String,flag:String) = {
+    var result:String = null
+    if(flag!=null){
+      flag match {
+        case "medusa" => {
+          if(path!=null){
+            if(path.contains("subject")){
+              val subjectCode = MedusaSubjectNameCodeUtil.getSubjectCode(path)
+              if(subjectCode!=" "){
+                result = subjectCode
+              }else{
+                //get subject code from mysql according subject name
+                val subjectName=MedusaSubjectNameCodeUtil.getSubjectNameETL(path)
+                if(null!=subjectName){
+                  result=CodeToNameUtils.getSubjectCodeByName(subjectName)
+                }
+              }
+            }
+          }
+        }
+        case "moretv" => {
+          if(path!=null){
+            val info = SubjectUtils.getSubjectCodeAndPath(path)
+            if(!info.isEmpty){
+              val subjectCode = info(0)
+              result = subjectCode._1
+            }
+          }
+        }
+        case _ =>
+      }
+    }
+    result
+  }
+
       /**
        *   从路径中获取专题名称
        */
@@ -503,4 +544,10 @@ object PathParser {
     }
     result
   }
+
+  def main(args: Array[String]) {
+    val pathSpecial="subject-儿歌一周热播榜"
+    println(getSubjectCodeByPathETL(pathSpecial,"medusa"))
+  }
 }
+
