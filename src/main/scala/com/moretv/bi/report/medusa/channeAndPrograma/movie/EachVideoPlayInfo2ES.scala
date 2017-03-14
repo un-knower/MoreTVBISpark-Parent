@@ -10,6 +10,7 @@ import com.moretv.bi.constant.Constants
 import com.moretv.bi.global.LogTypes
 import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
+import scala.collection.JavaConversions._
 
 /**
   * Created by xiajun on 2016/5/16.
@@ -18,6 +19,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 object EachVideoPlayInfo2ES extends BaseClass {
   def main(args: Array[String]): Unit = {
     ModuleClass.executor(this,args)
+
   }
 
   override def execute(args: Array[String]) {
@@ -58,10 +60,9 @@ object EachVideoPlayInfo2ES extends BaseClass {
             HttpUtils.delete(url)
           }
 
+          val videoList = new util.ArrayList[util.Map[String, Object]]()
           // 将数据插入ES
-          videoDf.foreachPartition(rdd => {
-            val videoList = new util.ArrayList[util.Map[String, Object]]()
-            rdd.foreach(e => {
+          videoDf.collectAsList.foreach(e => {
               val resMap = new util.HashMap[String, Object]()
               resMap.put("contentType", e.getString(0))
               resMap.put("sid", e.getString(1))
@@ -70,24 +71,10 @@ object EachVideoPlayInfo2ES extends BaseClass {
               resMap.put("userNum", new JLong(e.getLong(2)))
               resMap.put("accessNum", new JLong(e.getLong(3)))
               videoList.add(resMap)
-            })
-            ElasticSearchUtil.bulkCreateIndex(videoList, "medusa", "programPlay")
           })
+          ElasticSearchUtil.bulkCreateIndex(videoList, "medusa", "programPlay")
 
-//          episodeDf.foreachPartition(rdd =>{
-//            val episodeList = new util.ArrayList[util.Map[String, Object]]()
-//            rdd.foreach(e => {
-//              val resMap = new util.HashMap[String, Object]()
-//              resMap.put("contentType", e.getString(0))
-//              resMap.put("episodeSid", e.getString(1))
-//              resMap.put("title", ProgramRedisUtil.getTitleBySid(e.getString(1)).toString)
-//              resMap.put("day", insertDate.toString)
-//              resMap.put("userNum", new JLong(e.getLong(2)))
-//              resMap.put("accessNum", new JLong(e.getLong(3)))
-//              episodeList.add(resMap)
-//            })
-//            ElasticSearchUtil.bulkCreateIndex(episodeList, "medusa", "prograplay")
-//          })
+
         })
         ElasticSearchUtil.close
       }
