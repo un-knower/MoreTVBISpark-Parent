@@ -458,6 +458,38 @@ object PathParser {
     result
   }
 
+  /**
+    *  从路径中获取专题code
+    */
+  def getSubjectCodeByPathETL(path:String,flag:String) = {
+    var result:String = null
+    if(flag!=null){
+      flag match {
+        case "medusa" => {
+          if(path!=null){
+            if(path.contains("subject")){
+              val subjectCode = MedusaSubjectNameCodeUtil.getSubjectCode(path)
+              if(subjectCode!=" "){
+                result = subjectCode
+              }
+            }
+          }
+        }
+        case "moretv" => {
+          if(path!=null){
+            val info = SubjectUtils.getSubjectCodeAndPath(path)
+            if(!info.isEmpty){
+              val subjectCode = info(0)
+              result = subjectCode._1
+            }
+          }
+        }
+        case _ =>
+      }
+    }
+    result
+  }
+
 
   /**
     *  medusa:从pathSpecial路径中获取subject code,如果pathSpecial没有包含subject code,使用subject name去数据库查询获得subject code
@@ -465,7 +497,7 @@ object PathParser {
     *         subject-儿歌一周热播榜  ->儿歌一周热播榜
     *  moretv：从path里获得subject code
     */
-  def getSubjectCodeByPathETL(path:String,flag:String) = {
+  def getSubjectCodeByPathETLOld(path:String,flag:String) = {
     var result:String = null
     if(flag!=null){
       flag match {

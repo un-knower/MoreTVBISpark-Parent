@@ -40,7 +40,7 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
-        sqlContext.udf.register("getSubjectCode", PathParser.getSubjectCodeByPath _)
+        sqlContext.udf.register("getSubjectCode", PathParser.getSubjectCodeByPathETL _)
         sqlContext.udf.register("getSubjectName", PathParser.getSubjectNameByPathETL _)
         val startDate = p.startDate
         val calendar = Calendar.getInstance()
