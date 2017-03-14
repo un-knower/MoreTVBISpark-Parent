@@ -458,10 +458,11 @@ object PathParser {
     result
   }
 
+
   /**
     *  medusa:从pathSpecial路径中获取subject code,如果pathSpecial没有包含subject code,使用subject name去数据库查询获得subject code
     *         subject-新闻头条-hot11 -> hot11
-    *         subject-儿歌一周热播榜  ->儿歌一周热播榜 -> subject code[from mysql db]
+    *         subject-儿歌一周热播榜  ->儿歌一周热播榜
     *  moretv：从path里获得subject code
     */
   def getSubjectCodeByPathETL(path:String,flag:String) = {
@@ -501,7 +502,7 @@ object PathParser {
 
       /**
        *   从路径中获取专题名称
-       */
+        */
   def getSubjectNameByPath(path:String,flag:String) = {
     var result:String = null
     if(flag!=null){
@@ -540,6 +541,47 @@ object PathParser {
           }
         }
         case _ =>
+      }
+    }
+    result
+  }
+
+  /**
+    *从路径中获取专题名称,对于medusa日志，可以从pathSpecial解析出subjectName；对于moretv日志，日志里面不存在subjectName打点
+    * @param pathSpecial  medusa play pathSpecial field
+    * @return subject_name string value or null
+    * Example:
+    *
+    * {{{
+    *   sqlContext.sql("
+    *   select pathSpecial,subjectName,subjectCode
+    *   from log_data
+    *   where flag='medusa' and pathSpecial is not null and size(split(pathSpecial,'-'))=2").show(100,false)
+    * }}}
+
+  * */
+  def getSubjectNameByPathETL(pathSpecial:String) :String= {
+    var result:String = null
+    if(pathSpecial!=null){
+      if(pathSpecial.contains("subject")){
+        val subjectCode = MedusaSubjectNameCodeUtil.getSubjectCode(pathSpecial)
+        val pathLen = pathSpecial.split("-").length
+        if(pathLen==2){
+          result = getPathMainInfo(pathSpecial,2,1)
+        }else if(pathLen>2){
+          var tempResult = getPathMainInfo(pathSpecial,2,1)
+          if(subjectCode!=" "){
+            for(i<- 2 until pathLen-1){
+              tempResult = tempResult.concat("-").concat(getPathMainInfo(pathSpecial,i+1,1))
+            }
+            result = tempResult
+          }else{
+            for(i<- 2 until pathLen){
+              tempResult = tempResult.concat("-").concat(getPathMainInfo(pathSpecial,i+1,1))
+            }
+            result = tempResult
+          }
+        }
       }
     }
     result
