@@ -56,7 +56,7 @@ object LiveCategoryStat extends BaseClass {
           val df = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogType.LIVE, loadDate)
             .filter($"liveType" === "live" && $"date" === sqlDate && $"pathMain".isNotNull)
           val playDf = df
-            .join(categoryDF, df("liveMenuCode") === categoryDF("code"))
+            .join(categoryDF, df("liveMenuCode") === categoryDF("liveMenuCode"))
             .withColumnRenamed("name", "category")
 
           //          val viewDf = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogType.TABVIEW, loadDate)
