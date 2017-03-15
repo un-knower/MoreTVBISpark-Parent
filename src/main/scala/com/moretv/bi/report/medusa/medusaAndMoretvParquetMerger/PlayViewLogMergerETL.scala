@@ -31,7 +31,6 @@ object PlayViewLogMergerETL extends BaseClass {
       case Some(p) => {
         sqlContext.udf.register("pathParser", PathParser.pathParser _)
         sqlContext.udf.register("getSubjectCode", PathParser.getSubjectCodeByPathETL _)
-        sqlContext.udf.register("getSubjectNameBySid", PathParser.getSubjectNameByPath _)
         val cal = Calendar.getInstance()
         cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))
         (0 until p.numOfDays).foreach(i => {

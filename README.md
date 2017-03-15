@@ -1,4 +1,30 @@
+用于事实表的ETL操作，本项目在北京集群运行
+测试环境：bigdata-appsvr-130-2
+测试目录：
+cd /opt/bi/medusa/bin
+sh submit.sh 
 
+
+cp /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/MoreTVBISpark-1.0.0.jar
+~/Downloads/
+
+
+d
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+后期准备修改：
 use dw_fact_medusa;
 CREATE EXTERNAL TABLE fact_medusa_play(
    dim_web_location_sk         BIGINT,
