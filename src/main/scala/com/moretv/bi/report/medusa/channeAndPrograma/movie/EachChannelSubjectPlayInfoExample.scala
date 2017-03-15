@@ -45,6 +45,8 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
         val startDate = p.startDate
         val calendar = Calendar.getInstance()
         var sqlStr = ""
+         // /data_warehouse/dw_dimensions/dim_medusa_subject
+        //DataIO.getDataFrameOps.getPath(MORETV, LogTypes.dim_medusa_subject).registerTempTable("dim_medusa_subject")
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
         (0 until p.numOfDays).foreach(i => {
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
