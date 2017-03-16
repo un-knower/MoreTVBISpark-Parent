@@ -5,13 +5,14 @@ cd /opt/bi/medusa/bin
 sh submit.sh 
 
 
-cp /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/MoreTVBISpark-1.0.0.jar
-~/Downloads/
+cp /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/MoreTVBISpark-1.0.0.jar ~/Documents
+
+cp /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/ ~/Documents
 
 
-d
+[spark@bigdata-appsvr-130-6 bin]$ mysql -h10.255.130.1 -ubi -Dmedusa -pmlw321@moretv
 
-
+sh submit.sh com.moretv.bi.report.medusa.channeAndPrograma.movie.EachChannelSubjectPlayInfoExample --startDate 20170310
 
 
 

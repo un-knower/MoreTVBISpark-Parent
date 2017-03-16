@@ -3,7 +3,7 @@ package com.moretv.bi.report.medusa.channeAndPrograma.movie
 import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.global.{DimensionTypes, DataBases, LogTypes}
 import com.moretv.bi.report.medusa.util.FilesInHDFS
 import com.moretv.bi.report.medusa.util.udf.PathParser
 import com.moretv.bi.util._
@@ -45,8 +45,13 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
         val startDate = p.startDate
         val calendar = Calendar.getInstance()
         var sqlStr = ""
-         // /data_warehouse/dw_dimensions/dim_medusa_subject
-        //DataIO.getDataFrameOps.getPath(MORETV, LogTypes.dim_medusa_subject).registerTempTable("dim_medusa_subject")
+        val dimension_input_dir =DataIO.getDataFrameOps.getDimensionPath(MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SUBJECT)
+        val dimensionFlag = FilesInHDFS.IsInputGenerateSuccess(dimension_input_dir)
+        if (dimensionFlag) {
+          DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap,MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SUBJECT).registerTempTable(DimensionTypes.DIM_MEDUSA_SUBJECT)
+        }else{
+          throw new RuntimeException(s"$DimensionTypes.DIM_MEDUSA_SUBJECT not exist")
+        }
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
         (0 until p.numOfDays).foreach(i => {
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
@@ -149,8 +154,8 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
                |select b.subject_content_type,
                |       count(userId) as play_num,
                |       count(distinct userId) as play_user,
-               |from $spark_df_analyze_table     as a
-               |     join dim_medusa_subject                           as b
+               |from $spark_df_analyze_table               as a join
+               |     $DimensionTypes.DIM_MEDUSA_SUBJECT    as b
                |     on a.subject_code=b.subject_code
                |group by b.subject_content_type
            """.stripMargin
