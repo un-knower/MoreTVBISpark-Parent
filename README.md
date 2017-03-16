@@ -7,12 +7,18 @@ sh submit.sh
 
 cp /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/MoreTVBISpark-1.0.0.jar ~/Documents
 
-cp /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/ ~/Documents
-
+ 
+md5 /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/MoreTVBISpark-1.0.0.jar 
 
 [spark@bigdata-appsvr-130-6 bin]$ mysql -h10.255.130.1 -ubi -Dmedusa -pmlw321@moretv
 
-sh submit.sh com.moretv.bi.report.medusa.channeAndPrograma.movie.EachChannelSubjectPlayInfoExample --startDate 20170310
+
+select * from medusa_channel_subject_play_info where day='2017-03-09' order by play_num;
+
+select * from medusa_channel_subject_play_info_test where day='2017-03-09' order by play_num;
+
+
+sh submit.sh com.moretv.bi.report.medusa.channeAndPrograma.movie.EachChannelSubjectPlayInfoExample --startDate 20170310 --deleteOld true
 
 
 

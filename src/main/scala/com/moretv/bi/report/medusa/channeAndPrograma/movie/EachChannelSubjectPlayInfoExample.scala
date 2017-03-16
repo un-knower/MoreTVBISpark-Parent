@@ -42,6 +42,7 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         sqlContext.udf.register("getSubjectCode", PathParser.getSubjectCodeByPathETL _)
         sqlContext.udf.register("getSubjectName", PathParser.getSubjectNameByPathETL _)
+        sqlContext.udf.register("getSubjectType", PathParser.getSubjectTypeByPathETL _)
         val startDate = p.startDate
         val calendar = Calendar.getInstance()
         var sqlStr = ""
@@ -71,9 +72,11 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
             sqlStr = """
                  |select userId,
                  |       videoSid,
-                 |       getSubjectCode(pathSpecial,'medusa') as subjectCode,
-                 |       getSubjectName(pathSpecial) as subjectName
+                 |       getSubjectCode(pathSpecial,'medusa')  as subjectCode,
+                 |       getSubjectName(pathSpecial)           as subjectName
                  |from medusa_table
+                 |where event='startplay' and
+                 |      getSubjectType(pathSpecial,'medusa')='subject'
                  """.stripMargin
             println("--------------------"+sqlStr)
             sqlContext.sql(sqlStr).registerTempTable("medusa_table_final")
@@ -82,7 +85,7 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
                        |select a.userId,
                        |       a.videoSid,
                        |       a.subjectName,
-                       |       max(subject_code) as subjectCode
+                       |       first(subject_code) as subjectCode
                        |from
                        |    (select userId,
                        |            videoSid,
@@ -118,6 +121,8 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
                  |       getSubjectCode(path,'moretv') as subjectCode,
                  |       ''                            as subjectName
                  |from moretv_table
+                 |where event='playview' and
+                 |      getSubjectType(path,'moretv')='subject'
                  """.stripMargin
             println("--------------------"+sqlStr)
             val moretv_log_df = sqlContext.sql(sqlStr)

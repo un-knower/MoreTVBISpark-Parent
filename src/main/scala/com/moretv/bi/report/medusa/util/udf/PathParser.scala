@@ -619,6 +619,27 @@ object PathParser {
     result
   }
 
+  def getSubjectTypeByPathETL(path:String,flag:String) :String= {
+    var result:String=null
+    if(flag!=null && path!=null){
+      flag match {
+        case "medusa" => {
+            result = getPathMainInfo(path,1,1)
+            if(result.equalsIgnoreCase("subject")){
+              result = "subject"
+             }
+          }
+        case "moretv" => {
+            if(path.contains("-subject-")){
+              result ="subject"
+            }
+        }
+        case _ =>
+      }
+    }
+    result
+  }
+
   def main(args: Array[String]) {
     val pathSpecial="subject-儿歌一周热播榜"
     println(getSubjectCodeByPathETL(pathSpecial,"medusa"))
