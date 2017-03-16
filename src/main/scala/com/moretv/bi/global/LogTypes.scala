@@ -91,4 +91,9 @@ object LogTypes {
   val MEDUSABOOTSTARTPAGE = "medusa-boot-startpage"
 
   val CRASH_LOG = "crashlog"
+
+
+  val PLAY_ANALYZE_DF = "play_analyze_df"
+
+
 }

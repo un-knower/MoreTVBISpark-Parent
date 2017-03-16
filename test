@@ -1,25 +1,36 @@
+mysql> select * from medusa_channel_subject_play_info where day='2017-03-12' order by channel_name;
++------+------------+--------------+----------+-----------+
+| id   | day        | channel_name | play_num | play_user |
++------+------------+--------------+----------+-----------+
+| 4672 | 2017-03-12 | NULL         |   139673 |     23605 |
+| 4677 | 2017-03-12 | 体育         |   270677 |     71099 |
+| 4673 | 2017-03-12 | 动漫         |  2321161 |    231514 |
+| 4675 | 2017-03-12 | 少儿         |  5687619 |    422636 |
+| 4680 | 2017-03-12 | 电影         |   852168 |    259482 |
+| 4674 | 2017-03-12 | 电视         |   585759 |    120772 |
+| 4676 | 2017-03-12 | 纪实         |    72303 |     15399 |
+| 4679 | 2017-03-12 | 综艺         |   516466 |    118729 |
+| 4678 | 2017-03-12 | 资讯短片     |  7800563 |    705301 |
++------+------------+--------------+----------+-----------+
+9 rows in set (0.00 sec)
+
+mysql> select sum(play_num) from medusa_channel_subject_play_info where day='2017-03-12';
++---------------+
+| sum(play_num) |
++---------------+
+|      18246389 |
++---------------+
+1 row in set (0.00 sec)
+
+mysql> select sum(play_num) from medusa_channel_subject_play_info where day='2017-03-12' and channel_name!='NULL';
++---------------+
+| sum(play_num) |
++---------------+
+|      18106716 |
++---------------+
+1 row in set (0.00 sec)
 
 
-专题维度分析代码改造例子：
-项目：MoreTVBISpark-Parent
-分支：fact_table_etl
-代码：com.moretv.bi.report.medusa.channeAndPrograma.movie.EachChannelSubjectPlayInfoExample
 
-代码作用：统计不同频道的专题播放量，用于展示在各个频道的专题播放趋势图以及内容评估的专题趋势图
-逻辑方式【与EachChannelSubjectPlayInfo代码比较】：
-（首先从日志里获取subject code，如果subject code为null,通过subject name关联维度表dim_medusa_subject获得subject code
-最终获得userId,subject code两个字段作为分析表），括号中获得subject code的逻辑将合并到事实表ETL
-最终目的：通过分析表所要分析的字段和维度表dim_medusa_subject关联，获取分析结果
 
-在注释的代码块内逻辑， 以后会迁移，用来做事实表ETL操作：
-/*最终此逻辑会合并进入事实表的ETL过程-start*/
-/*最终此逻辑会合并进入事实表的ETL过程-end*/
-事实表ETL目的：将日志一次性地完成ETL生成FACT_TABLE，之后其他分析脚本直接使用FACT_TABLE简单地获取想要分析的字段，
-             例如：本脚本可以直接从FACT_TABLE获得userId,subjectCode进行分析，而不需在每个关于专题分析的脚本里，
-                  重复的从原来的MERGER表获得subjectCode分析字段。
-
-后续工作：1. 改造SDK代码，封装对维度parquet读取生成DF
- 例如：读取 /data_warehouse/dw_dimensions/dim_medusa_subject
-      调用 DataIO.getDataFrameOps.getPath(DIMENSION, LogTypes.DIM_MEDUSA_SUBJECT).registerTempTable("dim_medusa_subject")
-    2.依据刚生成的LogTypes.DIM_MEDUSA_SUBJECT做分析脚本的测试验证。
 

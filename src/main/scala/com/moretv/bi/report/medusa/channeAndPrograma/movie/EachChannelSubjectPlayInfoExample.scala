@@ -72,8 +72,8 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
             sqlStr = """
                  |select userId,
                  |       videoSid,
-                 |       getSubjectCode(pathSpecial,'medusa')  as subjectCode,
-                 |       getSubjectName(pathSpecial)           as subjectName
+                 |       getSubjectName(pathSpecial)           as subjectName,
+                 |       getSubjectCode(pathSpecial,'medusa')  as subjectCode
                  |from medusa_table
                  |where event='startplay' and
                  |      getSubjectType(pathSpecial,'medusa')='subject'
@@ -106,8 +106,8 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
             sqlStr = """
                        |select userId,
                        |       videoSid,
-                       |       subjectCode,
-                       |       subjectName
+                       |       subjectName,
+                       |       subjectCode
                        |from medusa_table_final
                        |where subjectCode is not null
                      """.stripMargin
@@ -118,11 +118,11 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
             sqlStr = """
                  |select userId,
                  |       videoSid,
-                 |       getSubjectCode(path,'moretv') as subjectCode,
-                 |       ''                            as subjectName
+                 |       ''                            as subjectName,
+                 |       getSubjectCode(path,'moretv') as subjectCode
                  |from moretv_table
                  |where event='playview' and
-                 |      getSubjectType(path,'moretv')='subject'
+                 |      getSubjectCode(path,'moretv') is not null
                  """.stripMargin
             println("--------------------"+sqlStr)
             val moretv_log_df = sqlContext.sql(sqlStr)
@@ -156,6 +156,12 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
             val spark_df_analyze_df=sqlContext.sql(sqlStr)
             println("b--------------------spark_df_analyze_df:"+spark_df_analyze_df.schema.treeString+","+spark_df_analyze_df.printSchema()+","+spark_df_analyze_df.count())
             spark_df_analyze_df.registerTempTable(spark_df_analyze_table)
+            //for test
+            val outputPath= DataIO.getDataFrameOps.getPath(MERGER,LogTypes.PLAY_ANALYZE_DF,date)
+            if(p.deleteOld){
+              HdfsUtil.deleteHDFSFile(outputPath)
+            }
+            spark_df_analyze_df.write.parquet(outputPath)
           }else {
             throw new RuntimeException("2.x and 3.x log data is not exist")
           }
@@ -168,13 +174,13 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
           }
           sqlStr =
             s"""
-               |select b.subject_content_type,
+               |select b.subject_content_type_name,
                |       count(userId) as play_num,
                |       count(distinct userId) as play_user
                |from $spark_df_analyze_table                  a join
                |     ${DimensionTypes.DIM_MEDUSA_SUBJECT}     b
                |     on a.subjectCode=b.subject_code
-               |group by b.subject_content_type
+               |group by b.subject_content_type_name
            """.stripMargin
           println("analyse--------------------"+sqlStr)
           val sqlInsert = s"insert into $mysql_analyze_result_table(day,channel_name,play_num,play_user) values (?,?,?,?)"
