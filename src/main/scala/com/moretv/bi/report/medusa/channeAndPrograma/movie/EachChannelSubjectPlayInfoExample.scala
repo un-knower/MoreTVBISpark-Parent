@@ -46,11 +46,13 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
         val calendar = Calendar.getInstance()
         var sqlStr = ""
         val dimension_input_dir =DataIO.getDataFrameOps.getDimensionPath(MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SUBJECT)
+        println(s"dimension_input_dir is $dimension_input_dir")
         val dimensionFlag = FilesInHDFS.IsInputGenerateSuccess(dimension_input_dir)
+        println(s"dimensionFlag is $dimensionFlag")
         if (dimensionFlag) {
-          DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap,MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SUBJECT).registerTempTable(DimensionTypes.DIM_MEDUSA_SUBJECT)
+          DataIO.getDataFrameOps.getDimensionDF(sqlContext, p.paramMap,MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SUBJECT).registerTempTable(DimensionTypes.DIM_MEDUSA_SUBJECT)
         }else{
-          throw new RuntimeException(s"$DimensionTypes.DIM_MEDUSA_SUBJECT not exist")
+          throw new RuntimeException(s"${DimensionTypes.DIM_MEDUSA_SUBJECT} not exist")
         }
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
         (0 until p.numOfDays).foreach(i => {
@@ -73,38 +75,40 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
                  |       getSubjectName(pathSpecial) as subjectName
                  |from medusa_table
                  """.stripMargin
-            println(sqlStr)
+            println("--------------------"+sqlStr)
             sqlContext.sql(sqlStr).registerTempTable("medusa_table_final")
 
-            sqlStr = """
+            sqlStr = s"""
                        |select a.userId,
                        |       a.videoSid,
                        |       a.subjectName,
-                       |       max(subject_code) as subject_code
+                       |       max(subject_code) as subjectCode
                        |from
-                       |    (select a.userId,
-                       |            a.videoSid,
-                       |            a.subjectName
+                       |    (select userId,
+                       |            videoSid,
+                       |            subjectName
                        |     from medusa_table_final
                        |     where subjectCode is null
                        |     ) as a
                        |join
-                       |    dim_medusa_subject as b
-                       |on a.subjectName=b.subjectName
+                       |    ${DimensionTypes.DIM_MEDUSA_SUBJECT} as b
+                       |on a.subjectName=b.subject_name
                        |group by a.userId,
                        |         a.videoSid,
                        |         a.subjectName
                      """.stripMargin
+            println("--------------------"+sqlStr)
             val medusa_subject_code_null_df=sqlContext.sql(sqlStr)
+
             sqlStr = """
                        |select userId,
                        |       videoSid,
-                       |       getSubjectCode(pathSpecial,'medusa') as subjectCode,
-                       |       getSubjectName(pathSpecial) as subjectName
+                       |       subjectCode,
+                       |       subjectName
                        |from medusa_table_final
                        |where subjectCode is not null
                      """.stripMargin
-            println(sqlStr)
+            println("--------------------"+sqlStr)
             val medusa_subject_code_not_null_df=sqlContext.sql(sqlStr)
             val medusa_log_df =  medusa_subject_code_null_df.unionAll(medusa_subject_code_not_null_df)
 
@@ -112,32 +116,38 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
                  |select userId,
                  |       videoSid,
                  |       getSubjectCode(path,'moretv') as subjectCode,
-                 |       null                          as subjectName
+                 |       ''                            as subjectName
                  |from moretv_table
                  """.stripMargin
-            println(sqlStr)
+            println("--------------------"+sqlStr)
             val moretv_log_df = sqlContext.sql(sqlStr)
-            medusa_log_df.unionAll(moretv_log_df).registerTempTable("moretv_and_medusa_play_table")
+            val moretv_and_medusa_play_df=medusa_log_df.unionAll(moretv_log_df)
+            moretv_and_medusa_play_df.registerTempTable("moretv_and_medusa_play_table")
+            println("a--------------------"+moretv_and_medusa_play_df.columns.toString)
+            println("a--------------------medusa_log_df:"+medusa_log_df.schema.treeString+","+medusa_log_df.printSchema()+","+medusa_log_df.count())
+            println("a--------------------moretv_log_df:"+moretv_log_df.schema.treeString+","+moretv_log_df.printSchema()+","+moretv_log_df.count())
+            println("a--------------------moretv_and_medusa_play_df:"+moretv_and_medusa_play_df.schema.treeString+","+moretv_and_medusa_play_df.printSchema()+","+moretv_and_medusa_play_df.count())
 
             //用于过滤单个用户播放当个视频量过大的情况
             sqlStr = s"""
-                       |select concat(userId,videoSid) as filterColumn,
+                       |select concat(userId,videoSid) as filterColumn
                        |from moretv_and_medusa_play_table
                        |group by concat(userId,videoSid)
-                       |having total_count>=$playNumLimit
+                       |having count(1)>=$playNumLimit
                      """.stripMargin
-            println(sqlStr)
+            println("--------------------"+sqlStr)
             sqlContext.sql(sqlStr).registerTempTable("moretv_and_medusa_play_filter_table")
 
             sqlStr = s"""
-                        |select a.userId,a.subjectCode
+                        |select a.userId,
+                        |       a.subjectCode
                         |from moretv_and_medusa_play_table           a
                         |     left join
                         |     moretv_and_medusa_play_filter_table    b
                         |     on concat(a.userId,a.videoSid)=b.filterColumn
                         |where b.filterColumn is null
                      """.stripMargin
-            println(sqlStr)
+            println("--------------------"+sqlStr)
             sqlContext.sql(sqlStr).registerTempTable(spark_df_analyze_table)
           }else {
             throw new RuntimeException("2.x and 3.x log data is not exist")
@@ -153,13 +163,13 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
             s"""
                |select b.subject_content_type,
                |       count(userId) as play_num,
-               |       count(distinct userId) as play_user,
-               |from $spark_df_analyze_table               as a join
-               |     $DimensionTypes.DIM_MEDUSA_SUBJECT    as b
-               |     on a.subject_code=b.subject_code
+               |       count(distinct userId) as play_user
+               |from $spark_df_analyze_table                  a join
+               |     ${DimensionTypes.DIM_MEDUSA_SUBJECT}     b
+               |     on a.subjectCode=b.subject_code
                |group by b.subject_content_type
            """.stripMargin
-          println(sqlStr)
+          println("analyse--------------------"+sqlStr)
           val sqlInsert = s"insert into $mysql_analyze_result_table(day,channel_name,play_num,play_user) values (?,?,?,?)"
           sqlContext.sql(sqlStr).foreachPartition(partition => {
             partition.foreach(row => {
