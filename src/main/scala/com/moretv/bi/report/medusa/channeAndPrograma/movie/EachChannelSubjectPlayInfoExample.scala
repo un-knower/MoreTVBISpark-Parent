@@ -180,12 +180,16 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
           val sqlInsert = s"insert into $mysql_analyze_result_table(day,channel_name,play_num,play_user) values (?,?,?,?)"
           val analyse_resul_df=sqlContext.sql(sqlStr)
           println("c--------------------analyse_resul_df:"+analyse_resul_df.schema.treeString+","+analyse_resul_df.printSchema()+","+analyse_resul_df.count())
-          analyse_resul_df.foreachPartition(partition => {
+
+          analyse_resul_df.collect.foreach(row=>{
+            util.insert(sqlInsert,insertDate,row.getString(0),new JLong(row.getLong(1)),new JLong(row.getLong(2)))
+          })
+        /*  analyse_resul_df.foreachPartition(partition => {
             val utilDb = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
             partition.foreach(row => {
               utilDb.insert(sqlInsert,insertDate,row.getString(0),new JLong(row.getLong(1)),new JLong(row.getLong(2)))
             })
-          })
+          })*/
         })
       }
       case None => throw new RuntimeException("At least needs one param: startDate!")
