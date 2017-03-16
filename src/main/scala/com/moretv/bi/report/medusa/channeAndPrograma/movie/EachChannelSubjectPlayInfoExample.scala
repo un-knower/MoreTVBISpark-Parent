@@ -148,7 +148,9 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
                         |where b.filterColumn is null
                      """.stripMargin
             println("--------------------"+sqlStr)
-            sqlContext.sql(sqlStr).registerTempTable(spark_df_analyze_table)
+            val spark_df_analyze_df=sqlContext.sql(sqlStr)
+            println("b--------------------spark_df_analyze_df:"+spark_df_analyze_df.schema.treeString+","+spark_df_analyze_df.printSchema()+","+spark_df_analyze_df.count())
+            spark_df_analyze_df.registerTempTable(spark_df_analyze_table)
           }else {
             throw new RuntimeException("2.x and 3.x log data is not exist")
           }
@@ -171,9 +173,12 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
            """.stripMargin
           println("analyse--------------------"+sqlStr)
           val sqlInsert = s"insert into $mysql_analyze_result_table(day,channel_name,play_num,play_user) values (?,?,?,?)"
-          sqlContext.sql(sqlStr).foreachPartition(partition => {
+          val analyse_resul_df=sqlContext.sql(sqlStr)
+          println("c--------------------analyse_resul_df:"+analyse_resul_df.schema.treeString+","+analyse_resul_df.printSchema()+","+analyse_resul_df.count())
+          analyse_resul_df.foreachPartition(partition => {
+            val utilDb = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
             partition.foreach(row => {
-              util.insert(sqlInsert,insertDate,row.getString(0),new JLong(row.getLong(1)),new JLong(row.getLong(2)))
+              utilDb.insert(sqlInsert,insertDate,row.getString(0),new JLong(row.getLong(1)),new JLong(row.getLong(2)))
             })
           })
         })
