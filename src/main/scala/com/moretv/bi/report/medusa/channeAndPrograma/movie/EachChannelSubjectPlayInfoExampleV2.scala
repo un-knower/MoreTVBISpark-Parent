@@ -194,7 +194,7 @@ object EachChannelSubjectPlayInfoExampleV2 extends BaseClass {
             if(p.deleteOld){
               HdfsUtil.deleteHDFSFile(outputPath)
             }
-            sqlContext.sql(sqlStr).write.parquet(outputPath)
+            step3_table_df.write.parquet(outputPath)
 
             println("a--------------------medusa_log_df:"+medusa_log_df.schema.treeString+","+medusa_log_df.printSchema()+","+medusa_log_df.count())
             println("a--------------------moretv_log_df:"+moretv_log_df.schema.treeString+","+moretv_log_df.printSchema()+","+moretv_log_df.count())
