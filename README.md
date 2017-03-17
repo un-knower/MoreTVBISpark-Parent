@@ -12,13 +12,16 @@ md5 /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/More
 
 [spark@bigdata-appsvr-130-6 bin]$ 
 mysql -h10.255.130.1 -ubi -Dmedusa -pmlw321@moretv
+mysql -hbigdata-extsvr-db_bi1 -ubi -Dmedusa -pmlw321@moretv
 
 
-select * from medusa_channel_subject_play_info where day='2017-03-09' order by play_num;
+select * from medusa_channel_subject_play_info where day='2017-03-12' order by channel_name;
 
-select * from medusa_channel_subject_play_info_test where day='2017-03-09' order by play_num;
+select * from medusa_channel_subject_play_info_test where day='2017-03-12' order by channel_name;
 
-
+elect sum(play_num) from medusa_channel_subject_play_info_test where day='2017-03-12' ;
+ select sum(play_num) from medusa_channel_subject_play_info where day='2017-03-12' ;
+ 
 nohup sh submit.sh com.moretv.bi.report.medusa.channeAndPrograma.movie.EachChannelSubjectPlayInfoExampleV2 --startDate 20170314 --deleteOld true \
 >a.log 2>&1 &
 
