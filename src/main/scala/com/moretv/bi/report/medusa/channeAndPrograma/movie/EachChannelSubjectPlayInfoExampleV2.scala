@@ -183,7 +183,8 @@ object EachChannelSubjectPlayInfoExampleV2 extends BaseClass {
                  |       ''                            as subjectName,
                  |       getSubjectCode(path,'moretv') as subjectCode
                  |from step2_table
-                 |where event='playview' and
+                 |where flag='moretv'        and
+                 |      event='playview'     and
                  |      getSubjectCode(path,'moretv') is not null
                  """.stripMargin
             println("--------------------"+sqlStr)

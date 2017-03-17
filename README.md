@@ -15,14 +15,17 @@ mysql -h10.255.130.1 -ubi -Dmedusa -pmlw321@moretv
 mysql -hbigdata-extsvr-db_bi1 -ubi -Dmedusa -pmlw321@moretv
 
 
-select * from medusa_channel_subject_play_info where day='2017-03-12' order by channel_name;
+select * from medusa_channel_subject_play_info where day='2017-03-14' order by channel_name;
 
-select * from medusa_channel_subject_play_info_test where day='2017-03-12' order by channel_name;
+select * from medusa_channel_subject_play_info_test where day='2017-03-15' order by channel_name;
 
 elect sum(play_num) from medusa_channel_subject_play_info_test where day='2017-03-12' ;
  select sum(play_num) from medusa_channel_subject_play_info where day='2017-03-12' ;
  
-nohup sh submit.sh com.moretv.bi.report.medusa.channeAndPrograma.movie.EachChannelSubjectPlayInfoExampleV2 --startDate 20170314 --deleteOld true \
+ select sum(play_user),sum(play_num) from medusa_channel_subject_play_info where day='2017-03-14';
+ select sum(play_user) from medusa_channel_subject_play_info_test where day='2017-03-15';
+ 
+nohup sh submit.sh com.moretv.bi.report.medusa.channeAndPrograma.movie.EachChannelSubjectPlayInfoExampleV2 --startDate 20170315 --deleteOld true \
 >a.log 2>&1 &
 
 
