@@ -156,12 +156,6 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
             val spark_df_analyze_df=sqlContext.sql(sqlStr)
             println("b--------------------spark_df_analyze_df:"+spark_df_analyze_df.schema.treeString+","+spark_df_analyze_df.printSchema()+","+spark_df_analyze_df.count())
             spark_df_analyze_df.registerTempTable(spark_df_analyze_table)
-            //for test
-            val outputPath= DataIO.getDataFrameOps.getPath(MERGER,LogTypes.PLAY_ANALYZE_DF,date)
-            if(p.deleteOld){
-              HdfsUtil.deleteHDFSFile(outputPath)
-            }
-            spark_df_analyze_df.write.parquet(outputPath)
           }else {
             throw new RuntimeException("2.x and 3.x log data is not exist")
           }
