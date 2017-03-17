@@ -95,5 +95,11 @@ object LogTypes {
 
   val PLAY_ANALYZE_DF = "play_analyze_df"
 
+  val STEP1 = "step1" //2.x and 3.x merge
+  val STEP2 = "step2" //2.x and 3.x merge filter 5000
+  val STEP3 = "step3" //subjectType is subject
+
+
+
 
 }

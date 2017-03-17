@@ -10,7 +10,8 @@ cp /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreT
  
 md5 /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/MoreTVBISpark-1.0.0.jar 
 
-[spark@bigdata-appsvr-130-6 bin]$ mysql -h10.255.130.1 -ubi -Dmedusa -pmlw321@moretv
+[spark@bigdata-appsvr-130-6 bin]$ 
+mysql -h10.255.130.1 -ubi -Dmedusa -pmlw321@moretv
 
 
 select * from medusa_channel_subject_play_info where day='2017-03-09' order by play_num;
@@ -18,7 +19,8 @@ select * from medusa_channel_subject_play_info where day='2017-03-09' order by p
 select * from medusa_channel_subject_play_info_test where day='2017-03-09' order by play_num;
 
 
-sh submit.sh com.moretv.bi.report.medusa.channeAndPrograma.movie.EachChannelSubjectPlayInfoExample --startDate 20170310 --deleteOld true
+nohup sh submit.sh com.moretv.bi.report.medusa.channeAndPrograma.movie.EachChannelSubjectPlayInfoExampleV2 --startDate 20170314 --deleteOld true \
+>a.log 2>&1 &
 
 
 
