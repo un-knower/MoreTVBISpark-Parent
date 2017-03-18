@@ -21,6 +21,9 @@ class ProgramRedisUtils {
     private val metadata_port=db.prop.getProperty("metadata_port").toInt
     private val metadata_db=6
     private var metadata_jedis:Jedis=null
+	println("*****************************")
+	println(s"${metadata_host} ${metadata_port}")
+	println("*****************************")
 
 		config.setMaxTotal(10)
 		config.setMaxWaitMillis(10000)

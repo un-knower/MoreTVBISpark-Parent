@@ -14,8 +14,8 @@ object ProgramRedisUtil {
   /**
    * 定义ProgramRedis使用的一些常量
    */
-  val TITLE = "item_title"
-  val AREA = "item_area"
+  val TITLE = "title"
+  val AREA = "area"
   val CONTENT_TYPE = "item_contentType"
   val SUPPLY_TYPE = "supply_type"
 
@@ -68,6 +68,7 @@ object ProgramRedisUtil {
     } catch {
       case e:Exception => sid
     }
+    destroy()
   }
 
 

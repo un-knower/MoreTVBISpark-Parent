@@ -51,8 +51,12 @@ object EachVideoOfChannelPlayInfo extends BaseClass{
           }
 
           rdd.foreach(e=>{
-            util.insert(insertSql,insertDate,e._1,e._2,ProgramRedisUtil.getTitleBySid(e._2),new JLong(e._3),
-            new JLong(e._4))
+            try{
+              util.insert(insertSql,insertDate,e._1,e._2,ProgramRedisUtil.getTitleBySid(e._2),new JLong(e._3),
+                new JLong(e._4))
+            }catch {
+              case e:Exception => throw  e
+            }
           })
 
         })

@@ -54,13 +54,23 @@ object EachDonghuaAndSongOfKidsPlayInfo extends BaseClass{
 
 
           donghuaRdd.collect().foreach(e=>{
-            util.insert(insertSql,insertDate,"donghua",e._1,ProgramRedisUtil.getTitleBySid(e._1),new JLong(e._2),
-              new JLong(e._3))
+            try{
+
+              util.insert(insertSql,insertDate,"donghua",e._1,ProgramRedisUtil.getTitleBySid(e._1),new JLong(e._2),
+                new JLong(e._3))
+            }catch {
+              case e:Exception => throw e
+            }
           })
 
           songRdd.collect().foreach(e=>{
-            util.insert(insertSql,insertDate,"song",e._1,ProgramRedisUtil.getTitleBySid(e._1),new JLong(e._2),new JLong(e
-              ._3))
+            try {
+              util.insert(insertSql,insertDate,"song",e._1,ProgramRedisUtil.getTitleBySid(e._1),new JLong(e._2),new JLong(e
+                ._3))
+            }catch {
+              case e:Exception => throw  e
+            }
+
           })
 
         })

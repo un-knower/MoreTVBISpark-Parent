@@ -63,8 +63,12 @@ object SearchProgramInfo extends BaseClass{
 
 
           searchRdd.collect().foreach(e=>{
-            util.insert(insertSql,insertDate,e._1,ProgramRedisUtil.getTitleBySid(e._1),new JLong(e._2),new JLong(e
-              ._3))
+            try{
+              util.insert(insertSql,insertDate,e._1,ProgramRedisUtil.getTitleBySid(e._1),new JLong(e._2),new JLong(e
+                ._3))
+            }catch {
+              case e:Exception => throw e
+            }
           })
 
         })
