@@ -59,7 +59,7 @@ object EachDonghuaAndSongOfKidsPlayInfo extends BaseClass{
               util.insert(insertSql,insertDate,"donghua",e._1,ProgramRedisUtil.getTitleBySid(e._1),new JLong(e._2),
                 new JLong(e._3))
             }catch {
-              case e:Exception => throw e
+              case e:Exception =>
             }
           })
 
@@ -68,7 +68,7 @@ object EachDonghuaAndSongOfKidsPlayInfo extends BaseClass{
               util.insert(insertSql,insertDate,"song",e._1,ProgramRedisUtil.getTitleBySid(e._1),new JLong(e._2),new JLong(e
                 ._3))
             }catch {
-              case e:Exception => throw  e
+              case e:Exception =>
             }
 
           })

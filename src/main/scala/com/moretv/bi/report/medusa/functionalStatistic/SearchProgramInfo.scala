@@ -67,7 +67,7 @@ object SearchProgramInfo extends BaseClass{
               util.insert(insertSql,insertDate,e._1,ProgramRedisUtil.getTitleBySid(e._1),new JLong(e._2),new JLong(e
                 ._3))
             }catch {
-              case e:Exception => throw e
+              case e:Exception =>
             }
           })
 

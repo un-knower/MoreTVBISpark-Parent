@@ -51,7 +51,7 @@ object QuerySubjectViewInfo extends BaseClass {
             "((flag='medusa' and pathPropertyFromPath='subject') or flag='moretv')").
             map(e=>(e.getString(0),e.getString(1),e.getString(2),e.getString(3),
             e.getString(4),e.getString(5),e.getString(6),e.getString(7))).
-            repartition(28).cache()
+            repartition(28)
           val mergerInfoRdd = rdd.map(x => {
             val flag = x._8
             if(flag == "medusa"){

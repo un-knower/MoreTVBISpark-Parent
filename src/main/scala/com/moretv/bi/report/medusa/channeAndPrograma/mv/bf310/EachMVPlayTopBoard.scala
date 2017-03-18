@@ -61,14 +61,14 @@ object EachMVPlayTopBoard extends BaseClass{
             try {
               util.insert(insertSql,insertDate,e._1,ProgramRedisUtil.getTitleBySid(e._1),e._2,new JLong(e._3),new JLong(e._4))
             }catch {
-              case e:Exception => throw e
+              case e:Exception =>
             }
           })
           durationRdd.foreach(e=>{
             try{
               util.insert(insertSql1,insertDate,e._1,ProgramRedisUtil.getTitleBySid(e._1),e._2,new JLong(e._3),new JLong(e._4))
             }catch {
-              case e:Exception => throw e
+              case e:Exception =>
             }
           })
         })
