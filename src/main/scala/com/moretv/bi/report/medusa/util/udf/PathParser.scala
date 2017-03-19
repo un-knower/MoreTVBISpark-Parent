@@ -641,8 +641,10 @@ object PathParser {
   }
 
   def main(args: Array[String]) {
-    val pathSpecial="subject-儿歌一周热播榜"
+    //val pathSpecial="subject-儿歌一周热播榜"
+    val pathSpecial="subject-六一儿歌行-kid8"
     println(getSubjectCodeByPathETL(pathSpecial,"medusa"))
+    println(getSubjectNameByPathETL(pathSpecial))
   }
 }
 

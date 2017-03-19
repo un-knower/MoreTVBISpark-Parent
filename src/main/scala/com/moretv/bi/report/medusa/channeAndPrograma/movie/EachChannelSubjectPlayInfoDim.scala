@@ -9,6 +9,13 @@ import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
 /**
+  *
+  * 参考最新修改
+  * EachChannelSubjectPlayInfoExampleV2
+  *
+  *
+  *
+  *
   * Created by baozhi.wang on 2017/3/13.
   * 统计不同频道的专题播放量，用于展示在各个频道的专题播放趋势图以及内容评估的专题趋势图
   *

@@ -147,25 +147,34 @@ object EachChannelSubjectPlayInfoExampleV2 extends BaseClass {
                  """.stripMargin
             println("--------------------"+sqlStr)
             sqlContext.sql(sqlStr).registerTempTable("medusa_table_final")
+            outputPath= DataIO.getDataFrameOps.getPath(MERGER,"medusa_table_final",date)
+            if(p.deleteOld){
+              HdfsUtil.deleteHDFSFile(outputPath)
+            }
+            sqlContext.sql(sqlStr).write.parquet(outputPath)
 
             sqlStr = s"""
                        |select a.userId,
                        |       a.subjectName,
-                       |       first(b.subject_code) as subjectCode
-                       |from
-                       |    (select userId,
-                       |            subjectName
-                       |     from medusa_table_final
-                       |     where subjectCode is null
-                       |     ) as a
+                       |       b.subject_code as subjectCode
+                       |from medusa_table_final a
                        |join
-                       |    ${DimensionTypes.DIM_MEDUSA_SUBJECT} as b
-                       |on a.subjectName=b.subject_name
-                       |group by a.userId,
-                       |         a.subjectName
+                       |    (select subject_name,
+                       |            first(subject_code) as subject_code
+                       |     from
+                       |     ${DimensionTypes.DIM_MEDUSA_SUBJECT}
+                       |     group by subject_name
+                       |    ) b
+                       |on trim(a.subjectName)=trim(b.subject_name)
+                       |where a.subjectCode is null
                      """.stripMargin
             println("--------------------"+sqlStr)
             val medusa_subject_code_null_df=sqlContext.sql(sqlStr)
+            outputPath= DataIO.getDataFrameOps.getPath(MERGER,"medusa_subject_code_null_df",date)
+            if(p.deleteOld){
+              HdfsUtil.deleteHDFSFile(outputPath)
+            }
+            medusa_subject_code_null_df.write.parquet(outputPath)
 
             sqlStr = """
                        |select userId,
@@ -176,7 +185,18 @@ object EachChannelSubjectPlayInfoExampleV2 extends BaseClass {
                      """.stripMargin
             println("--------------------"+sqlStr)
             val medusa_subject_code_not_null_df=sqlContext.sql(sqlStr)
+            outputPath= DataIO.getDataFrameOps.getPath(MERGER,"medusa_subject_code_not_null_df",date)
+            if(p.deleteOld){
+              HdfsUtil.deleteHDFSFile(outputPath)
+            }
+            medusa_subject_code_not_null_df.write.parquet(outputPath)
+
             val medusa_log_df = medusa_subject_code_null_df.unionAll(medusa_subject_code_not_null_df)
+            outputPath= DataIO.getDataFrameOps.getPath(MERGER,"medusa_log_df",date)
+            if(p.deleteOld){
+              HdfsUtil.deleteHDFSFile(outputPath)
+            }
+            medusa_log_df.write.parquet(outputPath)
 
             sqlStr = """
                  |select userId,
@@ -189,6 +209,12 @@ object EachChannelSubjectPlayInfoExampleV2 extends BaseClass {
                  """.stripMargin
             println("--------------------"+sqlStr)
             val moretv_log_df = sqlContext.sql(sqlStr)
+            outputPath= DataIO.getDataFrameOps.getPath(MERGER,"moretv_log_df",date)
+            if(p.deleteOld){
+              HdfsUtil.deleteHDFSFile(outputPath)
+            }
+            moretv_log_df.write.parquet(outputPath)
+
             val step3_table_df=medusa_log_df.unionAll(moretv_log_df)
             step3_table_df.registerTempTable(spark_df_analyze_table)
             outputPath= DataIO.getDataFrameOps.getPath(MERGER,LogTypes.STEP3,date)

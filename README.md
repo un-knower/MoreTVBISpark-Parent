@@ -19,20 +19,19 @@ select * from medusa_channel_subject_play_info where day='2017-03-14' order by c
 
 select * from medusa_channel_subject_play_info_test where day='2017-03-15' order by channel_name;
 
-elect sum(play_num) from medusa_channel_subject_play_info_test where day='2017-03-12' ;
- select sum(play_num) from medusa_channel_subject_play_info where day='2017-03-12' ;
+  select sum(play_num) from medusa_channel_subject_play_info where day='2017-03-15' ;
  
  select sum(play_user),sum(play_num) from medusa_channel_subject_play_info where day='2017-03-14';
  select sum(play_user) from medusa_channel_subject_play_info_test where day='2017-03-15';
  
-nohup sh submit.sh com.moretv.bi.report.medusa.channeAndPrograma.movie.EachChannelSubjectPlayInfoExampleV2 --startDate 20170315 --deleteOld true \
+nohup sh submit.sh com.moretv.bi.report.medusa.channeAndPrograma.movie.EachChannelSubjectPlayInfoExampleV2 --startDate 20170316 --deleteOld true \
 >a.log 2>&1 &
 
 
 
 
 
-
+SELECT * FROM `medusa_channel_subject_play_info` WHERE day='2017-03-15' order BY channel_name
 
 
 

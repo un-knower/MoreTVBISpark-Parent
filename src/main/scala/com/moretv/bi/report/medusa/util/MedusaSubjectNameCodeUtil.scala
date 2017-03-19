@@ -7,11 +7,12 @@ package com.moretv.bi.report.medusa.util
   * 残言化为句点，灯火黯然泯灭，忽见恍若隔世的你 不负沉默不言的抱歉 不见往日共度雨缠绵
  */
 object MedusaSubjectNameCodeUtil {
-  private val regex="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|mv)([0-9]+)""".r
+  //private val regex="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|mv)([0-9]+)""".r
+  private val regex_etl="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|mv|kid)([0-9]+)""".r
   private val regexSubjectName="""subject-([a-zA-Z0-9-\u4e00-\u9fa5]+)""".r
   // 获取 专题code
   def getSubjectCode(subject:String) = {
-    regex findFirstMatchIn subject match {
+    regex_etl findFirstMatchIn subject match {
       // 如果匹配成功，说明subject包含了专题code，直接返回专题code
       case Some(m) => {
         m.group(1)+m.group(2)
