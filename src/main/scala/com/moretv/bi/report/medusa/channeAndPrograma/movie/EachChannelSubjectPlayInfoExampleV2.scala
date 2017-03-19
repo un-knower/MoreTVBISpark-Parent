@@ -223,9 +223,9 @@ object EachChannelSubjectPlayInfoExampleV2 extends BaseClass {
             }
             step3_table_df.write.parquet(outputPath)
 
-            println("a--------------------medusa_log_df:"+medusa_log_df.schema.treeString+","+medusa_log_df.printSchema()+","+medusa_log_df.count())
-            println("a--------------------moretv_log_df:"+moretv_log_df.schema.treeString+","+moretv_log_df.printSchema()+","+moretv_log_df.count())
-            println("a--------------------step3_table_df:"+step3_table_df.schema.treeString+","+step3_table_df.printSchema()+","+step3_table_df.count())
+            //println("a--------------------medusa_log_df:"+medusa_log_df.schema.treeString+","+medusa_log_df.printSchema()+","+medusa_log_df.count())
+            //println("a--------------------moretv_log_df:"+moretv_log_df.schema.treeString+","+moretv_log_df.printSchema()+","+moretv_log_df.count())
+            //println("a--------------------step3_table_df:"+step3_table_df.schema.treeString+","+step3_table_df.printSchema()+","+step3_table_df.count())
           }else {
             throw new RuntimeException("2.x and 3.x log data is not exist")
           }
@@ -249,7 +249,7 @@ object EachChannelSubjectPlayInfoExampleV2 extends BaseClass {
           println("analyse--------------------"+sqlStr)
           val sqlInsert = s"insert into $mysql_analyze_result_table(day,channel_name,play_num,play_user) values (?,?,?,?)"
           val analyse_resul_df=sqlContext.sql(sqlStr)
-          println("c--------------------analyse_resul_df:"+analyse_resul_df.schema.treeString+","+analyse_resul_df.printSchema()+","+analyse_resul_df.count())
+          //println("c--------------------analyse_resul_df:"+analyse_resul_df.schema.treeString+","+analyse_resul_df.printSchema()+","+analyse_resul_df.count())
 
           analyse_resul_df.collect.foreach(row=>{
             util.insert(sqlInsert,insertDate,row.getString(0),new JLong(row.getLong(1)),new JLong(row.getLong(2)))
