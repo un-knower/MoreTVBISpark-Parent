@@ -13,10 +13,6 @@ import java.lang.{Long => JLong}
 
 /**
   * Created by baozhi.wang on 2017/3/13.
-  *
-  *   * 参考最新修改
-  * EachChannelSubjectPlayInfoExampleV2
-  *
   * 脚本作用：统计不同频道的专题播放量，用于展示在各个频道的专题播放趋势图以及内容评估的专题趋势图
   *
   * 逻辑方式【与EachChannelSubjectPlayInfo代码比较】：
@@ -33,7 +29,7 @@ import java.lang.{Long => JLong}
   */
 object EachChannelSubjectPlayInfoExample extends BaseClass {
   private val mysql_analyze_result_table = "medusa_channel_subject_play_info_test"
-  private val spark_df_analyze_table = "moretv_and_medusa_play_used_for_analyze_table"
+  private val spark_df_analyze_table = "step3_table"
 
   private val playNumLimit = 5000
   def main(args: Array[String]): Unit = {
@@ -51,9 +47,9 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
         val calendar = Calendar.getInstance()
         var sqlStr = ""
         val dimension_input_dir =DataIO.getDataFrameOps.getDimensionPath(MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SUBJECT)
-        println(s"dimension_input_dir is $dimension_input_dir")
+        println(s"--------------------dimension_input_dir is $dimension_input_dir")
         val dimensionFlag = FilesInHDFS.IsInputGenerateSuccess(dimension_input_dir)
-        println(s"dimensionFlag is $dimensionFlag")
+        println(s"--------------------dimensionFlag is $dimensionFlag")
         if (dimensionFlag) {
           DataIO.getDataFrameOps.getDimensionDF(sqlContext, p.paramMap,MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SUBJECT).registerTempTable(DimensionTypes.DIM_MEDUSA_SUBJECT)
         }else{
@@ -64,102 +60,172 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
           val insertDate = DateFormatUtils.toDateCN(date, -1)
           calendar.add(Calendar.DAY_OF_MONTH, -1)
-
-          /*最终此逻辑会合并进入事实表的ETL过程-start*/
+          /**最终此逻辑会合并进入事实表的ETL过程-start*/
+          /**事实表数据处理步骤
+            * 1.过滤单个用户播放单个视频量过大的情况
+            * 2.为事实表生成完整的subject code
+            */
           val medusa_input_dir = DataIO.getDataFrameOps.getPath(MEDUSA, LogTypes.PLAY, date)
           val moretv_input_dir = DataIO.getDataFrameOps.getPath(MORETV, LogTypes.PLAYVIEW, date)
           val medusaFlag = FilesInHDFS.IsInputGenerateSuccess(medusa_input_dir)
           val moretvFlag = FilesInHDFS.IsInputGenerateSuccess(moretv_input_dir)
           if (medusaFlag && moretvFlag) {
+            //step1
             DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MEDUSA, LogTypes.PLAY, date).registerTempTable("medusa_table")
             DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MORETV, LogTypes.PLAYVIEW, date).registerTempTable("moretv_table")
             sqlStr = """
-                 |select userId,
-                 |       videoSid,
-                 |       getSubjectName(pathSpecial)           as subjectName,
-                 |       getSubjectCode(pathSpecial,'medusa')  as subjectCode
-                 |from medusa_table
-                 |where event='startplay' and
-                 |      getSubjectType(pathSpecial,'medusa')='subject'
-                 """.stripMargin
-            println("--------------------"+sqlStr)
-            sqlContext.sql(sqlStr).registerTempTable("medusa_table_final")
-
-            sqlStr = s"""
-                       |select a.userId,
-                       |       a.videoSid,
-                       |       a.subjectName,
-                       |       first(subject_code) as subjectCode
-                       |from
-                       |    (select userId,
-                       |            videoSid,
-                       |            subjectName
-                       |     from medusa_table_final
-                       |     where subjectCode is null
-                       |     ) as a
-                       |join
-                       |    ${DimensionTypes.DIM_MEDUSA_SUBJECT} as b
-                       |on a.subjectName=b.subject_name
-                       |group by a.userId,
-                       |         a.videoSid,
-                       |         a.subjectName
+                       |select userId,
+                       |       videoSid,
+                       |       pathSpecial,
+                       |       event,
+                       |       'medusa'   as flag
+                       |from medusa_table
                      """.stripMargin
             println("--------------------"+sqlStr)
-            val medusa_subject_code_null_df=sqlContext.sql(sqlStr)
+            val medusa_table_rdd=sqlContext.sql(sqlStr).toJSON
+
 
             sqlStr = """
                        |select userId,
                        |       videoSid,
-                       |       subjectName,
-                       |       subjectCode
-                       |from medusa_table_final
-                       |where subjectCode is not null
+                       |       path,
+                       |       event,
+                       |       'moretv'   as flag
+                       |from moretv_table
                      """.stripMargin
-            println("--------------------"+sqlStr)
-            val medusa_subject_code_not_null_df=sqlContext.sql(sqlStr)
-            val medusa_log_df =  medusa_subject_code_null_df.unionAll(medusa_subject_code_not_null_df)
+            val moretv_table_rdd=sqlContext.sql(sqlStr).toJSON
+            val mergerRDD = medusa_table_rdd.union(moretv_table_rdd)
+            var outputPath= DataIO.getDataFrameOps.getPath(MERGER,LogTypes.STEP1,date)
+            if(p.deleteOld){
+              HdfsUtil.deleteHDFSFile(outputPath)
+            }
+            sqlContext.read.json(mergerRDD).registerTempTable("step1_table")
+            sqlContext.read.json(mergerRDD).write.parquet(outputPath)
 
-            sqlStr = """
-                 |select userId,
-                 |       videoSid,
-                 |       ''                            as subjectName,
-                 |       getSubjectCode(path,'moretv') as subjectCode
-                 |from moretv_table
-                 |where event='playview' and
-                 |      getSubjectCode(path,'moretv') is not null
-                 """.stripMargin
-            println("--------------------"+sqlStr)
-            val moretv_log_df = sqlContext.sql(sqlStr)
-            val moretv_and_medusa_play_df=medusa_log_df.unionAll(moretv_log_df)
-            moretv_and_medusa_play_df.registerTempTable("moretv_and_medusa_play_table")
-            println("a--------------------"+moretv_and_medusa_play_df.columns.toString)
-            println("a--------------------medusa_log_df:"+medusa_log_df.schema.treeString+","+medusa_log_df.printSchema()+","+medusa_log_df.count())
-            println("a--------------------moretv_log_df:"+moretv_log_df.schema.treeString+","+moretv_log_df.printSchema()+","+moretv_log_df.count())
-            println("a--------------------moretv_and_medusa_play_df:"+moretv_and_medusa_play_df.schema.treeString+","+moretv_and_medusa_play_df.printSchema()+","+moretv_and_medusa_play_df.count())
-
+            //step2 filter
             //用于过滤单个用户播放当个视频量过大的情况
             sqlStr = s"""
-                       |select concat(userId,videoSid) as filterColumn
-                       |from moretv_and_medusa_play_table
-                       |group by concat(userId,videoSid)
-                       |having count(1)>=$playNumLimit
+                        |select concat(userId,videoSid) as filterColumn
+                        |from step1_table
+                        |group by concat(userId,videoSid)
+                        |having count(1)>=$playNumLimit
                      """.stripMargin
             println("--------------------"+sqlStr)
-            sqlContext.sql(sqlStr).registerTempTable("moretv_and_medusa_play_filter_table")
+            sqlContext.sql(sqlStr).registerTempTable("step2_table_filter")
 
             sqlStr = s"""
                         |select a.userId,
-                        |       a.subjectCode
-                        |from moretv_and_medusa_play_table           a
+                        |       a.videoSid,
+                        |       a.pathSpecial,
+                        |       a.path,
+                        |       a.event,
+                        |       a.flag
+                        |from step1_table           a
                         |     left join
-                        |     moretv_and_medusa_play_filter_table    b
+                        |     step2_table_filter    b
                         |     on concat(a.userId,a.videoSid)=b.filterColumn
                         |where b.filterColumn is null
                      """.stripMargin
             println("--------------------"+sqlStr)
-            val spark_df_analyze_df=sqlContext.sql(sqlStr)
-            println("b--------------------spark_df_analyze_df:"+spark_df_analyze_df.schema.treeString+","+spark_df_analyze_df.printSchema()+","+spark_df_analyze_df.count())
-            spark_df_analyze_df.registerTempTable(spark_df_analyze_table)
+            sqlContext.sql(sqlStr).registerTempTable("step2_table")
+            outputPath= DataIO.getDataFrameOps.getPath(MERGER,LogTypes.STEP2,date)
+            if(p.deleteOld){
+              HdfsUtil.deleteHDFSFile(outputPath)
+            }
+            sqlContext.sql(sqlStr).write.parquet(outputPath)
+
+            //step3 get subjet type is subject,not star,tag
+            sqlStr = """
+                       |select userId,
+                       |       videoSid,
+                       |       getSubjectName(pathSpecial)           as subjectName,
+                       |       getSubjectCode(pathSpecial,'medusa')  as subjectCode
+                       |from step2_table
+                       |where flag='medusa'        and
+                       |      event='startplay'    and
+                       |      getSubjectType(pathSpecial,'medusa')='subject'
+                     """.stripMargin
+            println("--------------------"+sqlStr)
+            sqlContext.sql(sqlStr).registerTempTable("medusa_table_final")
+            outputPath= DataIO.getDataFrameOps.getPath(MERGER,"medusa_table_final",date)
+            if(p.deleteOld){
+              HdfsUtil.deleteHDFSFile(outputPath)
+            }
+            sqlContext.sql(sqlStr).write.parquet(outputPath)
+
+            sqlStr = s"""
+                        |select a.userId,
+                        |       a.subjectName,
+                        |       b.subject_code as subjectCode
+                        |from medusa_table_final a
+                        |join
+                        |    (select subject_name,
+                        |            first(subject_code) as subject_code
+                        |     from
+                        |     ${DimensionTypes.DIM_MEDUSA_SUBJECT}
+                        |     group by subject_name
+                        |    ) b
+                        |on trim(a.subjectName)=trim(b.subject_name)
+                        |where a.subjectCode is null
+                     """.stripMargin
+            println("--------------------"+sqlStr)
+            val medusa_subject_code_null_df=sqlContext.sql(sqlStr)
+            outputPath= DataIO.getDataFrameOps.getPath(MERGER,"medusa_subject_code_null_df",date)
+            if(p.deleteOld){
+              HdfsUtil.deleteHDFSFile(outputPath)
+            }
+            medusa_subject_code_null_df.write.parquet(outputPath)
+
+            sqlStr = """
+                       |select userId,
+                       |       subjectName,
+                       |       subjectCode
+                       |from  medusa_table_final
+                       |where subjectCode is not null
+                     """.stripMargin
+            println("--------------------"+sqlStr)
+            val medusa_subject_code_not_null_df=sqlContext.sql(sqlStr)
+            outputPath= DataIO.getDataFrameOps.getPath(MERGER,"medusa_subject_code_not_null_df",date)
+            if(p.deleteOld){
+              HdfsUtil.deleteHDFSFile(outputPath)
+            }
+            medusa_subject_code_not_null_df.write.parquet(outputPath)
+
+            val medusa_log_df = medusa_subject_code_null_df.unionAll(medusa_subject_code_not_null_df)
+            outputPath= DataIO.getDataFrameOps.getPath(MERGER,"medusa_log_df",date)
+            if(p.deleteOld){
+              HdfsUtil.deleteHDFSFile(outputPath)
+            }
+            medusa_log_df.write.parquet(outputPath)
+
+            sqlStr = """
+                       |select userId,
+                       |       ''                            as subjectName,
+                       |       getSubjectCode(path,'moretv') as subjectCode
+                       |from step2_table
+                       |where flag='moretv'        and
+                       |      event='playview'     and
+                       |      getSubjectCode(path,'moretv') is not null
+                     """.stripMargin
+            println("--------------------"+sqlStr)
+            val moretv_log_df = sqlContext.sql(sqlStr)
+            outputPath= DataIO.getDataFrameOps.getPath(MERGER,"moretv_log_df",date)
+            if(p.deleteOld){
+              HdfsUtil.deleteHDFSFile(outputPath)
+            }
+            moretv_log_df.write.parquet(outputPath)
+
+            val step3_table_df=medusa_log_df.unionAll(moretv_log_df)
+            step3_table_df.registerTempTable(spark_df_analyze_table)
+            outputPath= DataIO.getDataFrameOps.getPath(MERGER,LogTypes.STEP3,date)
+            if(p.deleteOld){
+              HdfsUtil.deleteHDFSFile(outputPath)
+            }
+            step3_table_df.write.parquet(outputPath)
+
+            //println("a--------------------medusa_log_df:"+medusa_log_df.schema.treeString+","+medusa_log_df.printSchema()+","+medusa_log_df.count())
+            //println("a--------------------moretv_log_df:"+moretv_log_df.schema.treeString+","+moretv_log_df.printSchema()+","+moretv_log_df.count())
+            //println("a--------------------step3_table_df:"+step3_table_df.schema.treeString+","+step3_table_df.printSchema()+","+step3_table_df.count())
           }else {
             throw new RuntimeException("2.x and 3.x log data is not exist")
           }
@@ -183,17 +249,11 @@ object EachChannelSubjectPlayInfoExample extends BaseClass {
           println("analyse--------------------"+sqlStr)
           val sqlInsert = s"insert into $mysql_analyze_result_table(day,channel_name,play_num,play_user) values (?,?,?,?)"
           val analyse_resul_df=sqlContext.sql(sqlStr)
-          println("c--------------------analyse_resul_df:"+analyse_resul_df.schema.treeString+","+analyse_resul_df.printSchema()+","+analyse_resul_df.count())
+          //println("c--------------------analyse_resul_df:"+analyse_resul_df.schema.treeString+","+analyse_resul_df.printSchema()+","+analyse_resul_df.count())
 
           analyse_resul_df.collect.foreach(row=>{
             util.insert(sqlInsert,insertDate,row.getString(0),new JLong(row.getLong(1)),new JLong(row.getLong(2)))
           })
-        /*  analyse_resul_df.foreachPartition(partition => {
-            val utilDb = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
-            partition.foreach(row => {
-              utilDb.insert(sqlInsert,insertDate,row.getString(0),new JLong(row.getLong(1)),new JLong(row.getLong(2)))
-            })
-          })*/
         })
       }
       case None => throw new RuntimeException("At least needs one param: startDate!")
