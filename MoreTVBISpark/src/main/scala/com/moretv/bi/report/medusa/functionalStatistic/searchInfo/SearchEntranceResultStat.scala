@@ -25,6 +25,7 @@ object SearchEntranceResultStat extends BaseClass {
 
   def main(args: Array[String]) {
 
+
     ModuleClass.executor(this, args)
 
   }

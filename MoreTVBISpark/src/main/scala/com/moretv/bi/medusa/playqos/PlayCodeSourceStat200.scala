@@ -4,6 +4,7 @@ import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.report.medusa.dataAnalytics.DataAnalyticsUserOnDurationDist._
 import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil, ProgramRedisUtil}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.json.JSONObject
@@ -18,11 +19,18 @@ object PlayCodeSourceStat200 extends BaseClass {
 
   private val tableName = "medusa_episode_content_type_playqos_playcode_source_top200"
 
-  private val arr = Array("movie", "mv", "sports", "tv", "hot", "zongyi", "comic", "xiqu", "jilu", "kids")
+  private val insertSql =
+    s"insert into $tableName(day,episodeSid,title,source,contentType,playcode,num,sourceNum) values(?,?,?,?,?,?,?,?)"
 
-  private val limit = 200
+
+  private val limit = 100
 
   def main(args: Array[String]): Unit = {
+
+    config.set("spark.executor.memory", "5g").
+      set("spark.executor.cores", "5").
+      set("spark.cores.max", "80")
+
     ModuleClass.executor(this, args)
   }
 
@@ -30,80 +38,70 @@ object PlayCodeSourceStat200 extends BaseClass {
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-        val tmpSqlContext = sqlContext
-        import tmpSqlContext.implicits._
+
+        val sq = sqlContext
+        import sq.implicits._
+        import org.apache.spark.sql.functions._
+
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val cal = Calendar.getInstance
         val startDate = p.startDate
         cal.setTime(DateFormatUtils.readFormat.parse(startDate))
         var readPath = ""
+
+
+
         (0 until p.numOfDays).foreach(i => {
           val date = DateFormatUtils.readFormat.format(cal.getTime)
           val insertDate = DateFormatUtils.toDateCN(date, -1)
 
-          DataIO.getDataFrameOps.getDF(sc, p.paramMap, MERGER, LogTypes.PLAYVIEW, date).
-            select("userId", "contentType", "event", "episodeSid")
-            .registerTempTable("log_data")
-          sqlContext.sql("select contentType,episodeSid,count(userId) as playNum" +
-            " from log_data where event in ('startplay','playview') and contentType in ('sports','mv','movie','tv','hot','zongyi'," +
-            "'comic','xiqu','jilu','kids') group by contentType,episodeSid").toDF("contentType", "episodeSid", "playNum").
-            registerTempTable("log_play_num")
-
-          if (date.equals("20160815")) {
-            readPath = s"/log/medusa/parquet/20160814/playqos"
-            cal.add(Calendar.DAY_OF_MONTH, -1)
-          }
-          else {
-            readPath = s"/log/medusa/parquet/$date/playqos"
-          }
-          val rdd = sqlContext.read.parquet(readPath).select("userId", "date", "jsonLog")
-            .map(e => (e.getString(0), e.getString(1), e.getString(2))).filter(_._2 == insertDate)
-          rdd.flatMap(e => getPlayCode(e._1, e._2, e._3)).toDF("userId", "episodeSid", "day", "source", "playCode", "contentType").
-            registerTempTable("log_playqos")
-
+          readPath = s"/log/medusa/parquet/$date/playqos"
 
           if (p.deleteOld) {
             val deleteSql = s"delete from $tableName where day = ?"
             util.delete(deleteSql, insertDate)
           }
-          val insertSql = s"insert into $tableName(day,episodeSid,title,source,contentType,playcode,num,sourceNum) values(?,?,?,?,?,?,?,?)"
 
-          // Getting the playqos info
+          // play qos df
+          val qosDf = sqlContext.read.parquet(readPath)
+            .filter($"date" === insertDate)
+            .select($"userId", $"date", $"jsonLog")
+            .map(e => (e.getString(0), e.getString(1), e.getString(2))).filter(_._2 == insertDate)
+            .flatMap(
+              e => getPlayCode(e._1, e._2, e._3)
+            )
+            .toDF("userId", "episodeSid", "day", "source", "playCode", "contentType")
+            .filter($"source".isin(getSites(): _*))
+            .filter($"playCode" !== 200)
+            .cache()
 
-          arr.foreach(contentType => {
-            sqlContext.sql(
-              s"""
-                 |select distinct contentType,episodeSid,playNum
-                 |from log_play_num
-                 |where contentType = '${contentType}'
-                 |order by playNum desc
-                 |limit ${limit}
-              """.stripMargin).registerTempTable("log_videosid")
 
-            val numRdd = sqlContext.sql(
-              """
-                |select a.contentType,a.episodeSid,a.source,a.playCode,count(a.userId)
-                |from log_playqos as a
-                |join log_videosid as b
-                |on a.contentType = b.contentType and a.episodeSid = b.episodeSid
-                |group by a.contentType,a.episodeSid,a.source,a.playCode
-              """.stripMargin).map(e => ((e.getString(0), e.getString(1), e.getString(2)), (e.getInt(3), e.getLong(4))))
+          getSites.foreach(site => {
 
-            val sourceRdd = sqlContext.sql(
-              """
-                |select a.contentType,a.episodeSid,a.source,count(a.userId)
-                |from log_playqos as a
-                |join log_videosid as b
-                |on a.contentType = b.contentType and a.episodeSid = b.episodeSid
-                |group by a.contentType,a.episodeSid,a.source
-              """.stripMargin).map(e => ((e.getString(0), e.getString(1), e.getString(2)), e.getLong(3)))
+            // top limit play info
 
-            numRdd.join(sourceRdd).foreachPartition(partition => {
-              val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
-              partition.foreach(rdd => {
-                util.insert(insertSql, insertDate, rdd._1._2, ProgramRedisUtil.getTitleBySid(rdd._1._2), rdd._1._3,
-                  rdd._1._1, rdd._2._1._1, rdd._2._1._2, rdd._2._2)
-              })
+            val codeAgg = qosDf.filter($"source" === site)
+              .groupBy($"day", $"episodeSid", $"contentType", $"source", $"playCode")
+              .agg(count($"userId").as("num"))
+
+
+            val sourceAgg = qosDf.filter($"source" === site)
+              .groupBy($"day", $"episodeSid", $"contentType", $"source")
+              .agg(count($"userId").as("sourceNum"))
+              .orderBy($"sourceNum".desc)
+              .limit(100)
+
+            codeAgg.as("c").join(sourceAgg.as("s"),
+              $"c.day" === $"s.day"
+                && $"c.episodeSid" === $"s.episodeSid"
+                && $"c.contentType" === $"s.contentType"
+                && $"c.source" === $"s.source")
+              .select($"c.day", $"c.episodeSid", $"c.source", $"c.contentType", $"playCode", $"num", $"sourceNum")
+
+              .collect.foreach(w => {
+              util.insert(insertSql, w.getString(0), w.getString(1),
+                ProgramRedisUtil.getTitleBySid(w.getString(1)), w.getString(2), w.getString(3), w.getInt(4),
+                w.getLong(5), w.getLong(6))
             })
 
           })
@@ -175,6 +173,29 @@ object PlayCodeSourceStat200 extends BaseClass {
     }
   }
 
+
+  def getSites(): Seq[String] = {
+    import org.apache.spark.sql.types._
+    import org.apache.spark.sql.Row
+    val sq = sqlContext
+    import sq.implicits._
+    import org.apache.spark.sql.functions._
+
+    val rdd = sc.textFile("/log/medusa/qos/live-site-info")
+      .map(_.split("\t"))
+      .map(attr => {
+        Row(attr(0), attr(1), attr(2))
+      })
+
+    val fields = "admin,display,code".split(",")
+      .map(fieldName => StructField(fieldName, StringType, nullable = true))
+
+    val schema = StructType(fields)
+
+    sqlContext.createDataFrame(rdd, schema)
+      .select($"code")
+      .collect().map(_.getString(0))
+  }
 }
 
 

@@ -19,7 +19,7 @@ import scala.collection.mutable.ListBuffer
 
 object DataAnalyticsPlayDistribution extends BaseClass {
 
-  private val tableName = "data_analytic_play_distribution"
+  private val tableName = "data_analytic_on_duration_distribution"
 
   def main(args: Array[String]): Unit = {
     ModuleClass.executor(DataAnalyticsPlayDistribution, args)
@@ -54,12 +54,14 @@ object DataAnalyticsPlayDistribution extends BaseClass {
               |where event in ('startplay','playview')
               |group by contentType,getVersion(apkVersion),userId,videoSid
             """.stripMargin).registerTempTable("log_play")
+
           sqlContext.sql(
             """
               |select contentType,version,playNum,count(userId) as playUser
               |from log_play
               |group by contentType,version,playNum
             """.stripMargin).registerTempTable("log_play_distribution")
+
           sqlContext.sql(
             """
               |select a.contentType,a.version,a.playNum,a.playUser,b.totalUser
