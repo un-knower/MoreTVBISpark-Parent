@@ -36,8 +36,8 @@ object TencentVideoInfo extends BaseClass {
         val sqlMinMaxId2 = "select min(id),max(id) from mtv_media_file"
         val sqlData2 = "select content_id from mtv_media_file " +
           "where id >= ? and id <= ? and origin_status = 1 and status = 1 and " +
-//          "source in ('tencent2','qq')"
-          "source = 'tencent2'"
+          "source in ('tencent2','qq')"
+//          "source = 'tencent2'"
         MySqlOps.getJdbcRDD(sc,DataBases.MORETV_CMS_MYSQL,sqlMinMaxId2,sqlData2,100,rs => {
           rs.getLong(1)
         }).distinct().toDF("content_id").persist(StorageLevel.MEMORY_AND_DISK).

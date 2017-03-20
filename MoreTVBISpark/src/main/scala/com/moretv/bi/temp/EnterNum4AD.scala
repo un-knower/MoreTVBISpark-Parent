@@ -12,7 +12,7 @@ import org.apache.spark.storage.StorageLevel
   * Created by liankai on 2016/5/16.
   *
   */
-object TencentVideoPlayNum extends BaseClass{
+object EnterNum4AD extends BaseClass{
 
   val coreCities = List("北京","上海","广州")
   val aCities = List("深圳","沈阳","南京","成都")
@@ -45,9 +45,6 @@ object TencentVideoPlayNum extends BaseClass{
           selectExpr("user_id","getCity(city) as city","getCityType(city) as cityType").
           persist(StorageLevel.MEMORY_AND_DISK).
           registerTempTable("user_area")
-        sqlContext.read.load(s"/log/temp/parquet/20170310/mtv_tencent").
-          persist(StorageLevel.MEMORY_AND_DISK).
-          registerTempTable("mtv_tencent")
 
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
         (0 until p.numOfDays).foreach(i=>{
@@ -55,8 +52,8 @@ object TencentVideoPlayNum extends BaseClass{
           val day = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
 
-          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MERGER,LogTypes.PLAYVIEW,date).
-            select("userId","contentType","event","videoSid")
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MERGER,LogTypes.ENTER,date).
+            select("userId")
             .registerTempTable("play_data")
 
 
@@ -64,23 +61,20 @@ object TencentVideoPlayNum extends BaseClass{
           sqlContext.sql("select a.*,b.city,b.cityType from play_data a join user_area b on a.userId = b.user_id").
             registerTempTable("log_data")
 
-          sqlContext.sql("select videoSid,contentType,city,cityType,count(userId) as play_num" +
-            " from log_data where videoSid is not null and event in ('startplay','playview') and contentType in ('movie','tv','zongyi'," +
-            "'comic','jilu','kids') group by contentType,videoSid,city,cityType").registerTempTable("log_play_num")
+          val result = sqlContext.sql("select city,cityType,count(userId) as play_num" +
+            " from log_data group by city,cityType").collect()
 
 
 
-          val result = sqlContext.sql("select a.contentType,a.city,a.cityType,sum(a.play_num) as play_num from log_play_num a join mtv_tencent b on " +
-            "a.videoSid = b.sid group by a.contentType,a.city,a.cityType").collect()
           if(p.deleteOld){
-            util.delete("delete from temp_tencent_play_num where day = ?",day)
+            util.delete("delete from temp_tencent_enter_num where day = ?",day)
           }
-          val insertSql="insert into temp_tencent_play_num(day,content_type,city,city_type,play_num) " +
-            "values (?,?,?,?,?)"
+          val insertSql="insert into temp_tencent_enter_num(day,city,city_type,play_num) " +
+            "values (?,?,?,?)"
 
           result.foreach(row => {
             println(row)
-            util.insert(insertSql,day,row.get(0),row.get(1),row.get(2),row.get(3))
+            util.insert(insertSql,day,row.get(0),row.get(1),row.get(2))
           })
 
 

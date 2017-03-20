@@ -6,10 +6,7 @@ import java.util.Calendar
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
-import org.json.JSONObject
-
-import scala.collection.mutable.ListBuffer
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 
 /**
   * Created by witnes on 9/7/16.
@@ -17,9 +14,9 @@ import scala.collection.mutable.ListBuffer
 
 
 
-object DataAnalyticsPlayDistribution extends BaseClass {
+object DataAnalyticsAllPlayDistribution extends BaseClass {
 
-  private val tableName = "data_analytic_on_duration_distribution"
+  private val tableName = "data_analytic_all_play_distribution"
 
   def main(args: Array[String]): Unit = {
     ModuleClass.executor(this, args)
@@ -41,7 +38,7 @@ object DataAnalyticsPlayDistribution extends BaseClass {
             val deleteSql = s"delete from $tableName where day = ?"
             util.delete(deleteSql, insertDate)
           }
-          val insertSql = s"insert into $tableName(day,content_type,version,play_num,play_user,total_user) values(?,?,?,?,?,?)"
+          val insertSql = s"insert into $tableName(day,version,play_num,play_user,total_user) values(?,?,?,?,?)"
           //临时没有该parquet文件,容错
           DataIO.getDataFrameOps.getDF(sc, p.paramMap, MORETV, LogTypes.PLAYVIEW,date).select("userId", "videoSid", "contentType",
             "event", "apkVersion").unionAll(
@@ -49,35 +46,33 @@ object DataAnalyticsPlayDistribution extends BaseClass {
               "event", "apkVersion")).registerTempTable("log_data")
           sqlContext.sql(
             """
-              |select contentType,getVersion(apkVersion) as version,userId,videoSid,count(userId) as playNum
+              |select getVersion(apkVersion) as version,userId,videoSid,count(userId) as playNum
               |from log_data
               |where event in ('startplay','playview') and contentType in ('movie','tv','zongyi','comic','kids','hot','sports','mv','xiqu','jilu')
               |and getVersion(apkVersion) in ('2','3')
-              |group by contentType,getVersion(apkVersion),userId,videoSid
+              |group by getVersion(apkVersion),userId,videoSid
             """.stripMargin).registerTempTable("log_play")
-
           sqlContext.sql(
             """
-              |select contentType,version,playNum,count(userId) as playUser
+              |select version,playNum,count(userId) as playUser
               |from log_play
-              |group by contentType,version,playNum
+              |group by version,playNum
             """.stripMargin).registerTempTable("log_play_distribution")
-
           sqlContext.sql(
             """
-              |select a.contentType,a.version,a.playNum,a.playUser,b.totalUser
+              |select a.version,a.playNum,a.playUser,b.totalUser
               |from log_play_distribution as a
               |join
               |(
-              |select contentType,version,sum(playUser) as totalUser
+              |select version,sum(playUser) as totalUser
               |from log_play_distribution
-              |group by contentType,version
+              |group by version
               |) as b
-              |on a.contentType=b.contentType and a.version = b.version
+              |on a.version = b.version
             """.stripMargin).foreachPartition(partition => {
             val util1 = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
             partition.foreach(rdd => {
-              util1.insert(insertSql, insertDate, rdd.getString(0), rdd.getString(1), rdd.getLong(2), rdd.getLong(3),rdd.getLong(4))
+              util1.insert(insertSql, insertDate, rdd.getString(0), rdd.getLong(1), rdd.getLong(2),rdd.getLong(3))
             })
           })
           cal.add(Calendar.DAY_OF_MONTH, -1)

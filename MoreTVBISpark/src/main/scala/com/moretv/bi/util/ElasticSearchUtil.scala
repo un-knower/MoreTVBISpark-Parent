@@ -77,6 +77,7 @@ object ElasticSearchUtil {
     } catch {
       case e: Exception =>
         e.printStackTrace()
+        throw e
     }
   }
 
@@ -141,6 +142,7 @@ object ElasticSearchUtil {
     if (client == null) init
     client.prepareDelete(index, typeName, id).get()
   }
+
 
 
   def searchIndex(index: String, typeName: String, sid: String, startDate: String, endDate: String): Unit = {
