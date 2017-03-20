@@ -24,15 +24,19 @@ object AccumulateUser extends BaseClass {
         val startDate = p.startDate
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
+        val cal1 = Calendar.getInstance()
+        cal1.setTime(DateFormatUtils.readFormat.parse(startDate))
 
         (0 until p.numOfDays).foreach(i => {
+          cal1.add(Calendar.DAY_OF_MONTH,-1)
+          val mtvAccountDate = DateFormatUtils.readFormat.format(cal1.getTime)
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
           val insertDate = DateFormatUtils.toDateCN(date, 0)
           calendar.add(Calendar.DAY_OF_MONTH, -1)
 
           //TODO 是否需要写到固定的常量类or通过SDK读取
           val inputPath = p.paramMap.getOrElse("inputPath", "/log/dbsnapshot/parquet/#{date}/moretv_mtv_account")
-          val newUserInput =inputPath.replace("#{date}",date)
+          val newUserInput =inputPath.replace("#{date}",mtvAccountDate)
           sqlContext.read.parquet(newUserInput).registerTempTable("log_data")
 
           val rdd = sqlContext.sql(s"select product_model, count(distinct user_id) as user_num from log_data " +

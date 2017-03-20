@@ -58,10 +58,18 @@ object EachMVPlayTopBoard extends BaseClass{
             util.delete(deleteSql2,insertDate)
           }
           playRdd.foreach(e=>{
-            util.insert(insertSql,insertDate,e._1,ProgramRedisUtil.getTitleBySid(e._1),e._2,new JLong(e._3),new JLong(e._4))
+            try {
+              util.insert(insertSql,insertDate,e._1,ProgramRedisUtil.getTitleBySid(e._1),e._2,new JLong(e._3),new JLong(e._4))
+            }catch {
+              case e:Exception =>
+            }
           })
           durationRdd.foreach(e=>{
-            util.insert(insertSql1,insertDate,e._1,ProgramRedisUtil.getTitleBySid(e._1),e._2,new JLong(e._3),new JLong(e._4))
+            try{
+              util.insert(insertSql1,insertDate,e._1,ProgramRedisUtil.getTitleBySid(e._1),e._2,new JLong(e._3),new JLong(e._4))
+            }catch {
+              case e:Exception =>
+            }
           })
         })
       }

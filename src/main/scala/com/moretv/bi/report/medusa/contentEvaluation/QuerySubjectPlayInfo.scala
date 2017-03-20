@@ -31,18 +31,12 @@ object QuerySubjectPlayInfo extends BaseClass{
       case Some(p) => {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        //val medusaDir = "/log/medusaAndMoretvMerger/"
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
         (0 until p.numOfDays).foreach(i=>{
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
-
-/*          val playviewInput = s"$medusaDir/$date/playview/"
-          sqlContext.read.parquet(playviewInput).select("userId","launcherAreaFromPath","launcherAccessLocationFromPath",
-            "pageDetailInfoFromPath","pathIdentificationFromPath","path","pathPropertyFromPath","flag","event","pathMain").
-            repartition(16).registerTempTable("log_data")*/
 
            DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MERGER,LogTypes.PLAYVIEW,date).select("userId","launcherAreaFromPath","launcherAccessLocationFromPath",
             "pageDetailInfoFromPath","pathIdentificationFromPath","path","pathPropertyFromPath","flag","event","pathMain").
@@ -75,16 +69,18 @@ object QuerySubjectPlayInfo extends BaseClass{
             util.delete(deleteSql,insertDate)
           }
 
-            mergerPlayInfo.collect.foreach(e=>{
+          mergerPlayInfo.foreachPartition(partition=>{
+            val util1 = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+            partition.foreach(e=>{
               try{
-                util.insert(insertSql,insertDate,e._1._1,CodeToNameUtils.getSubjectNameBySid(e._1._1),e._1._2,new JLong(e._2._1),
+                util1.insert(insertSql,insertDate,e._1._1,CodeToNameUtils.getSubjectNameBySid(e._1._1),e._1._2,new JLong(e._2._1),
                   new JLong(e._2._2))
               }catch{
                 case e:Exception=>{println("QuerySubjectPlayInfo: Insert into table existing error! The exception is: ")
                   e.printStackTrace()}
               }
             })
-
+          })
           mergerInfoRdd.unpersist()
           rdd.unpersist()
 

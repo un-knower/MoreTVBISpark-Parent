@@ -75,16 +75,32 @@ object MVRecommendPlay extends BaseClass {
           }
 
           subjectPlayInfo.foreach(i => {
-            util.insert(insertSql1, insertDate, "topic", i._1, LiveCodeToNameUtils.getMVSubjectName(i._1), new JLong(i._2), new JLong(i._3))
+            try{
+              util.insert(insertSql1, insertDate, "topic", i._1, LiveCodeToNameUtils.getMVSubjectName(i._1), new JLong(i._2), new JLong(i._3))
+            }catch {
+              case e:Exception =>{}
+            }
           })
           programPlayInfo.foreach(i => {
-            util.insert(insertSql1, insertDate, "program", i._1, ProgramRedisUtil.getTitleBySid(i._1), new JLong(i._2), new JLong(i._3))
+            try{
+              util.insert(insertSql1, insertDate, "program", i._1, ProgramRedisUtil.getTitleBySid(i._1), new JLong(i._2), new JLong(i._3))
+            }catch {
+              case e:Exception => {}
+            }
           })
           subjectDurationInfo.foreach(i => {
-            util.insert(insertSql2, insertDate, "topic", i._1, LiveCodeToNameUtils.getMVSubjectName(i._1), new JLong(i._2), new JLong(i._3))
+            try{
+              util.insert(insertSql2, insertDate, "topic", i._1, LiveCodeToNameUtils.getMVSubjectName(i._1), new JLong(i._2), new JLong(i._3))
+            }catch {
+              case e:Exception => {}
+            }
           })
           programDurationInfo.foreach(i => {
-            util.insert(insertSql2, insertDate, "program", i._1, ProgramRedisUtil.getTitleBySid(i._1), new JLong(i._2), new JLong(i._3))
+            try{
+              util.insert(insertSql2, insertDate, "program", i._1, ProgramRedisUtil.getTitleBySid(i._1), new JLong(i._2), new JLong(i._3))
+            }catch {
+              case e:Exception => {}
+            }
           })
         })
       }

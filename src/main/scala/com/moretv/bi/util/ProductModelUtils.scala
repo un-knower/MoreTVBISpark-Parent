@@ -16,7 +16,7 @@ object ProductModelUtils {
   private val PRODUCT_BRAND_MAP = s"${rootDir}/product_brand_map.properties"
   val file = new File(PRODUCT_BRAND_MAP)
   val brandMap = if(file.exists()){ResourcesParser.getMapConf(PRODUCT_BRAND_MAP)} else {
-    val in = this.getClass.getClassLoader.getResourceAsStream("product_brand_map.properties")
+    val in = this.getClass.getResourceAsStream("/conf/product_brand_map.properties")
     val lines = Source.fromInputStream(in).getLines()
     var lineNum = 0
     lines.map(line => {
@@ -32,7 +32,7 @@ object ProductModelUtils {
   val nonOttList = if(file.exists()){
      ResourcesParser.getListConf(NON_OTT)
   }else{
-    val in1 = this.getClass.getClassLoader.getResourceAsStream("non_ott.properties")
+    val in1 = this.getClass.getResourceAsStream("/conf/non_ott.properties")
     val lines1 = Source.fromInputStream(in1).getLines()
     var lineNum1 = 0
     lines1.map(line => {
