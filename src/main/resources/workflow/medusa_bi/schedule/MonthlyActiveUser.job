@@ -1,0 +1,4 @@
+type=command
+mainclass=com.moretv.bi.login.MonthlyActiveUser
+command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --deleteOld ${deleteOld} --offset ${offset}
+

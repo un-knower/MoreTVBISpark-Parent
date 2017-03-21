@@ -1,0 +1,5 @@
+type=command
+dependencies=other_isExist
+mainclass=com.moretv.bi.medusa.playqos.PlayCodeVideoSourceStatics
+command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}
+

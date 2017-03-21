@@ -1,0 +1,4 @@
+type=command
+dependencies=DBSnapShot,EvaluateLogMerger,InterviewLogMerger,CollectLogMerger,DetailLogMerger,HomeViewLogMerger,livebuttonLogMerger,videobuttonLogMerger,mtvaccountLogMerger,apprecommendLogMerger,ExitLogMerger,HomeAccessLogMerger,PlayViewLogMergerFilter,EntertogMerger,SubjectInterviewLogMerger,LiveLogMerger
+command=echo "medusa_moretv is end ..."
+
