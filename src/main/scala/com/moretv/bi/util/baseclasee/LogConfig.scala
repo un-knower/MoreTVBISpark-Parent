@@ -19,4 +19,10 @@ trait LogConfig {
   val ACTIVITY = "activity"
   val MEDUSA_DIMENSION="medusa_dimension"
 
+
+ /**
+   * 日志event类型 */
+  val MEDUSA_EVENT_START_PLAY="startplay"
+  val MORETV_EVENT_START_PLAY="playview"
+
 }
