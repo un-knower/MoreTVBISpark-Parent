@@ -3,6 +3,9 @@ package com.moretv.bi.report.medusa.functionalStatistic.searchInfo
 import java.lang.{Long => JLong}
 import java.util.Calendar
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 
@@ -23,8 +26,6 @@ import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
   */
 object SearchVideoContentTypeStat extends  BaseClass{
 
-  private val dataSource = "clickSearchResult"
-
   private val tableName = "search_video_contenttype_stat"
 
   private val fileds = "day,videoSid,videoName,contentType,pv,uv"
@@ -36,7 +37,7 @@ object SearchVideoContentTypeStat extends  BaseClass{
 
   def main(args: Array[String]):Unit = {
 
-    ModuleClass.executor(SearchVideoContentTypeStat,args)
+    ModuleClass.executor(this,args)
 
   }
 
@@ -46,7 +47,7 @@ object SearchVideoContentTypeStat extends  BaseClass{
 
       case Some(p) => {
         //init util
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
         val startDate = p.startDate
         val cal = Calendar.getInstance
@@ -60,19 +61,23 @@ object SearchVideoContentTypeStat extends  BaseClass{
           cal.add(Calendar.DAY_OF_MONTH,-1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          //path 
-          val path = s"/log/medusa/parquet/$loadDate/$dataSource"
-          println(path)
+          /* //path 
+           val path = s"/log/medusa/parquet/$loadDate/$dataSource"
+           println(path)
 
 
-          //df 
-          val df =sqlContext.read.parquet(path)
+           //df 
+           val df =sqlContext.read.parquet(path)
+                     .select("resultSid", "resultName", "contentType", "userId", "apkVersion")
+                       .filter("resultSid is not null")
+                       .filter("resultName is not null")
+                       .filter("contentType is not null")*/
+
+          val df=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.SEARCH_CLICKRESULT,loadDate)
             .select("resultSid", "resultName", "contentType", "userId", "apkVersion")
             .filter("resultSid is not null")
             .filter("resultName is not null")
             .filter("contentType is not null")
-
-
           //rdd((resultSid,resultName,contentType),userId)
           val rdd = df.map(e=>((e.getString(0),e.getString(1),e.getString(2)),e.getString(3)))
             .cache

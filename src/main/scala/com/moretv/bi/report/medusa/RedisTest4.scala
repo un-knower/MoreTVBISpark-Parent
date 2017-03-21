@@ -1,14 +1,16 @@
 package com.moretv.bi.report.medusa
 
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import com.moretv.bi.util.{CodeIDOperator, ProgramRedisUtil}
+import com.moretv.bi.util.{CodeIDOperator, ProgramRedis2Util, ProgramRedisUtil}
 import org.json.JSONObject
 import redis.clients.jedis.{JedisPool, JedisPoolConfig, Protocol}
+
 import scala.collection.JavaConversions._
+
 /**
   * Created by xiajun on 2017/3/20.
   */
-object RedisTest extends BaseClass{
+object RedisTest4 extends BaseClass{
 
   def main(args: Array[String]): Unit = {
     ModuleClass.executor(this,args)
@@ -16,8 +18,8 @@ object RedisTest extends BaseClass{
 
   override def execute(args: Array[String]) = {
     println("********************************************")
-    println(ProgramRedisUtil.getTitleBySid("1cu96knpp8k7"))
-    println(ProgramRedisUtil.getTitleBySid("5ifhwya1fhm7"))
+    println(ProgramRedis2Util.getTitleBySid("1cu96knpp8k7"))
+    println(ProgramRedis2Util.getTitleBySid("5ifhwya1fhm7"))
     println("********************************************")
 
 //        println(getTitle("1cu96knpp8k7"))

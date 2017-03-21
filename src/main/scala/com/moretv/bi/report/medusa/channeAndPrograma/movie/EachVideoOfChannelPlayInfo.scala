@@ -63,6 +63,7 @@ object EachVideoOfChannelPlayInfo extends BaseClass{
               }
 
             })
+            ProgramRedisUtil.destroy()
           })
 
         })
