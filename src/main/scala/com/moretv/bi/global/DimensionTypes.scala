@@ -5,5 +5,6 @@ package com.moretv.bi.global
   */
 object DimensionTypes {
   val DIM_MEDUSA_SUBJECT = "dim_medusa_subject"
+  val DIM_MEDUSA_APPLICATION = "dim_medusa_application"
 
 }

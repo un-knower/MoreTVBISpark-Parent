@@ -13,6 +13,9 @@ md5 /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/More
 [spark@bigdata-appsvr-130-6 bin]$ 
 mysql -h10.255.130.1 -ubi -Dmedusa -pmlw321@moretv
 mysql -hbigdata-extsvr-db_bi1 -ubi -Dmedusa -pmlw321@moretv
+mysql -hbigdata-appsvr-130-1 -ubi -Dmedusa -pmlw321@moretv
+
+sh submit.sh com.moretv.bi.report.medusa.functionalStatistic.appRecommendUpgradeInfo --startDate 20170321 --deleteOld true
 
  create table  contenttype_play_src_stat_test like  contenttype_play_src_stat; 
 

@@ -94,6 +94,7 @@ object CodeToNameUtils {
    * @param sid
    * @return
    */
+  @Deprecated
   def getApplicationNameBySid(sid: String):String ={
     sidApplicationNameMap.getOrElse(sid,"null")
   }
