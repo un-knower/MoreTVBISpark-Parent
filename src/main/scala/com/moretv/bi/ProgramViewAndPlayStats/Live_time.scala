@@ -8,6 +8,8 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import java.lang.{Long => JLong}
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DimensionTypes
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
 /**

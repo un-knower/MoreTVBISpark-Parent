@@ -13,6 +13,7 @@ import scala.io.Source
  * Created by xia jun on 2016/7/22.
  * For IP 运营商
  */
+@Deprecated
 object IPOperatorsUtil extends SparkSetting{
   private val IPISPMap = new mutable.HashMap[String,Array[String]]()
   private val IPArrayBuffer = new ArrayBuffer[String]()

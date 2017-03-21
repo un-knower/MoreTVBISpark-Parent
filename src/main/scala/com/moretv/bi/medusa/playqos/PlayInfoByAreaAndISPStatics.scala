@@ -3,10 +3,9 @@ package com.moretv.bi.medusa.playqos
 import java.util.Calendar
 import java.lang.{Long => JLong}
 
-import com.moretv.bi.util.IPLocationUtils.{IPOperatorsUtil, IPLocationDataUtil}
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.global.{DataBases, DimensionTypes, LogTypes}
 import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.json.JSONObject
@@ -16,7 +15,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by witnes on 9/7/16.
   */
-
+@Deprecated
 object PlayInfoByAreaAndISPStatics extends BaseClass {
 
   private val tableName1 = "medusa_playinfo_area_playqos"
@@ -44,8 +43,7 @@ object PlayInfoByAreaAndISPStatics extends BaseClass {
       case Some(p) => {
 
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
-        sqlContext.udf.register("getProvince",IPLocationDataUtil.getProvince _)
-        sqlContext.udf.register("getISP",IPOperatorsUtil.getISPInfo _)
+        sqlContext.udf.register("getIpKey",getIpKey _)
         val cal = Calendar.getInstance
         val startDate = p.startDate
         cal.setTime(DateFormatUtils.readFormat.parse(startDate))
@@ -56,12 +54,13 @@ object PlayInfoByAreaAndISPStatics extends BaseClass {
           val date = DateFormatUtils.readFormat.format(cal.getTime)
           cal.add(Calendar.DAY_OF_MONTH,-1)
 
-          if(date.equals("20160815")){
-            val readPath = s"/log/medusa/parquet/20160814/playqos"
-            cal.add(Calendar.DAY_OF_MONTH,-1)
+          val readPath =
+            if(date.equals("20160815")){
+              cal.add(Calendar.DAY_OF_MONTH,-1)
+              s"/log/medusa/parquet/20160814/playqos"
           }
           else{
-            val readPath = s"/log/medusa/parquet/$date/playqos"
+            s"/log/medusa/parquet/$date/playqos"
           }
 
           val date1 = DateFormatUtils.cnFormat.format(cal.getTime)
@@ -71,8 +70,15 @@ object PlayInfoByAreaAndISPStatics extends BaseClass {
             "jsonLog")
               .filter(s"date=$date1").registerTempTable("log")
 
+          DataIO.getDataFrameOps.getDimensionDF(
+            sqlContext, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_APPLICATION
+          ).registerTempTable("dim_web_location")
+
           //(videoSid, day, playcode)
-          val rdd = sqlContext.sql("select getProvince(ip),getISP(ip),productModel,userId,jsonLog from log").
+          val rdd = sqlContext.sql(
+            "select b.province, b.isp, a.productModel, a.userId, a.jsonLog " +
+            "from log a left join dim_web_location b " +
+            "on getIpKey(a.ip) = b.web_location_key and b.dim_invalid_time is null").
             map(e=>(e.getString(0),e.getString(1),e.getString(2),e.getString(3),e.getString(4)))
 
           val tmpRdd = rdd.flatMap(e=>getPlayCode(e._1,e._2,e._3,e._4,e._5)).
@@ -131,10 +137,19 @@ object PlayInfoByAreaAndISPStatics extends BaseClass {
 
   }
 
+  def getIpKey(ip: String): Long = {
+    val ipInfo = ip.split("\\.")
+    if (ipInfo.length >= 3) {
+      (((ipInfo(0).toLong * 256) + ipInfo(1).toLong) * 256 + ipInfo(2).toLong) * 256
+    } else 0
+  }
 
   /**
     *
-    * @param
+    * @param area
+    * @param isp
+    * @param productModel
+    * @param userId
     * @param str json字符串
     * @return (videoSid, day, playcode)
     */
