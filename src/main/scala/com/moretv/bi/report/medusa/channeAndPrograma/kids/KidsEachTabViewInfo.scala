@@ -6,6 +6,9 @@ package com.moretv.bi.report.medusa.channeAndPrograma.kids
 
 import java.util.Calendar
 import java.lang.{Long => JLong}
+
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.DataBases
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
@@ -17,8 +20,6 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 object KidsEachTabViewInfo extends BaseClass{
 
   private val tableName = "medusa_channel_eachtabwithgroup_view_kids_info"
-  private val selectSql = "select userId, pathMain from log where pathMain like '%kids_home%'"
-
 
   private val regex_collect = ("(kids_collect)*(观看历史|收藏追看|专题收藏)").r
   private val regex_kandonghua = ("(kandonghua|kids_anim)*(动画明星|热播推荐|最新出炉|动画专题|欧美精选|国产精选|0-3岁|" +
@@ -40,8 +41,7 @@ object KidsEachTabViewInfo extends BaseClass{
   override def execute(args: Array[String]): Unit = {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-
-        val util = new DBOperationUtils("medusa")
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
         val medusaBaseDir = "/log/medusa/parquet"
         val calendar = Calendar.getInstance()
@@ -84,7 +84,6 @@ object KidsEachTabViewInfo extends BaseClass{
           if(p.deleteOld){
             util.delete(deleteSql,insertDate)
           }
-
           merge_rdd.collect().foreach(e=>{
             //day | channelname | groupname | tabname | view_num | view_user
             println(insertDate, e._1.split("->")(0),e._1.split("->")(1), e._2._1, e._2._2)
