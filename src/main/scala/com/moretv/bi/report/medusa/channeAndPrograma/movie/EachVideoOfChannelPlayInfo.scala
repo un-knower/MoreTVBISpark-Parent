@@ -61,9 +61,7 @@ object EachVideoOfChannelPlayInfo extends BaseClass{
                 }
                 case e:Exception => throw e
               }
-
             })
-            ProgramRedisUtil.destroy()
           })
 
         })
