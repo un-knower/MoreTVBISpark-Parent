@@ -5,10 +5,19 @@ cd /opt/bi/medusa/bin
 sh submit.sh 
 
 
+本地jar包上传服务器:
 cp /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/MoreTVBISpark-1.0.0.jar ~/Documents
-
- 
 md5 /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/MoreTVBISpark-1.0.0.jar 
+
+统计不同入口播放统计：
+nohup sh submit.sh com.moretv.bi.report.medusa.newsRoomKPI.ChannelEntrancePlayStatExample \
+  --startDate 20170321 \
+  --deleteOld true     \
+  >ChannelEntrancePlayStatExample.log 2>&1 &
+
+sh submit.sh com.moretv.bi.report.medusa.functionalStatistic.appRecommendUpgradeInfo --startDate 20170321 --deleteOld true
+
+
 
 [spark@bigdata-appsvr-130-6 bin]$ 
 mysql -h10.255.130.1 -ubi -Dmedusa -pmlw321@moretv

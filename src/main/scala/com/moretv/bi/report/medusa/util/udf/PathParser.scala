@@ -647,6 +647,9 @@ object PathParser {
     "home\\*my_tv\\*collect|home\\*recommendation|home\\*my_tv\\*[a-zA-Z0-9&\\u4e00-\\u9fa5]{1,})").r
   private val sourceRe1 = ("(classification|history|hotrecommend|search)").r
   def getEntranceTypeByPathETL(path: String, flag: String): String = {
+    if(null==path){
+     s"未知${flag}"
+    }else{
     val specialPattern = "home\\*my_tv\\*[a-zA-Z0-9&\\u4e00-\\u9fa5]{1,}".r
     flag match {
       case "medusa" => {
@@ -687,7 +690,7 @@ object PathParser {
       }
     }
   }
-
+  }
 
 
   def main(args: Array[String]) {

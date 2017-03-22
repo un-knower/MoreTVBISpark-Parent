@@ -65,6 +65,21 @@ object ChannelEntrancePlayStatExample extends BaseClass {
         sqlContext.udf.register("getSubjectName", PathParser.getSubjectNameByPathETL _)
         sqlContext.udf.register("getSubjectType", PathParser.getSubjectTypeByPathETL _)
         sqlContext.udf.register("getEntranceType", PathParser.getEntranceTypeByPathETL _)
+
+        //引入维度表
+        val dimension_subject_input_dir =DataIO.getDataFrameOps.getDimensionPath(MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SUBJECT)
+        val dimensionSubjectFlag = FilesInHDFS.IsInputGenerateSuccess(dimension_subject_input_dir)
+        val dimension_program_input_dir =DataIO.getDataFrameOps.getDimensionPath(MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_PROGRAM)
+        val dimensionProgramFlag = FilesInHDFS.IsInputGenerateSuccess(dimension_program_input_dir)
+        println(s"--------------------dimensionSubjectFlag is ${dimensionSubjectFlag}")
+        println(s"--------------------dimensionProgramFlag is ${dimensionProgramFlag}")
+        if (dimensionSubjectFlag && dimensionProgramFlag) {
+          DataIO.getDataFrameOps.getDimensionDF(sqlContext, p.paramMap,MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SUBJECT).registerTempTable(DimensionTypes.DIM_MEDUSA_SUBJECT)
+          DataIO.getDataFrameOps.getDimensionDF(sqlContext, p.paramMap,MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_PROGRAM).registerTempTable(DimensionTypes.DIM_MEDUSA_PROGRAM)
+        }else{
+          throw new RuntimeException(s"--------------------dimension not exist")
+        }
+
         val startDate = p.startDate
         val cal = Calendar.getInstance
         cal.setTime(DateFormatUtils.readFormat.parse(startDate))
@@ -92,7 +107,7 @@ object ChannelEntrancePlayStatExample extends BaseClass {
                        |       videoSid,
                        |       pathSpecial,
                        |       pathMain,
-                       |       getEntranceType(a.pathMain,'medusa') as entryType,
+                       |       getEntranceType(pathMain,'medusa') as entryType,
                        |       duration,
                        |       event,
                        |       'medusa'   as flag
@@ -150,7 +165,7 @@ object ChannelEntrancePlayStatExample extends BaseClass {
             step2_table_df.registerTempTable("step2_table")
             writeToHDFSForCheck(date,"step2_table_df",step2_table_df,p.deleteOld)
 
-            //step3 get subjet type is subject,not star,tag
+            //step3
             sqlStr = """
                        |select userId,
                        |       videoSid,
@@ -161,7 +176,7 @@ object ChannelEntrancePlayStatExample extends BaseClass {
                        |       event,
                        |       getSubjectType(pathSpecial,'medusa')                                               as subjectType,
                        |       if(getSubjectType(pathSpecial,'medusa')='subject',getSubjectName(pathSpecial),'')  as subjectName,
-                       |       if(getSubjectType(pathSpecial,'medusa')='subject',getSubjectCode(pathSpecial),null)  as subjectCode
+                       |       if(getSubjectType(pathSpecial,'medusa')='subject',getSubjectCode(pathSpecial,'medusa'),'')  as subjectCode
                        |from step2_table
                        |where flag='medusa'
                      """.stripMargin
@@ -180,7 +195,7 @@ object ChannelEntrancePlayStatExample extends BaseClass {
                         |       a.duration,
                         |       a.event,
                         |       a.subjectType,
-                        |       if(a.subjectCode is null,b.subject_code,a.subjectCode) as subjectCode
+                        |       if((a.subjectCode is null or a.subjectCode=''),b.subject_code,a.subjectCode) as subjectCode
                         |from medusa_table_init_table a
                         |left join
                         |    (select subject_name,
@@ -255,8 +270,9 @@ object ChannelEntrancePlayStatExample extends BaseClass {
                      |        count(userId)             as playNum,
                      |        count(distinct userId)    as playUser
                      |from $spark_df_analyze_table
-                     |where event in ($MEDUSA_EVENT_START_PLAY,$MORETV_EVENT_START_PLAY)
-                     |group by if(subject_content_type_name is not null,subject_content_type_name,content_type_name)
+                     |where event in ('$MEDUSA_EVENT_START_PLAY','$MORETV_EVENT_START_PLAY')
+                     |group by if(subject_content_type_name is not null,subject_content_type_name,content_type_name),
+                     |         entryType
                    """.stripMargin
           println("--------------------"+sqlStr)
           val channel_entry_playNum_playUser_df = sqlContext.sql(sqlStr)
@@ -269,9 +285,10 @@ object ChannelEntrancePlayStatExample extends BaseClass {
                       |        entryType,
                       |        sum(duration)             as duration_sum
                       |from $spark_df_analyze_table
-                      |where event not in ($MEDUSA_EVENT_START_PLAY) and
+                      |where event not in ('$MEDUSA_EVENT_START_PLAY') and
                       |      duration between 1 and 10800
-                      |group by if(subject_content_type_name is not null,subject_content_type_name,content_type_name)
+                      |group by if(subject_content_type_name is not null,subject_content_type_name,content_type_name),
+                      |         entryType
                    """.stripMargin
           println("--------------------"+sqlStr)
           val channel_entry_duration_df = sqlContext.sql(sqlStr)
@@ -428,6 +445,7 @@ object ChannelEntrancePlayStatExample extends BaseClass {
 
   //用来写入HDFS，测试数据是否正确
   def writeToHDFSForCheck(date:String,logType:String,df:DataFrame,isDeleteOld:Boolean): Unit ={
+    println(s"--------------------$logType is write done.")
     val outputPath= DataIO.getDataFrameOps.getPath(MERGER,logType,date)
     if(isDeleteOld){
       HdfsUtil.deleteHDFSFile(outputPath)
