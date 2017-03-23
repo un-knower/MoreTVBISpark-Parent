@@ -10,6 +10,7 @@ import scala.collection.mutable
 /**
  * Created by laishun on 2015/7/17.
  */
+@deprecated
 object CodeToNameUtils {
   /**
    * 定义一些map集合
@@ -94,7 +95,7 @@ object CodeToNameUtils {
    * @param sid
    * @return
    */
-  @Deprecated
+  @deprecated
   def getApplicationNameBySid(sid: String):String ={
     sidApplicationNameMap.getOrElse(sid,"null")
   }

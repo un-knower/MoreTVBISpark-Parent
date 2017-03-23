@@ -15,6 +15,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 /**
  * Created by laishun on 15/10/9.
  */
+@deprecated
 object Live_time extends BaseClass with DateUtil{
 
   def main(args: Array[String]): Unit = {

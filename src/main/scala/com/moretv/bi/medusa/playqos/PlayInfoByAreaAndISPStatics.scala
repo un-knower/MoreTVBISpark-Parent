@@ -15,7 +15,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by witnes on 9/7/16.
   */
-@Deprecated
+@deprecated
 object PlayInfoByAreaAndISPStatics extends BaseClass {
 
   private val tableName1 = "medusa_playinfo_area_playqos"

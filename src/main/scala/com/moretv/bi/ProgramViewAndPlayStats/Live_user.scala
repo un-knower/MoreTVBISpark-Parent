@@ -12,6 +12,7 @@ import org.apache.spark.storage.StorageLevel
 /**
  * Created by laishun on 15/10/9.
  */
+@deprecated
 object Live_user extends BaseClass with DateUtil{
 
   def main(args: Array[String]): Unit = {

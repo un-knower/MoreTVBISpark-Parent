@@ -11,7 +11,7 @@ import scala.io.Source
   * Created by xia jun on 2016/7/22.
   * For IP map
   */
-@Deprecated
+@deprecated
 object IPLocationDataUtil {
   val ipLocationMap = new util.HashMap[String, Array[String]]()
   if (ipLocationMap.isEmpty) {

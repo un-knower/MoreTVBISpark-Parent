@@ -11,6 +11,7 @@ import org.apache.spark.storage.StorageLevel
 import com.moretv.bi.util.SubjectUtils._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
+@deprecated
 object Subject_pv_uv extends BaseClass with DateUtil{
 
   def main(args: Array[String]): Unit = {

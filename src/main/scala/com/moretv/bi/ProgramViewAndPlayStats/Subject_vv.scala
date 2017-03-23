@@ -11,6 +11,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.storage.StorageLevel
 
+@deprecated
 object Subject_vv extends BaseClass with DateUtil{
 
   def main(args: Array[String]): Unit = {
