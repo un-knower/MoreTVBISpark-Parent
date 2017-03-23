@@ -31,19 +31,6 @@ object SearchProgramInfo extends BaseClass{
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
-          //val enterUserIdDate = DateFormatUtils.readFormat.format(calendar.getTime)
-
-        /*  val playviewInput = s"$medusaDir/$date/{playview,detail}/"
-
-          sqlContext.read.parquet(playviewInput).select("userId","path","pathMain","event","videoSid")
-            .registerTempTable("log_data")
-
-          val searchRdd = sqlContext.sql("select videoSid,count(userId),count(distinct userId)" +
-            " from log_data where event in ('startplay','playview','view') and (path like '%-search%' or " +
-            "pathMain like '%-search%') group by videoSid").map(e=>(e.getString(0),e.getLong(1),e
-            .getLong(2)))*/
-
-          //
           val df1=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MERGER,LogTypes.PLAYVIEW,date).select("userId","path","pathMain","event","videoSid")
           val df2=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MERGER,LogTypes.DETAIL,date).select("userId","path","pathMain","event","videoSid")
           val df =df1 unionAll df2

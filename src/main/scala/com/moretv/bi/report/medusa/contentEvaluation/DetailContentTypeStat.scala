@@ -55,14 +55,6 @@ object DetailContentTypeStat extends BaseClass {
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          //path
-          /*val loadPath2 = s"/log/medusaAndMoretvMerger/$loadDate/$dataSource"
-
-
-          val df2 = sqlContext.read.parquet(loadPath2)
-            .select("userId", "contentType")
-            .filter("contentType is not null")*/
-
           val df2=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MERGER,LogTypes.DETAIL,loadDate).select("userId", "contentType")
             .filter("contentType is not null")
           df2.registerTempTable("log_data")

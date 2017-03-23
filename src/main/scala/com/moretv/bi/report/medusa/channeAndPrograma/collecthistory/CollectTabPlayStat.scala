@@ -74,7 +74,7 @@ object CollectTabPlayStat extends BaseClass {
               |select tab, sum(duration) as duration
               |from log_tmp
               |where event not in ('startplay','playview')
-              | and duration between 1 and 10800
+              | and duration between 0 and 10800
               |group by tab
             """.stripMargin)
 

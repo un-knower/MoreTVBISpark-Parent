@@ -90,7 +90,7 @@ object LiveSourceTypePlayStat extends BaseClass {
             .agg(count($"userId").as("vv"), countDistinct($"userId").as("uv"))
             .as("t1")
             .join(
-              baseDf.filter($"event" === "switchchannel" && $"duration".between(10, 36000))
+              baseDf.filter($"event" === "switchchannel" && $"duration".between(0, 36000))
                 .groupBy($"sourceType")
                 .agg(sum($"duration").as("duration")).as("t2"), $"t1.sourceType" === $"t2.sourceType"
             )

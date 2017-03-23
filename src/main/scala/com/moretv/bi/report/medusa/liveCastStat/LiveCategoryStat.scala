@@ -72,7 +72,7 @@ object LiveCategoryStat extends BaseClass {
             .agg(count($"userId").as("play_num"), countDistinct($"userId").as("play_user"))
             .as("t1")
             .join(
-              playDf.filter($"event" === "switchchannel" && $"date" === sqlDate && $"duration".between(1, 36000))
+              playDf.filter($"event" === "switchchannel" && $"date" === sqlDate && $"duration".between(0, 36000))
                 .groupBy($"category")
                 .agg(sum($"duration").as("duration"))
                 .as("t2"),

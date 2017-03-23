@@ -65,7 +65,7 @@ object LiveChannelPlayStat extends BaseClass {
             .groupBy(groupFields4D.map(w => col(w)): _*)
             .agg(count($"userId").as(VV), countDistinct($"userId").as(UV))
             .join(
-              playDf.filter($"event" === "switchchannel" && $"duration".between(10, 36000))
+              playDf.filter($"event" === "switchchannel" && $"duration".between(0, 36000))
                 .groupBy(groupFields4D.map(w => col(w)): _*)
                 .agg(sum($"duration").as(DURATION)),
               groupFields4D
@@ -98,7 +98,7 @@ object LiveChannelPlayStat extends BaseClass {
 
           val channel10MPlayList = new ArrayList[Map[String, Object]]()
           // 统计电台直播和全网直播每隔10分钟的在线人数
-          playDf.filter($"event" === "switchchannel" && $"duration".between(10, 36000))
+          playDf.filter($"event" === "switchchannel" && $"duration".between(0, 36000))
             .withColumn("period",
               periodFillingWithStartEndUdf(
                 hour((unix_timestamp($"datetime") - $"duration").cast("timestamp")),
