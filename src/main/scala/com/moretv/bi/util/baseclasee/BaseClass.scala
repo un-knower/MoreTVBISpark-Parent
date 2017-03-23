@@ -15,14 +15,13 @@ trait BaseClass extends LogConfig{
   var sc:SparkContext = null
   implicit var sqlContext:SQLContext = null
   val config = new SparkConf()
-
+  DataIO.init(SdkConfig.CONFIG_PATH)
   /**
    * initialize global parameters
    */
   def init()={
     sc = new SparkContext(config)
     sqlContext = SQLContext.getOrCreate(sc)
-    DataIO.init(SdkConfig.CONFIG_PATH)
     }
 
   /**
