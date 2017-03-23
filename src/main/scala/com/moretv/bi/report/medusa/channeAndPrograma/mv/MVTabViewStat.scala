@@ -21,6 +21,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
   * 输出: tbl:[mv_tabview_pv_uv](day, entrance, tabname, uv, pv)
   */
 
+@deprecated
 object MVTabViewStat extends BaseClass{
 
   private val tableName = "mv_tabs_view_statistic"

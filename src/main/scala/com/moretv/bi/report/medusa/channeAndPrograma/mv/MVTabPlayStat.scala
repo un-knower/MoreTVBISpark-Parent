@@ -31,7 +31,7 @@ import scala.collection.mutable.{ListBuffer}
   * 输出: tbl[mv_tabs_play_statistic](day, home_tab, entrance, pv, uv, mean_duration)
   *
   */
-
+@deprecated
 object MVTabPlayStat extends BaseClass{
 
     private val tableName = "mv_tabs_play_statistic"

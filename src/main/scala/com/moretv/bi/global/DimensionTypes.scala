@@ -10,6 +10,7 @@ object DimensionTypes {
   val DIM_WEB_LOCATION = "dim_web_location"
   val DIM_MEDUSA_PROGRAM = "dim_medusa_program"
   val DIM_MEDUSA_FIX_ENTRANCE_INFO = "dim_medusa_fix_entrance_info"
+  val DIM_MEDUSA_MV_TOPIC = "dim_medusa_mv_topic"
 
 
 }

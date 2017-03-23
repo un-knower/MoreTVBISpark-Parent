@@ -9,6 +9,7 @@ import redis.clients.jedis.{JedisPool, JedisPoolConfig, Protocol}
  * Created by xia jun  on 2016-08-24.
   * 连接redis，通过sid查询节目对应的duration
  */
+@deprecated
 object ProgramDurationUtil {
 
   /**

@@ -24,7 +24,7 @@ mysql -h10.255.130.1 -ubi -Dmedusa -pmlw321@moretv
 mysql -hbigdata-extsvr-db_bi1 -ubi -Dmedusa -pmlw321@moretv
 mysql -hbigdata-appsvr-130-1 -ubi -Dmedusa -pmlw321@moretv
 
-sh submit.sh com.moretv.bi.report.medusa.functionalStatistic.appRecommendUpgradeInfo --startDate 20170321 --deleteOld true
+bin/submit.sh com.moretv.bi.report.medusa.channeAndPrograma.mv.bf310.MVRecommendPlay --startDate 20170323 --deleteOld true
 
  create table  contenttype_play_src_stat_test like  contenttype_play_src_stat; 
 

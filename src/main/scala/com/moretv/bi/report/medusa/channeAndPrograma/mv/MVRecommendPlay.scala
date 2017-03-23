@@ -6,7 +6,7 @@ import java.util.Calendar
 import cn.whaley.bi.utils.ElasticSearchUtil
 import com.moretv.bi.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.global.{DataBases, DimensionTypes, LogTypes}
 import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
@@ -45,21 +45,42 @@ object MVRecommendPlay extends BaseClass {
             .toDF("userId", "duration", "event", "subjectCode",
             "videoSid").registerTempTable("log")
 
-          val subjectPlayInfo = sqlContext.sql("select subjectCode,count(userId),count(distinct " +
-            "userId) from log where subjectCode!=videoSid and event='startplay' group by subjectCode").
-            map(e => (e.getString(0), e.getLong(1), e.getLong(2))).collect()
+          DataIO.getDataFrameOps.getDimensionDF(
+            sqlContext, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_MV_TOPIC
+          ).registerTempTable("dim_mv_topic")
 
-          val programPlayInfo = sqlContext.sql("select videoSid,count(userId),count(distinct userId) from log where " +
-            "subjectCode=videoSid and event='startplay' group by videoSid").map(e => (e.getString(0),
-            e.getLong(1), e.getLong(2))).collect()
+          DataIO.getDataFrameOps.getDimensionDF(
+            sqlContext, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_PROGRAM
+          ).registerTempTable("dim_program")
 
-          val subjectDurationInfo = sqlContext.sql("select subjectCode,sum(duration),count(distinct " +
-            "userId) from log where subjectCode!=videoSid and event!='startplay' and duration between 0 and 10800 group by" +
-            " subjectCode").map(e => (e.getString(0), e.getLong(1), e.getLong(2))).collect()
+          val subjectPlayInfo = sqlContext.sql(
+            "select a.subjectCode, a.pv, a.uv, b.mv_topic_name from " +
+              "(select subjectCode,count(userId) pv,count(distinct userId) uv " +
+              "from log where subjectCode != videoSid and event= 'startplay' group by subjectCode) a " +
+              "left join dim_mv_topic b on a.subjectCode = b.mv_topic_sid and b.dim_invalid_time is null"
+          ).map(e => (e.getString(0), e.getLong(1), e.getLong(2), e.getString(3))).collect()
 
-          val programDurationInfo = sqlContext.sql("select videoSid,sum(duration),count(distinct userId) from log where " +
-            "subjectCode=videoSid and event!='startplay' and duration between 0 and 10800 group by videoSid").map(e => (e
-            .getString(0), e.getLong(1), e.getLong(2))).collect()
+          val programPlayInfo = sqlContext.sql(
+            "select a.videoSid, a.pv, a.uv, b.title from " +
+              "(select videoSid,count(userId) pv, count(distinct userId) uv from log where " +
+              "subjectCode=videoSid and event='startplay' group by videoSid ) a " +
+              "left join dim_program b on a.videoSid = b.sid and b.dim_invalid_time is null"
+          ).map(e => (e.getString(0), e.getLong(1), e.getLong(2), e.getString(3))).collect()
+
+          val subjectDurationInfo = sqlContext.sql(
+            "select a.subjectCode, a.duration, a.uv, b.mv_topic_name from " +
+              "(select subjectCode, sum(duration) duration, count(distinct userId) uv from log " +
+              "where subjectCode!=videoSid and event!='startplay' and duration between 0 and 10800 group by subjectCode) a " +
+              "left join dim_mv_topic b on a.subjectCode = b.mv_topic_sid and b.dim_invalid_time is null"
+          ).map(e => (e.getString(0), e.getLong(1), e.getLong(2), e.getString(3))).collect()
+
+          val programDurationInfo = sqlContext.sql(
+            "select a.videoSid, a.duration, a.uv, b.title from " +
+              "(select videoSid, sum(duration) duration, count(distinct userId) uv from log where " +
+              "subjectCode=videoSid and event!='startplay' and duration between 0 and 10800 group by videoSid) a " +
+              "left join dim_program b on a.videoSid = b.sid and b.dim_invalid_time is null"
+          ).map(e => (e
+            .getString(0), e.getLong(1), e.getLong(2), e.getString(3))).collect()
 
 
           val insertSql1 = "insert into medusa_channel_mv_recommend_each_program_play_info(day,flag,programCode,title," +
@@ -76,21 +97,21 @@ object MVRecommendPlay extends BaseClass {
 
           subjectPlayInfo.foreach(i => {
             try{
-              util.insert(insertSql1, insertDate, "topic", i._1, LiveCodeToNameUtils.getMVSubjectName(i._1), new JLong(i._2), new JLong(i._3))
+              util.insert(insertSql1, insertDate, "topic", i._1, i._4, new JLong(i._2), new JLong(i._3))
             }catch {
               case e:Exception =>{}
             }
           })
           programPlayInfo.foreach(i => {
             try{
-              util.insert(insertSql1, insertDate, "program", i._1, ProgramRedisUtil.getTitleBySid(i._1), new JLong(i._2), new JLong(i._3))
+              util.insert(insertSql1, insertDate, "program", i._1, i._4, new JLong(i._2), new JLong(i._3))
             }catch {
               case e:Exception => {}
             }
           })
           subjectDurationInfo.foreach(i => {
             try{
-              util.insert(insertSql2, insertDate, "topic", i._1, LiveCodeToNameUtils.getMVSubjectName(i._1), new JLong(i._2), new JLong(i._3))
+              util.insert(insertSql2, insertDate, "topic", i._1, i._4, new JLong(i._2), new JLong(i._3))
             }catch {
               case e:Exception => {}
             }
