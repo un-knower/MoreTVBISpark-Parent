@@ -3,6 +3,7 @@ package com.moretv.bi.report.medusa.newsRoomKPI
 import java.lang.{Double => JDouble, Long => JLong}
 import java.util.Calendar
 import cn.whaley.sdk.dataexchangeio.DataIO
+import cn.whaley.sdk.parse.ReadConfig
 import com.moretv.bi.global.{DimensionTypes, DataBases, LogTypes}
 import com.moretv.bi.report.medusa.util.FilesInHDFS
 import com.moretv.bi.util._
@@ -31,23 +32,10 @@ import com.moretv.bi.report.medusa.util.udf.PathParser
   *
   */
 object ChannelEntrancePlayStatExample extends BaseClass {
-
   private val tableName = "contenttype_play_src_stat"
-
   private val fields = "day,contentType,entrance,pv,uv,duration"
-
   private val sqlInsert = s"insert into $tableName($fields) values(?,?,?,?,?,?)"
-
   private val deleteSql = s"delete from $tableName where day = ? "
-
-  private val regex ="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|mv)([0-9]+)""".r
-
-  private val sourceRe = ("(home\\*classification|search|home\\*my_tv\\*history|" +
-    "home\\*my_tv\\*collect|home\\*recommendation|home\\*my_tv\\*[a-zA-Z0-9&\\u4e00-\\u9fa5]{1,})").r
-
-  private val sourceRe1 = ("(classification|history|hotrecommend|search)").r
-
-  private val codeMap: scala.collection.immutable.Map[String, String] = CodeToNameUtils.getSubjectCodeMap
   private val playNumLimit = 5000
   private val spark_df_analyze_table = "analyze_table"
 
@@ -56,10 +44,10 @@ object ChannelEntrancePlayStatExample extends BaseClass {
   }
 
   override def execute(args: Array[String]) {
-
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         val sqlContext = new SQLContext(sc)
+        println("---------------------"+ReadConfig.getConfig)
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         sqlContext.udf.register("getSubjectCode", PathParser.getSubjectCodeByPathETL _)
         sqlContext.udf.register("getSubjectName", PathParser.getSubjectNameByPathETL _)
@@ -162,6 +150,7 @@ object ChannelEntrancePlayStatExample extends BaseClass {
                      """.stripMargin
             println("--------------------"+sqlStr)
             val step2_table_df=sqlContext.sql(sqlStr)
+            step2_table_df.cache()
             step2_table_df.registerTempTable("step2_table")
             writeToHDFSForCheck(date,"step2_table_df",step2_table_df,p.deleteOld)
 
@@ -208,6 +197,7 @@ object ChannelEntrancePlayStatExample extends BaseClass {
                      """.stripMargin
             println("--------------------"+sqlStr)
             val medusa_log_df=sqlContext.sql(sqlStr)
+            medusa_log_df.cache()
             writeToHDFSForCheck(date,"medusa_log_df",medusa_log_df,p.deleteOld)
 
             sqlStr = """
@@ -225,10 +215,12 @@ object ChannelEntrancePlayStatExample extends BaseClass {
                       """.stripMargin
             println("--------------------"+sqlStr)
             val moretv_log_df = sqlContext.sql(sqlStr)
+            moretv_log_df.cache()
             writeToHDFSForCheck(date,"moretv_log_df",moretv_log_df,p.deleteOld)
 
             //moretv and medusa 获得subjectCode后，合并
             val moretv_medusa_log_df =medusa_log_df.unionAll(moretv_log_df)
+            moretv_medusa_log_df.cache()
             moretv_medusa_log_df.registerTempTable("moretv_medusa_log_df_table")
             writeToHDFSForCheck(date,"moretv_medusa_log_df",moretv_medusa_log_df,p.deleteOld)
 
@@ -256,6 +248,7 @@ object ChannelEntrancePlayStatExample extends BaseClass {
                      """.stripMargin
             println("--------------------"+sqlStr)
             val step3_table_df = sqlContext.sql(sqlStr)
+            step3_table_df.cache()
             writeToHDFSForCheck(date,"step3_table_df",step3_table_df,p.deleteOld)
             step3_table_df.registerTempTable(spark_df_analyze_table)
         }else {
@@ -325,6 +318,16 @@ object ChannelEntrancePlayStatExample extends BaseClass {
     }
   }
 
+  //用来写入HDFS，测试数据是否正确
+  def writeToHDFSForCheck(date:String,logType:String,df:DataFrame,isDeleteOld:Boolean): Unit ={
+    println(s"--------------------$logType is write done.")
+    val outputPath= DataIO.getDataFrameOps.getPath(MERGER,logType,date)
+    if(isDeleteOld){
+      HdfsUtil.deleteHDFSFile(outputPath)
+    }
+    df.write.parquet(outputPath)
+  }
+
   //dfUser: userId,pathMain,path,contentType,pathIdentificationFromPath,flag,cast(0 as Long)
   //dfDuration : userId,pathMain,path,contentType,pathIdentificationFromPath,flag,duration
   /**
@@ -354,7 +357,7 @@ object ChannelEntrancePlayStatExample extends BaseClass {
     * 过滤channel为非法类型的记录
     * 过滤入口类型为null的记录
     * */
-  def contentFilter(df: DataFrame): RDD[(String, String, Long, String)] = {
+  /*def contentFilter(df: DataFrame): RDD[(String, String, Long, String)] = {
     val rdd = df.map(e => {
       var channel = e.getString(3)
       if (e.getString(4) != null) {
@@ -380,10 +383,10 @@ object ChannelEntrancePlayStatExample extends BaseClass {
 
       .filter(_._2 != null)
     rdd
-  }
+  }*/
 
 
-  def fromEngToChinese(str: String): String = {
+  /*def fromEngToChinese(str: String): String = {
     str match {
       case "movie" => "电影"
       case "tv" => "电视"
@@ -397,10 +400,10 @@ object ChannelEntrancePlayStatExample extends BaseClass {
       case "mv" => "音乐"
       case _ => "未知"
     }
-  }
+  }*/
 
   //pathMain        path             flag
-  def splitSource(pathMain: String, path: String, flag: String): String = {
+  /*def splitSource(pathMain: String, path: String, flag: String): String = {
     val specialPattern = "home\\*my_tv\\*[a-zA-Z0-9&\\u4e00-\\u9fa5]{1,}".r
     flag match {
       case "medusa" => {
@@ -441,16 +444,8 @@ object ChannelEntrancePlayStatExample extends BaseClass {
       }
     }
 
-  }
+  }*/
 
-  //用来写入HDFS，测试数据是否正确
-  def writeToHDFSForCheck(date:String,logType:String,df:DataFrame,isDeleteOld:Boolean): Unit ={
-    println(s"--------------------$logType is write done.")
-    val outputPath= DataIO.getDataFrameOps.getPath(MERGER,logType,date)
-    if(isDeleteOld){
-      HdfsUtil.deleteHDFSFile(outputPath)
-    }
-    df.write.parquet(outputPath)
-  }
+
 
 }
