@@ -38,9 +38,7 @@ object EachVideoOfChannelPlayInfo extends BaseClass{
           val rdd = sqlContext.sql("select contentType,videoSid,count(userId),count(distinct userId)" +
             " from log_data where event in ('startplay','playview') and contentType in ('movie','tv','hot','zongyi'," +
             "'comic','xiqu','jilu','kids') group by contentType,videoSid").map(e=>(e.getString(0),e.getString(1),e.getLong(2),e
-            .getLong(3))).filter(_._2!=null).filter(_._2.length<=50).collect()
-
-
+            .getLong(3))).filter(_._2!=null).filter(_._2.length<=50)
 
           val insertSql="insert into medusa_channel_each_video_play_info(day,channel,video_sid,title,play_num,play_user) " +
             "values (?,?,?,?,?,?)"
@@ -50,13 +48,20 @@ object EachVideoOfChannelPlayInfo extends BaseClass{
             util.delete(deleteSql,insertDate)
           }
 
-          rdd.foreach(e=>{
-            try{
-              util.insert(insertSql,insertDate,e._1,e._2,ProgramRedisUtil.getTitleBySid(e._2),new JLong(e._3),
-                new JLong(e._4))
-            }catch {
-              case e:Exception =>
-            }
+          rdd.foreachPartition(partition=>{
+            val util1 = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+            partition.foreach(e=>{
+              val title=ProgramRedisUtil.getTitleBySid(e._2)
+              try{
+                util1.insert(insertSql,insertDate,e._1,e._2,title,new JLong(e._3),
+                  new JLong(e._4))
+              }catch {
+                case e:java.sql.SQLException => {
+                  println(s"insert errror: $title")
+                }
+                case e:Exception => throw e
+              }
+            })
           })
 
         })

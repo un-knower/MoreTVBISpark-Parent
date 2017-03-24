@@ -2,7 +2,7 @@ package com.moretv.bi.util
 
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.DataBases
-import org.json.JSONObject
+import com.alibaba.fastjson.{JSONObject,JSON}
 import redis.clients.jedis.{JedisPool, JedisPoolConfig, Protocol}
 
 /**
@@ -16,7 +16,7 @@ object ProgramRedisUtil {
    */
   val TITLE = "title"
   val AREA = "area"
-  val CONTENT_TYPE = "item_contentType"
+  val CONTENT_TYPE = "contentType"
   val SUPPLY_TYPE = "supply_type"
 
   /**
@@ -47,14 +47,15 @@ object ProgramRedisUtil {
     if(metadataPool == null){
       init()
     }
+    val metadata_jedis = metadataPool.getResource
     try {
-      val metadata_jedis = metadataPool.getResource
       val id = CodeIDOperator.codeToId(sid)
       val metadata = metadata_jedis.get(id.toString)
       var title = sid
       if (metadata != null && metadata != "nil") {
-        val jsonObject = new JSONObject(metadata)
+        val jsonObject =  JSON.parseObject(metadata)
         title = jsonObject.getString(TITLE)
+
         if (title != null) {
           title = title.replace("'", "")
           title = title.replace("\t", " ")
@@ -63,12 +64,12 @@ object ProgramRedisUtil {
           title = title.replace("\r\n", "-")
         } else title = sid
       }
-      metadataPool.returnResource(metadata_jedis)
       title
     } catch {
       case e:Exception => sid
+    }finally {
+      metadataPool.returnResource(metadata_jedis)
     }
-    destroy()
   }
 
 

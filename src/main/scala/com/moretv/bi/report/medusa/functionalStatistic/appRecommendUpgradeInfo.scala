@@ -22,7 +22,6 @@ object appRecommendUpgradeInfo extends BaseClass{
       case Some(p) => {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        //val appRecommendDir = "/log/medusaAndMoretvMerger/"
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
 

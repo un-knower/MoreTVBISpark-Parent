@@ -2,7 +2,7 @@ package com.moretv.bi.util
 
 import java.io.FileInputStream
 
-import org.apache.logging.log4j.LogManager
+//import org.apache.logging.log4j.LogManager
 
 import scala.io.Source
 
@@ -10,7 +10,7 @@ import scala.io.Source
   * Created by Administrator on 2017/1/13.
   */
 object ResourcesParser {
-  private val logger = LogManager.getLogger(this.getClass)
+//  private val logger = LogManager.getLogger(this.getClass)
 
   /**
     * 用于获取Map型信息
@@ -27,7 +27,7 @@ object ResourcesParser {
         val Array(key,value) = line.toString.split("=")
         (key.trim, value.trim)
       }else {
-        logger.info("invalid conf line [{}] as {}",lineNum,line)
+//        logger.info("invalid conf line [{}] as {}",lineNum,line)
         null
       }
     }).filter(_!=null).toMap

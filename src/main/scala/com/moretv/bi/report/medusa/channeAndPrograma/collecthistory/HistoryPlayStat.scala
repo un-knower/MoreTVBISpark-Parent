@@ -58,7 +58,7 @@ object HistoryPlayStat extends BaseClass {
             .distinct.count
 
           val duration = df.filter("event not in ('startplay','playview')")
-            .filter("duration between 1 and 10800")
+            .filter("duration between 0 and 10800")
             .select("duration")
             .map(e => e.getLong(0))
             .reduce(_ + _)

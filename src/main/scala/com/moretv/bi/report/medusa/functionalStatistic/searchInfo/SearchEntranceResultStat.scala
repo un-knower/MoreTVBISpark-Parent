@@ -21,7 +21,6 @@ object SearchEntranceResultStat extends BaseClass {
 
   private val insertSql = s"insert into $tableName(${fields.mkString(",")}) values(?,?,?,?,?,?,?)"
 
-  private val deleteSql = s"delete from $tableName where day = ?"
 
   def main(args: Array[String]) {
 

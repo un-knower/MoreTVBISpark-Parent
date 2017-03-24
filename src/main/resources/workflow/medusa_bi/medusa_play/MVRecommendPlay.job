@@ -1,0 +1,5 @@
+type=command
+dependencies=medusa_paly_isExist
+mainclass=com.moretv.bi.report.medusa.channeAndPrograma.mv.MVRecommendPlay
+command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}
+

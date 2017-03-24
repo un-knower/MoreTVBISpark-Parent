@@ -1,0 +1,4 @@
+type=command
+dependencies=KidPlayClass,ChannelEntrancePlayStat,PlayContentTypeStat,KidsEachTabPlayInfo,CollectTabPlayStat,HistoryPlayStat,EachVideoOfChannelPlayInfo,EachChannelSubjectPlayInfo,todayRecommendationProgramPlayInfoQuery,EachSubjectPlayInfo,EachDonghuaAndSongOfKidsPlayInfo,SearchProgramInfo,EachChannelPlayInfo,EachVideoPlayInfo2ES
+command=echo "merger palyview is end ..."
+

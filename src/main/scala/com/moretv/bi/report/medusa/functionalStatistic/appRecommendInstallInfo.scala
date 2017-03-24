@@ -24,7 +24,6 @@ object appRecommendInstallInfo extends BaseClass{
       case Some(p) => {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
-        //val appRecommendDir = "/log/medusaAndMoretvMerger/"
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
 
@@ -32,14 +31,6 @@ object appRecommendInstallInfo extends BaseClass{
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
           val insertDate = DateFormatUtils.toDateCN(date, -1)
           calendar.add(Calendar.DAY_OF_MONTH, -1)
-
-          /*val appRecommendInput = s"$appRecommendDir/$date/apprecommend"
-
-          sqlContext.read.parquet(appRecommendInput).registerTempTable("log_data")
-
-          val rdd = sqlContext.sql("select appSid,count(distinct userId),count(userId) from log_data " +
-            s"where event='install' group by appSid " ).map(e => (e.getString(0), e.getLong(1), e.getLong(2)))
-*/
 
           val df=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MERGER,LogTypes.APP_RECOMMEND,date)
           df.registerTempTable("log_data")

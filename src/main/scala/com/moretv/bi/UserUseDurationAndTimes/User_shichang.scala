@@ -1,7 +1,8 @@
 package com.moretv.bi.UserUseDurationAndTimes
 
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.DataBases
+import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.report.medusa.channeAndPrograma.kids.KidsEachTabPlayInfo.{MERGER, sc}
 import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.sun.xml.internal.bind.v2.TODO
@@ -13,16 +14,17 @@ import org.apache.spark.storage.StorageLevel
 object User_shichang extends BaseClass with DateUtil{
   def main(args: Array[String]) {
     config.setAppName("User_shichang")
-    ModuleClass.executor(User_shichang,args)
+    ModuleClass.executor(this,args)
   }
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
 
         //TODO 是否需要写到固定的常量类or通过SDK读取
-        val path = "/mbi/parquet/exit/"+p.startDate+"/part-*"
-        val df = sqlContext.read.load(path)
-        val resultRDD = df.select("date","duration","userId").map(e =>(e.getString(0),e.getInt(1),e.getString(2))).
+//        val path = "/mbi/parquet/exit/"+p.startDate+"/part-*"
+//        val df = sqlContext.read.load(path)
+        val df = DataIO.getDataFrameOps.getDF(sc,p.paramMap,MERGER,LogTypes.EXIT,p.startDate)
+        val resultRDD = df.select("date","duration","userId").filter("duration is not null").map(e =>(e.getString(0),e.getLong(1),e.getString(2))).
             map(e=>(getKeys(e._1,e._2),e._3)).persist(StorageLevel.MEMORY_AND_DISK)
         val userNum = resultRDD.distinct().countByKey()
         val accessNum = resultRDD.countByKey()
@@ -37,7 +39,7 @@ object User_shichang extends BaseClass with DateUtil{
         //insert new data
         val sql = "INSERT INTO user_shichang(day,period,user_num,count) VALUES(?,?,?,?)"
         userNum.foreach(x =>{
-          util.insert(sql,x._1._1,x._1._2,new Integer(x._2.toInt),new Integer(accessNum(x._1).toInt))
+          util.insert(sql,x._1._1,x._1._2,Integer.parseInt(String.valueOf(x._2)),Integer.parseInt(String.valueOf(accessNum(x._1))))
         })
 
         resultRDD.unpersist()
