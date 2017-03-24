@@ -1,4 +1,4 @@
-# 本项目在北京集群运行，用于从分析代码抽取维度逻辑，最后合并在事实表ETL中，落地一个新的维度丰富的parquet文件。
+# 本项目在北京集群运行，用于从分析代码抽取维度逻辑，最后合并在事实表ETL中，落地一个新的维度丰富的parquet文件
 
 ## 最终目的：
 1.对事实表ETL【例如：playview日志】，填充空缺维度【例如subject code】，分析脚本写sql与维度表关联获得分析结果。
@@ -40,25 +40,21 @@ com.moretv.bi.report.medusa.newsRoomKPI.channelClassificationAnalyse
 
 
 
-###--------------------------------开发测试--------------------------------
+### 开发测试
 测试环境：bigdata-appsvr-130-2，bigdata-appsvr-130-3
 测试目录：
 cd /opt/bi/medusa/bin
 sh submit.sh
 1.启动例子
-nohup sh submit.sh com.moretv.bi.report.medusa.newsRoomKPI.ChannelEntrancePlayStatExample \
-  --startDate 20170321 \
-  --deleteOld true     \
-  >ChannelEntrancePlayStatExample.log 2>&1 &
+
+nohup sh submit.sh com.moretv.bi.report.medusa.newsRoomKPI.ChannelEntrancePlayStatExample --startDate 20170321 --deleteOld true >ChannelEntrancePlayStatExample.log 2>&1 &
 
 2.查询mysql验证
 北京线上数据库：
 mysql -hbigdata-extsvr-db_bi1 -ubi -Dmedusa -pmlw321@moretv
 北京测试数据库：
 mysql -hbigdata-appsvr-130-1 -ubi -Dmedusa -pmlw321@moretv
-###--------------------------------开发测试end--------------------------------
 
-###--------------------------------本地jar包上传服务器--------------------------------
-cp /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/MoreTVBISpark-1.0.0.jar ~/Documents/MoreTVBISpark-1.0.0-michael.jar
-md5 /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/MoreTVBISpark-1.0.0.jar
-###--------------------------------本地jar包上传服务器end--------------------------------
+### 本地jar包上传服务器
+1. cp /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/MoreTVBISpark-1.0.0.jar ~/Documents/MoreTVBISpark-1.0.0-michael.jar
+2. md5 /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/MoreTVBISpark-1.0.0.jar
