@@ -1,5 +1,4 @@
 type=command
-dependencies=medusa_moretv_isExist
 mainclass=com.moretv.bi.snapshot.DBSnapShot
 command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}
 
