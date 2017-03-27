@@ -1,15 +1,15 @@
 package com.moretv.bi.report.medusa.util.udf
 
 /**
- * Created by xiajun on 2016/5/11.
+ * Created by baozhi.wang on 2017/3/24.
  * 定义UDF中所需要的常量
  */
 object UDFConstantDimension {
 
   /**
-   * For PathParser
-   * *******************************************************************
-   */
+    * For PathParser
+    * *******************************************************************
+    */
   // 定义日志类型：logType
   val INTERVIEW = "interview"
   val DETAIL = "detail"
@@ -47,6 +47,7 @@ object UDFConstantDimension {
   val MULTI_SEARCH = "multi_search"
 
   val SEARCH_DIMENSION = "search"
+  val HOME_SEARCH = "home-search"
 
 
   //used for 列表页过滤
@@ -57,6 +58,8 @@ object UDFConstantDimension {
   //用来获取列表页使用
   val HOME_CLASSIFICATION = "home*classification"
   val HOME_MY_TV = "home*my_tv"
+  val KIDS_HOME = "kids_home-"
+
   val MEDUSA_LIST_Page_LEVEL_1 = Array("movie","tv","zongyi","jilu","comic","xiqu","collect","accountcenter_home","account")
   // MEDUSA_LIST_Page_LEVEL_2 use MedusaPageDetailInfo , not need mv kids and sport in MEDUSA_LIST_Page_LEVEL_1
 
@@ -189,8 +192,8 @@ object UDFConstantDimension {
 
   /*-------------------大宽表中不需要在事实表展示的字段-------------------*/
   val FAT_TABLE_COLUMN_NOT_SHOW="accountId,accessPathFromPath,versionCode,appEnterWay,ip,launcherAccessLocationFromPath,launcherAreaFromPath,logType,logVersion,omnibusName,omnibusSid,pageDetailInfoFromPath,pageTypeFromPath,path,"+
-  "pathIdentificationFromPath,pathMain,pathPropertyFromPath,pathSpecial,pathSub,previousContentTypeFromPath,previousSidFromPath,retrieval,searchText,"+
-  "singer,singerSid,station,subjectCode,subjectName,topRankName,topRankSid,videoSid,date,day,videoName,productModel"
+    "pathIdentificationFromPath,pathMain,pathPropertyFromPath,pathSpecial,pathSub,previousContentTypeFromPath,previousSidFromPath,retrieval,searchText,"+
+    "singer,singerSid,station,subjectCode,subjectName,topRankName,topRankSid,videoSid,date,day,videoName,productModel"
   //exist in table: datetime,duration,episodeSid,event,flag,mark,promotionChannel
 
 
@@ -214,7 +217,7 @@ object UDFConstantDimension {
   // path
   // 定义moretv的launcherArea集合
   val MoretvLauncherAreaNAVI = Array("search","setting") //For moretv,navi包含了search和setting两种
-    //For moretv, 将这些内容归属于分类信息中
+  //For moretv, 将这些内容归属于分类信息中
   val MoretvLauncherCLASSIFICATION = Array("history","movie","tv","live","hot","zongyi","comic","mv","jilu","xiqu","sports",
       "kids_home","subject")
   val MoretvLauncherUPPART = Array("watchhistory","otherswatch","hotrecommend","TVlive")
@@ -299,7 +302,5 @@ object UDFConstantDimension {
     "kids_anim*4-6岁","kids_anim*7-10岁","kids_anim*英文动画","kids_anim*搞笑","kids_anim*机战","kids_anim*亲子","kids_anim*探险",
     "kids_anim*中文动画","kids_anim*亲子交流","kids_anim*益智启蒙","kids_anim*童话故事","kids_anim*教育课堂","kids_rhymes*随便听听",
     "kids_rhymes*儿歌明星","kids_rhymes*儿歌热播","kids_rhymes*儿歌专题","kids_rhymes*英文儿歌","kids_rhymes*舞蹈律动")
-
-
 
 }
