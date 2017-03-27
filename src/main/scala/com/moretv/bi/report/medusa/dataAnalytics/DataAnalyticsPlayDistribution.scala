@@ -6,10 +6,7 @@ import java.util.Calendar
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
-import org.json.JSONObject
-
-import scala.collection.mutable.ListBuffer
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 
 /**
   * Created by witnes on 9/7/16.

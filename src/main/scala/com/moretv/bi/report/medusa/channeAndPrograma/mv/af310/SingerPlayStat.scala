@@ -4,10 +4,9 @@ import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import com.moretv.bi.report.medusa.functionalStatistic.searchInfo.SearchEntranceResultStat._
 import com.moretv.bi.report.medusa.util.udf.Path2Position
-import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import org.apache.spark.sql.functions._
 
 /**

@@ -5,7 +5,6 @@ import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import com.moretv.bi.medusa.playqos.EachVideoOfChannelPlayInfoTop200.{MERGER, sc, sqlContext}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil, ProgramRedisUtil}
 import org.json.JSONObject

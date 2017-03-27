@@ -5,12 +5,8 @@ import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import com.moretv.bi.report.medusa.dataAnalytics.DataAnalyticsPlayDistribution._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
-import org.json.JSONObject
-
-import scala.collection.mutable.ListBuffer
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 
 /**
   * Created by michael on 3/2/17.

@@ -3,10 +3,9 @@ package com.moretv.bi.medusa.playqos
 import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.{DataBases, LogTypes}
-import com.moretv.bi.report.medusa.dataAnalytics.DataAnalyticsUserOnDurationDist._
-import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil, ProgramRedisUtil}
+import com.moretv.bi.global.DataBases
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil, ProgramRedisUtil}
 import org.json.JSONObject
 
 import scala.collection.mutable.ListBuffer
@@ -40,8 +39,8 @@ object PlayCodeSourceStat200 extends BaseClass {
       case Some(p) => {
 
         val sq = sqlContext
-        import sq.implicits._
         import org.apache.spark.sql.functions._
+        import sq.implicits._
 
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val cal = Calendar.getInstance
@@ -175,11 +174,10 @@ object PlayCodeSourceStat200 extends BaseClass {
 
 
   def getSites(): Seq[String] = {
-    import org.apache.spark.sql.types._
     import org.apache.spark.sql.Row
+    import org.apache.spark.sql.types._
     val sq = sqlContext
     import sq.implicits._
-    import org.apache.spark.sql.functions._
 
     val rdd = sc.textFile("/log/medusa/qos/live-site-info")
       .map(_.split("\t"))

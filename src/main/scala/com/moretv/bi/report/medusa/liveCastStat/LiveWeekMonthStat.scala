@@ -2,8 +2,8 @@ package com.moretv.bi.report.medusa.liveCastStat
 
 import java.util.Calendar
 
-import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import com.moretv.bi.util.baseclasee.BaseClass
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 
 /**
   * Created by witnes on 3/24/17.
@@ -21,7 +21,6 @@ object LiveWeekMonthStat extends BaseClass {
       case Some(p) => {
 
         val q = sqlContext
-        import q.implicits._
 
         val cal = Calendar.getInstance
 

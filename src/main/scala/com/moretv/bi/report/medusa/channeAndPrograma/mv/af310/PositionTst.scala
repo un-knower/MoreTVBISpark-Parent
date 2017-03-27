@@ -1,6 +1,5 @@
-package com.moretv.bi.report.medusa.channeAndPrograma.mv
+package com.moretv.bi.report.medusa.channeAndPrograma.mv.af310
 
-import com.moretv.bi.report.medusa.channeAndPrograma.mv.af310.SingerPlayStat._
 import com.moretv.bi.report.medusa.util.udf.Path2Position
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.sql.functions._

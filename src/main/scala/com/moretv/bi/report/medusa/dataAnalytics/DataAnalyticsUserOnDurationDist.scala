@@ -4,11 +4,9 @@ import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import com.moretv.bi.report.medusa.liveCastStat.LiveChannelPlayStat._
-import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.functions._
 
 /**
   * Created by witnes on 3/11/17.
@@ -111,8 +109,8 @@ object DataAnalyticsUserOnDurationDist extends BaseClass {
 
     val s = sqlContext
 
-    import s.implicits._
     import org.apache.spark.sql.functions._
+    import s.implicits._
 
     val df = df2.select($"apkVersion", $"date", $"userId", $"duration".cast("long"))
       .unionAll(
@@ -133,8 +131,8 @@ object DataAnalyticsUserOnDurationDist extends BaseClass {
 
     val sq = sqlContext
 
-    import sq.implicits._
     import org.apache.spark.sql.functions._
+    import sq.implicits._
 
 
     val df = df2.select($"apkVersion", $"userId", $"datetime", $"date")

@@ -4,14 +4,11 @@ import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil, ProgramRedisUtil}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import org.json.JSONObject
-import org.apache.spark.sql.functions._
-import org.apache.spark.sql._
-
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil, ProgramRedisUtil}
 import org.apache.spark.sql.expressions.Window
-import org.apache.spark.sql.hive.HiveContext
+import org.apache.spark.sql.functions._
+import org.json.JSONObject
 
 import scala.collection.mutable.ListBuffer
 
@@ -39,7 +36,6 @@ object PlayCodeEpisodeContentSourceStatTop200 extends BaseClass {
         val sqlContext = new HiveContext(sc)
 
         val q = sqlContext
-        import q.implicits._
 
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val getPlayCodeUdf = udf[List[(String, String, Int)], String](getPlayCode)
