@@ -1,0 +1,5 @@
+type=command
+dependencies=other_isExist
+mainclass=com.moretv.bi.report.medusa.userDevelop.activeUserVersionStat
+command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}
+

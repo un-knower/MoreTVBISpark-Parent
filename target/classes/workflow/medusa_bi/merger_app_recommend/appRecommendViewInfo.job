@@ -1,0 +1,5 @@
+type=command
+dependencies=merger_app_recommend_isExist
+mainclass=com.moretv.bi.report.medusa.functionalStatistic.appRecommendViewInfo
+command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}
+
