@@ -52,7 +52,7 @@ object UDFConstant {
     "search","kids_home")
   val MoretvPageDetailInfo = Array("search","hot_jiaodian","1_hot_tag_xinwenredian","hot_zhuanti",
     "1_hot_tag_chuangyidongzuo","1_hot_tag_yinshiduanpian","1_hot_tag_youxi","danmuzhuanqu","1_hot_tag_qingsonggaoxiao",
-    "1_hot_tag_shenghuoshishang","1_hot_tag_yulebagua","1_hot_tag_vicezhuanqu","1_hot_tag_yinyuewudao",
+    "1_hot_tag_shenghuoshishang","1_hot_tag_yulebagua","1_hot_tag_vicezhuanqu","1_hot_tag_yinyuewudao","hot_lanmu","hot_dspzhuanti",
     "1_hot_tag_wuhuabamen","history","collect","subjectcollect","mytag","tag","reservation","multi_search","movie_hot",
     "movie_7days","movie","movie_jujiaodian","movie_zhuanti","movie_teseyingyuan","movie_star","movie_yugao",
     "movie_yiyuan","movie_xilie","movie_erzhan","movie_aosika","movie_comic","movie_hollywood","movie_huayu",
@@ -119,7 +119,7 @@ object UDFConstant {
     "纪实热播","王牌栏目","纪实专题", "VICE专区","BBC","国家地理","NHK","美食大赏","军事风云","自然万象","社会百态","人物大观",
     "历史钩沉","公开课","前沿科技","其他分类","豆瓣高分","猫叔推荐","刑侦档案","相声小品","铁血军魂","大话汽车","王牌综艺",
     "我的收藏","今日焦点","新闻热点", "资讯专题","创意运动","影视短片","游戏动画","生活时尚","娱乐八卦","音乐舞蹈","五花八门",
-    "电台","热门歌手","正在流行", "MV首发","精选集","演唱会","排行榜",
+    "电台","热门歌手","正在流行", "MV首发","精选集","演唱会","排行榜","短视频栏目","短视频专题",
     "广场舞","戏曲综艺","京剧", "豫剧","越剧","黄梅戏","二人转","河北梆子","晋剧","锡剧","秦腔","潮剧",
     "评剧","花鼓戏","粤剧","歌仔戏","吕剧","沪剧","淮剧","川剧","婺剧","昆曲","苏州弹唱",
     "kids_collect*观看历史","kids_collect*收藏追看","kids_collect*专题收藏", "kids_anim*动画明星","kids_anim*少儿热播",

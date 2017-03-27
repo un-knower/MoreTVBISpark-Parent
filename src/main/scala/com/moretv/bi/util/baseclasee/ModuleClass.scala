@@ -51,6 +51,7 @@ object ModuleClass {
         }
         throw e
       }
+        throw e
     }finally{
       op.destroy()
     }
