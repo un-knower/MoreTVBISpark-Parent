@@ -17,8 +17,10 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
   * input: /mbi/parquet/playview/$date
   * output: /log/medusaAndMoretv/parquet/$date/playview2filterETL
   *
-  * play事实表的作用：
-  * 1.解析出所有分析脚本可以使用的subject code
+  * play事实表ETL需要做的任务：
+  * 1.过滤播放量大于5000的记录【参考com.moretv.bi.report.medusa.channeAndPrograma.movie.EachChannelSubjectPlayInfoExample代码】
+  * 2.解析出所有分析脚本可以使用的subject code【参考com.moretv.bi.report.medusa.channeAndPrograma.movie.EachChannelSubjectPlayInfoExample代码】
+  * 3.解析出不同入口维度【参考com.moretv.bi.report.medusa.newsRoomKPI.ChannelEntrancePlayStatExample代码】
   *
   */
 object PlayViewLogMergerETL extends BaseClass {
