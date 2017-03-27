@@ -1,6 +1,7 @@
 package com.moretv.bi.login
 
 import java.lang.{Long => JLong}
+import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
@@ -19,25 +20,34 @@ object TotalAndAvgTime extends BaseClass with DateUtil{
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-        DataIO.getDataFrameOps.getDF(sc, p.paramMap, MERGER, LogTypes.EXIT,p.startDate).registerTempTable("log_data")
-        val result = sqlContext.sql("select count(distinct userId),count(userId),sum(duration) from log_data where duration between 0 and 54000")
-          .collect()
+        val startDate = p.startDate
 
-        //save date
-        val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
-        //delete old data
-        val date = DateFormatUtils.toDateCN(p.startDate, -1)
-        if (p.deleteOld) {
-          val oldSql = s"delete from total_duration_user where day = '$date'"
-          util.delete(oldSql)
-        }
-        //insert new data
-        val sql = "INSERT INTO total_duration_user(year,month,day,weekstart_end,user_num,login_num,total_duration) VALUES(?,?,?,?,?,?,?)"
-        result.foreach(row =>{
-          val keys = getKeys(date)
-          util.insert(sql,new Integer(keys._1),new Integer(keys._2),keys._3,keys._4,new JLong(row.getLong(0)),
-            new JLong(row.getLong(1)),new JLong(row.getLong(2)))
+        val calendar = Calendar.getInstance()
+        calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
+        (0 until p.numOfDays).foreach(i=>{
+          val date = DateFormatUtils.readFormat.format(calendar.getTime)
+          calendar.add(Calendar.DAY_OF_MONTH,-1)
+          DataIO.getDataFrameOps.getDF(sc, p.paramMap, MERGER, LogTypes.EXIT,date).registerTempTable("log_data")
+          val result = sqlContext.sql("select count(distinct userId),count(userId),sum(duration) from log_data where duration between 0 and 54000")
+            .collect()
+
+          //save date
+          val util = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)
+          //delete old data
+          val insertDate = DateFormatUtils.toDateCN(p.startDate, -1)
+          if (p.deleteOld) {
+            val oldSql = s"delete from total_duration_user where day = '$insertDate'"
+            util.delete(oldSql)
+          }
+          //insert new data
+          val sql = "INSERT INTO total_duration_user(year,month,day,weekstart_end,user_num,login_num,total_duration) VALUES(?,?,?,?,?,?,?)"
+          result.foreach(row =>{
+            val keys = getKeys(insertDate)
+            util.insert(sql,new Integer(keys._1),new Integer(keys._2),keys._3,keys._4,new JLong(row.getLong(0)),
+              new JLong(row.getLong(1)),new JLong(row.getLong(2)))
+          })
         })
+
 
       }
       case None =>{
