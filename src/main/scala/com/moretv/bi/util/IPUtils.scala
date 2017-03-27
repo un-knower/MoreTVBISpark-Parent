@@ -4,6 +4,7 @@ package com.moretv.bi.util
 import moretv.openapi.service.IIpService
 import moretv.openapi.service.impl.IpServiceImpl2
 
+@deprecated
 object IPUtils {
     private val instance:IIpService = new IpServiceImpl2()
 
