@@ -7,26 +7,25 @@ package com.moretv.bi.report.medusa.productUpdateEvaluate.crash
 import java.lang.{Long => JLong}
 
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.LogTypes
+import com.moretv.bi.global.{DataBases, LogTypes}
 import com.moretv.bi.medusa.util.DevMacUtils
-import com.moretv.bi.report.medusa.CrashLog.EachUserEachCrashAppearInfo.{MEDUSA, sc}
-import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
+import com.moretv.bi.report.medusa.CrashLog.EachUserEachCrashAppearInfo.MEDUSA
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil, SparkSetting}
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
-import org.json.JSONObject
 
 object CrashTrendsByVersionProductCrashKeyV2 extends SparkSetting{
   val sc = new SparkContext()
   val sqlContext = new SQLContext(sc)
   import sqlContext.implicits._
-  val util = new DBOperationUtils("medusa")
+  val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
   def main(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) =>{
         val inputDate = p.startDate
-        val day = DateFormatUtils.toDateCN(inputDate)
+        val day = DateFormatUtils.toDateCN(inputDate,-1)
 
         //TODO 是否需要写到固定的常量类or通过SDK读取
         // 过滤掉stack_trace没有值/空的情形

@@ -77,6 +77,7 @@ object ElasticSearchUtil {
     } catch {
       case e: Exception =>
         e.printStackTrace()
+        throw e
     }
   }
 
