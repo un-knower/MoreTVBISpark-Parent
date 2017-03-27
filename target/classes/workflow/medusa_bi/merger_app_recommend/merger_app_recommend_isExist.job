@@ -1,2 +1,0 @@
-type=command
-command=sh ${working.dir}/../../bin/hdfsExist.sh ${startDate} merger apprecommend 0

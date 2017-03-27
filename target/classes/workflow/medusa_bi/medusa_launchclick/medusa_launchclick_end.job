@@ -1,4 +1,0 @@
-type=command
-dependencies=LauncherClickStatistic,LauncherSearchAndSetStatistic,LauncherRecommendStatistic,LauncherMyTVStatistic,LauncherFoundationStatistic,LauncherClickBasedOnTimeStatistic,LauncherClassificationStatistic
-command=echo "loginlog is end ..."
-

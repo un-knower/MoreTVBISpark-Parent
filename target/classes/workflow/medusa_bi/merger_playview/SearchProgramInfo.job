@@ -1,6 +1,0 @@
-type=command
-dependencies=merger_playview_isExist
-mainclass=com.moretv.bi.report.medusa.functionalStatistic.SearchProgramInfo
-command=sh ${working.dir}/../../bin/hdfsExist.sh ${startDate} merger detail 0
-command.1=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}
-

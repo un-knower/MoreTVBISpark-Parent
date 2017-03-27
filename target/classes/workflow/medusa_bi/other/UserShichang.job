@@ -1,5 +1,0 @@
-type=command
-dependencies=other_isExist
-mainclass=com.moretv.bi.UserUseDurationAndTimes.User_shichang
-command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}
-

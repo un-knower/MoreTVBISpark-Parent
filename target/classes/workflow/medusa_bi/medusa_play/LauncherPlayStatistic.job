@@ -1,5 +1,0 @@
-type=command
-dependencies=medusa_paly_isExist
-mainclass=com.moretv.bi.report.medusa.pageStatistics.LauncherPlayStatistic
-command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}
-

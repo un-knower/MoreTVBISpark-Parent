@@ -1,3 +1,0 @@
-type=command
-user.to.proxy=spark
-command=echo "medusa parquet is over ..."
