@@ -1,14 +1,13 @@
-package com.moretv.bi.report.medusa.newsRoomKPI
+package com.moretv.bi.report.medusa.channelClassification
 
 import java.lang.{Double => JDouble, Long => JLong}
 import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
 import cn.whaley.sdk.parse.ReadConfig
-import com.moretv.bi.etl.MvDimensionClassificationETL
-import com.moretv.bi.global.{DataBases, DimensionTypes, LogTypes}
+import com.moretv.bi.global.{DataBases, LogTypes}
 import com.moretv.bi.report.medusa.util.FilesInHDFS
-import com.moretv.bi.report.medusa.util.udf.{UDFConstantDimension, PathParser}
+import com.moretv.bi.report.medusa.util.udf.PathParser
 import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.sql.{DataFrame, SQLContext}
@@ -39,7 +38,7 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
   * pathMain         解析出一级入口，二级入口  维度值
   *
   */
-object channelClassificationAnalyse extends BaseClass {
+object MoviechannelClassificationAnalyse extends BaseClass {
   private val tableName = "medusa_channel_eachtab_play_movie_info"
   private val fields = "day,channelname,tabname,play_user,play_num"
   private val sqlInsert = s"insert into $tableName($fields) values(?,?,?,?,?)"
@@ -158,9 +157,9 @@ object channelClassificationAnalyse extends BaseClass {
           /** 进入分析代码 */
           sqlStr =
             s"""
-               |select  sub_category              as tabname,
-               |        count(distinct userId)    as playUser,
-               |        count(userId)             as playNum
+               |select  sub_category            as tabname,
+               |        count(userId)             as playNum,
+               |        count(distinct userId)    as playUser
                |from $analyse_source_data_df_name
                |where event in ('$MEDUSA_EVENT_START_PLAY','$MORETV_EVENT_START_PLAY') and
                |      main_category='$CHANNEL_MOVIE'
@@ -174,7 +173,7 @@ object channelClassificationAnalyse extends BaseClass {
           }
           //day,channelname,tabname,play_user,play_num
           mysql_result_df.collect.foreach(row => {
-            util.insert(sqlInsert, sqlDate, CHANNEL_MOVIE,row.getString(0) ,new JLong(row.getLong(1)), new JLong(row.getLong(2)))
+            util.insert(sqlInsert, sqlDate, row.getString(0), row.getString(1), row.getString(2),new JLong(row.getLong(3)), new JLong(row.getLong(4)))
           })
         })
       }
