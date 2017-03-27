@@ -6,6 +6,7 @@ import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil, ProgramRedisUtil}
+import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
 import org.json.JSONObject
@@ -33,9 +34,11 @@ object PlayCodeEpisodeContentSourceStatTop200 extends BaseClass {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
-        val sqlContext = new HiveContext(sc)
+        val sqlContext = new SQLContext(sc)
 
         val q = sqlContext
+
+        import q.implicits._
 
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val getPlayCodeUdf = udf[List[(String, String, Int)], String](getPlayCode)

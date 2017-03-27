@@ -1,0 +1,3 @@
+type=command
+command=sh ${working.dir}/../../bin/hdfsExist.sh ${startDate} loginlog loginlog 0
+
