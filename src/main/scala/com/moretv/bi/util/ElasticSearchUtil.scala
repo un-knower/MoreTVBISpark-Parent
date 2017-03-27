@@ -144,6 +144,7 @@ object ElasticSearchUtil {
   }
 
 
+
   def searchIndex(index: String, typeName: String, sid: String, startDate: String, endDate: String): Unit = {
     if (client == null) init
     val searchResponce = client.prepareSearch(index).setTypes(typeName).setSearchType(SearchType.DFS_QUERY_THEN_FETCH)

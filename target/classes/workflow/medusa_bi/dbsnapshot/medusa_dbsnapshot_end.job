@@ -1,0 +1,4 @@
+type=command
+dependencies=RetentionStat,AccumulateUser,ProductModelNewDist,YunOSAddUserBasedAlidogTvdog,ProductBrandPromotionChannelNewDist,PromotionChannelNonOTTNewDist,PromotionChannelTotalDist,AdduserBasedApkVersionAndPromotionChannel,AppVersionUser
+command=echo "dbsnapshot is end ..."
+

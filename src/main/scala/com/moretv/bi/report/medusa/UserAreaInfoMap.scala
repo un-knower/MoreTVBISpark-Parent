@@ -24,7 +24,7 @@ object UserAreaInfoMap extends BaseClass{
 
         val outDir = s"${LogTypes.USERAREAOUTDIR}${p.startDate}/userArea/"
         // 账号信息
-        DataIO.getDataFrameOps.getDF(sc,p.paramMap,DBSNAPSHOT,LogTypes.MORETV_MTV_ACCOUNT).
+        DataIO.getDataFrameOps.getDF(sc,p.paramMap,DBSNAPSHOT,LogTypes.MORETV_MTV_ACCOUNT,p.startDate).
           select("user_id","ip").registerTempTable("log_data1")
         // 城市的维度表信息
         sqlContext.read.load(LogTypes.AREAINFO).registerTempTable("log_data2")

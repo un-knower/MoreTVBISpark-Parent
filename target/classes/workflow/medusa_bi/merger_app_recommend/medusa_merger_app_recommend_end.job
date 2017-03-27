@@ -1,0 +1,4 @@
+type=command
+dependencies=appRecommendInstallInfo,appRecommendOpenInfo,appRecommendViewInfo,appRecommendUpgradeInfo
+command=echo "merger_app_recommend is end ..."
+
