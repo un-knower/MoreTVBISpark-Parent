@@ -25,4 +25,9 @@ trait LogConfig {
   val MEDUSA_EVENT_START_PLAY="startplay"
   val MORETV_EVENT_START_PLAY="playview"
 
+  /**
+    * 频道类型 */
+  val CHANNEL_MOVIE="movie"
+
+
 }

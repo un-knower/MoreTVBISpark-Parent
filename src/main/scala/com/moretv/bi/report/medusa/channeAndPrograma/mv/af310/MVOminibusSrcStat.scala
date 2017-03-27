@@ -211,8 +211,6 @@ object MVOminibusSrcStat extends BaseClass {
       .filter("omnibusSid != videoSid")
       .select("pathMain", "omnibusSid", "userId", "duration", "event")
     df
-
-    df
   }
 
   def getSidFromPath(path: String) = {
