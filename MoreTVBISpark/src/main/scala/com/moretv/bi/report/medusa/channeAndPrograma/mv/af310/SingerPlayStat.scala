@@ -5,6 +5,7 @@ import java.util.Calendar
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
 import com.moretv.bi.report.medusa.functionalStatistic.searchInfo.SearchEntranceResultStat._
+import com.moretv.bi.report.medusa.util.udf.Path2Position
 import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.sql.functions._
@@ -40,7 +41,7 @@ object SingerPlayStat extends BaseClass {
   private val tableName = ""
 
   private val fields = Array(
-    "day",
+    "date",
     "content_type",
     "sid_type",
     "sid",
@@ -73,9 +74,9 @@ object SingerPlayStat extends BaseClass {
         cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))
 
 
-        val entranceFromUdf = udf[Seq[String], String, String, Boolean](entranceFrom)
+        val entranceFromUdf = udf[Seq[String], String, String, Boolean](Path2Position.entranceFrom)
 
-        val isRecommendedUdf = udf[Boolean, String](isRecommended)
+        val isRecommendedUdf = udf[Boolean, String](Path2Position.isRecommended)
 
 
         // load Dim here
@@ -102,44 +103,58 @@ object SingerPlayStat extends BaseClass {
           cal.add(Calendar.DAY_OF_YEAR, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
+          try {
 
-          // load Fact here
+            // load Fact here
 
-          val df = DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MEDUSA, LogTypes.PLAY, loadDate)
+            val df = DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MEDUSA, LogTypes.PLAY, loadDate)
 
-            .filter($"date" === sqlDate && $"contentType" === contentType)
-            .withColumn("entrance_code",
-              explode(
-                entranceFromUdf($"contentType", explode(split($"pathMain", "-")), isRecommendedUdf($"recommendType"))
+              .filter($"date" === sqlDate && $"contentType" === contentType && $"event" === "startplay")
+              .withColumn("pagePath", explode(split($"pathMain", "-")))
+              .withColumn("entrance_code",
+                explode(
+                  entranceFromUdf($"contentType", $"pagePath", isRecommendedUdf($"recommendType"))
+                )
               )
-            )
-            .withColumnRenamed("singerSid", "sid")
+              .withColumnRenamed("singerSid", "sid")
 
-            .filter($"sid".isNotNull)
+              .filter($"sid".isNotNull)
 
-            .withColumn("sid_type", lit("singer"))
-            .withColumnRenamed("contentType", "content_type")
-
+              .withColumn("sid_type", lit("singer"))
+              .withColumnRenamed("contentType", "content_type")
 
 
-          // top sid selected
-          val sidWithTotalStatDf =
 
-            df.groupBy($"sid")
-              .agg(count($"userId").as("total_vv"), countDistinct($"userId").as("total_uv"))
-              .orderBy($"vv".desc)
-              .limit(topNum)
+            // top sid selected
+            val sidWithTotalStatDf =
+
+              df.groupBy($"date", $"sid")
+                .agg(count($"userId").as("total_vv"), countDistinct($"userId").as("total_uv"))
+                .orderBy($"total_vv".desc)
+                .limit(topNum)
 
 
-          //selected sids are distributed over different entrance
 
-          df.join(sidWithTotalStatDf, $"sid")
-            .groupBy($"entrance_code", $"sid")
-            .agg(count($"userId").as("entrance_vv"), countDistinct($"userId").as("entrance_uv"))
-            .join(sidDim, "sid" :: "contentType" :: Nil)
-            .join(positionDim, "entrance_code" :: Nil, "left_outer")
-            .select(fields.map(col(_)): _*)
-            .show(100,false)
+
+            //selected sids are distributed over different entrance
+            // join with two dim tables
+
+            df.join(sidWithTotalStatDf, "date" :: "sid" :: Nil)
+              .groupBy($"date", $"entrance_code", $"sid", $"total_vv", $"total_uv", $"content_type", $"sid_type")
+              .agg(count($"userId").as("entrance_vv"), countDistinct($"userId").as("entrance_uv"))
+
+              .join(sidDim, "sid" :: Nil, "left_outer")
+              .join(positionDim, "entrance_code" :: Nil, "left_outer")
+
+              .select(fields.map(col(_)): _*)
+              .filter($"entrance_title".isNotNull)
+              .show(100, false)
+
+
+          } catch {
+            case ex: Exception => ex.printStackTrace()
+          }
+
 
         })
 
@@ -153,82 +168,6 @@ object SingerPlayStat extends BaseClass {
 
   }
 
-  /**
-    * In general, page contains many parts ,which means it holds different classifications.
-    *
-    * @param pagePath
-    * @param isRecommended
-    */
-  def entranceFrom(contentType: String, pagePath: String, isRecommended: Boolean): Seq[String] = {
 
-    /**
-      * if the contentType is in the last location of pageLocation :
-      * then this page level is the upstream of this contentType homepage.
-      *
-      * else if the contentType is in the first location of pageLocation :
-      * then this page level is exactly this contentType homepage.
-      *
-      * and if isRecommended is True:
-      * then this entrance is in the recommendation area parts.
-      * else
-      * this entrance is in the contentType site tree.
-      * and this entrance may have its own downstram pages.
-      *
-      */
-
-
-    // home page , exp: home*classification*mv
-
-    if (pagePath.endsWith(contentType)) {
-
-      // get the location before this contentType flag
-
-      val pathLocations = pagePath.split("\\*")
-
-      val upstreamArea = pathLocations(pathLocations.length - 2)
-
-      upstreamArea :: Nil
-
-    }
-
-    // contentType homepage
-
-    else if (pagePath.startsWith(contentType)) {
-
-      val pathLocations = pagePath.split("\\*")
-
-      if (isRecommended) {
-
-        // * *followed by sid , exp: mv*mvRecommendHomePage*34bdwxl7a19v
-
-        pathLocations(1) :: Nil
-
-      }
-      else {
-
-        // * * not followed by sid , exp: mv*function*site_hotsinger
-
-        pathLocations.slice(1, pathLocations.length)
-
-      }
-    }
-
-    else {
-      // first level
-      pagePath.split("\\*")(0) :: Nil
-    }
-
-
-  }
-
-
-  def isRecommended(recommendType: String): Boolean = {
-
-    if (recommendType != null && recommendType != "") {
-      true
-    }
-    else {
-      false
-    }
-  }
 }
+
