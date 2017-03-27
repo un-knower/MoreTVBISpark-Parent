@@ -1,0 +1,5 @@
+type=command
+dependencies=medusa_launchclick_isExist
+mainclass=com.moretv.bi.report.medusa.pageStatistics.LauncherMyTVStatistic
+command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld false
+

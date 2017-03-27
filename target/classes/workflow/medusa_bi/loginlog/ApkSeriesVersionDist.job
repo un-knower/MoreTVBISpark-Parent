@@ -1,0 +1,5 @@
+type=command
+dependencies=loginlogisExist
+mainclass=com.moretv.bi.login.ApkSeriesVersionDist
+command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld} 
+
