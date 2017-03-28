@@ -835,21 +835,16 @@ object PathParser {
     var result: String = null
     if (null != path) {
       if (index_input == 1) {
-        result = getPathMainInfo(path, 1, 3)
+        result = getSplitInfo(path, 2)
         if (result != null) {
-          if (getPathMainInfo(path, 1, 2) == UDFConstant.MedusaLive || !UDFConstant.MedusaLauncherAccessLocation
-            .contains(result)) {
-            result = ""
-          }
-        } else {
-          // 处理launcher的搜索和设置的点击事件
-          if (getPathMainInfo(path, 2, 1) == "search") {
-            result = "search"
-          } else if (getPathMainInfo(path, 2, 1) == "setting") {
-            result = "setting"
-          }
-          if (null == result) {
-            result = ""
+          // 如果accessArea为“navi”和“classification”，则保持不变，即在launcherAccessLocation中
+          if (!UDFConstant.MoretvLauncherAccessLocation.contains(result)) {
+            // 如果不在launcherAccessLocation中，则判断accessArea是否在uppart中
+            if (UDFConstant.MoretvLauncherUPPART.contains(result)) {
+              result = "MoretvLauncherUPPART"
+            } else {
+              result = null
+            }
           }
         }
       }
