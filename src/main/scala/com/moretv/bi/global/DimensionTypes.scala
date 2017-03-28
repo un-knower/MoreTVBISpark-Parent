@@ -11,6 +11,7 @@ object DimensionTypes {
   val DIM_MEDUSA_PROGRAM = "dim_medusa_program"
   val DIM_MEDUSA_FIX_ENTRANCE_INFO = "dim_medusa_fix_entrance_info"
   val DIM_MEDUSA_MV_TOPIC = "dim_medusa_mv_topic"
+  val DIM_MEDUSA_PRODUCT_MODEL = "dim_medusa_product_model"
 
 
 }

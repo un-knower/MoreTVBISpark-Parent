@@ -10,6 +10,7 @@ import org.json.JSONObject
  * Created by Will on 2015/7/16.
  * The utility of log str process.
  */
+@deprecated
 object LogUtils {
 
   val regexIpA = "\"(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})".r
