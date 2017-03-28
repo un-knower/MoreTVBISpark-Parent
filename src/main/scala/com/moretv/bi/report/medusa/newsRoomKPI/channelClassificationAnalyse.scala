@@ -118,7 +118,7 @@ object channelClassificationAnalyse extends BaseClass {
               s"""
                  |select a.userId,
                  |       a.videoSid,
-                 |       a.path,
+                 |       a.pathMain,
                  |       a.event,
                  |       a.main_category,
                  |       b.second_category,
