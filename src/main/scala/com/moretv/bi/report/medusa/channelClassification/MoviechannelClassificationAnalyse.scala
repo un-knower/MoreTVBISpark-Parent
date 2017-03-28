@@ -1,14 +1,13 @@
-package com.moretv.bi.report.medusa.newsRoomKPI
+package com.moretv.bi.report.medusa.channelClassification
 
 import java.lang.{Double => JDouble, Long => JLong}
 import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
 import cn.whaley.sdk.parse.ReadConfig
-import com.moretv.bi.etl.MvDimensionClassificationETL
-import com.moretv.bi.global.{DataBases, DimensionTypes, LogTypes}
+import com.moretv.bi.global.{DataBases, LogTypes}
 import com.moretv.bi.report.medusa.util.FilesInHDFS
-import com.moretv.bi.report.medusa.util.udf.{UDFConstantDimension, PathParser}
+import com.moretv.bi.report.medusa.util.udf.PathParser
 import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.sql.{DataFrame, SQLContext}
@@ -31,7 +30,7 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
   * 使用的事实表：
   * 解析出列表页维度  一级入口，二级入口
   * 使用的维度表：
-  * 站点树维度表           dim_medusa_source_site [关联此表做过滤]
+  * 节目维度表           dim_medusa_source_site [关联此表做过滤]
 
   * 使用的分析字段（从事实表获得）:
   * userId           度量值
@@ -39,7 +38,7 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
   * pathMain         解析出一级入口，二级入口  维度值
   *
   */
-object channelClassificationAnalyse extends BaseClass {
+object MoviechannelClassificationAnalyse extends BaseClass {
   private val tableName = "medusa_channel_eachtab_play_movie_info"
   private val fields = "day,channelname,tabname,play_user,play_num"
   private val sqlInsert = s"insert into $tableName($fields) values(?,?,?,?,?)"
@@ -60,16 +59,6 @@ object channelClassificationAnalyse extends BaseClass {
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         sqlContext.udf.register("getListCategoryMedusa", PathParser.getListCategoryMedusaETL _)
         sqlContext.udf.register("getListCategoryMoretv", PathParser.getListCategoryMoretvETL _)
-        //引入维度表
-        val dimension_source_site_input_dir =DataIO.getDataFrameOps.getDimensionPath(MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SOURCE_SITE)
-        val dimensionSourceSiteFlag = FilesInHDFS.IsInputGenerateSuccess(dimension_source_site_input_dir)
-        println(s"--------------------dimensionSourceSiteFlag is ${dimensionSourceSiteFlag}")
-        if (dimensionSourceSiteFlag) {
-          DataIO.getDataFrameOps.getDimensionDF(sqlContext, p.paramMap,MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SOURCE_SITE).registerTempTable(DimensionTypes.DIM_MEDUSA_SOURCE_SITE)
-        }else{
-          throw new RuntimeException(s"--------------------dimension not exist")
-        }
-
         val startDate = p.startDate
         val cal = Calendar.getInstance
         cal.setTime(DateFormatUtils.readFormat.parse(startDate))
@@ -82,7 +71,6 @@ object channelClassificationAnalyse extends BaseClass {
           /** 最终此逻辑会合并进入事实表的ETL过程-start */
           /** 事实表数据处理步骤
             * 1.过滤单个用户播放单个视频量过大的情况
-            * 2.关联站点树维度表过滤掉乱码的一级入口，二级入口
             */
           val medusa_input_dir = DataIO.getDataFrameOps.getPath(MEDUSA, LogTypes.PLAY, date)
           val moretv_input_dir = DataIO.getDataFrameOps.getPath(MORETV, LogTypes.PLAYVIEW, date)
@@ -97,8 +85,7 @@ object channelClassificationAnalyse extends BaseClass {
             moretv_table_df.registerTempTable("moretv_table")
 
             /**
-              * step1 解析出列表页维度，一级入口，二级入口 */
-            /** 3.x 使用站点树维度表对3.x的二级入口进行过滤，防止日志里脏数据*/
+              * step1 解析出列表页维度  一级入口，二级入口 */
             sqlStr =
               s"""
                  |select userId,
@@ -106,33 +93,14 @@ object channelClassificationAnalyse extends BaseClass {
                  |       pathMain,
                  |       event,
                  |       getListCategoryMedusa(pathMain,1) as main_category,
-                 |       getListCategoryMedusa(pathMain,2) as second_category,
+                 |       getListCategoryMedusa(pathMain,2) as sub_category,
                  |       '$MEDUSA'   as flag
                  |from medusa_table
-                     """.stripMargin
-            println("--------------------" + sqlStr)
-            val medusa_table_step2_df=sqlContext.sql(sqlStr)
-            medusa_table_step2_df.cache()
-            medusa_table_step2_df.registerTempTable("medusa_table_step2")
-            sqlStr =
-              s"""
-                 |select a.userId,
-                 |       a.videoSid,
-                 |       a.pathMain,
-                 |       a.event,
-                 |       a.main_category,
-                 |       b.second_category,
-                 |       a.flag
-                 |from medusa_table_step2                       a
-                 |join
-                 |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}  b
-                 |    on a.main_category=b.site_content_type and a.second_category=b.second_category
                      """.stripMargin
             println("--------------------" + sqlStr)
             val medusa_table_rdd = sqlContext.sql(sqlStr).toJSON
             medusa_table_rdd.cache()
 
-            /** 2.x 使用站点树维度表对2.x的二级入口进行过滤，英文转中文*/
             sqlStr =
               s"""
                  |select userId,
@@ -140,33 +108,12 @@ object channelClassificationAnalyse extends BaseClass {
                  |       path,
                  |       event,
                  |       getListCategoryMoretv(path,1)  as main_category,
-                 |       getListCategoryMoretv(path,2)  as second_category,
+                 |       getListCategoryMoretv(path,2)  as sub_category,
                  |       '$MORETV'   as flag
                  |from moretv_table
                      """.stripMargin
-            println("--------------------" + sqlStr)
-            val moretv_table_step2_df=sqlContext.sql(sqlStr)
-            moretv_table_step2_df.cache()
-            moretv_table_step2_df.registerTempTable("moretv_table_step2")
-            sqlStr =
-              s"""
-                 |select a.userId,
-                 |       a.videoSid,
-                 |       a.path,
-                 |       a.event,
-                 |       a.main_category,
-                 |       b.second_category,
-                 |       a.flag
-                 |from moretv_table_step2                       a
-                 |join
-                 |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}  b
-                 |    on a.main_category=b.site_content_type and a.second_category=b.second_category_code
-                     """.stripMargin
-            println("--------------------" + sqlStr)
             val moretv_table_rdd = sqlContext.sql(sqlStr).toJSON
             moretv_table_rdd.cache()
-
-            //scheme merge
             val mergerRDD = medusa_table_rdd.union(moretv_table_rdd)
             mergerRDD.cache()
             val step1_table_df = sqlContext.read.json(mergerRDD)
@@ -190,7 +137,7 @@ object channelClassificationAnalyse extends BaseClass {
                  |select a.userId,
                  |       a.event,
                  |       a.main_category,
-                 |       a.second_category
+                 |       a.sub_category
                  |from step1_table           a
                  |     left join
                  |     step2_table_filter    b
@@ -207,16 +154,16 @@ object channelClassificationAnalyse extends BaseClass {
           }
           /** 最终此逻辑会合并进入事实表的ETL过程-end */
 
-          /** 进入分析代码，以后分析脚本编写、HUE查询、kylin查询只需要编写如下sql */
+          /** 进入分析代码 */
           sqlStr =
             s"""
-               |select  second_category           as tabname,
-               |        count(distinct userId)    as playUser,
-               |        count(userId)             as playNum
+               |select  sub_category            as tabname,
+               |        count(userId)             as playNum,
+               |        count(distinct userId)    as playUser
                |from $analyse_source_data_df_name
                |where event in ('$MEDUSA_EVENT_START_PLAY','$MORETV_EVENT_START_PLAY') and
                |      main_category='$CHANNEL_MOVIE'
-               |group by second_category
+               |group by sub_category
                    """.stripMargin
           println("--------------------" + sqlStr)
           val mysql_result_df = sqlContext.sql(sqlStr)
@@ -226,7 +173,7 @@ object channelClassificationAnalyse extends BaseClass {
           }
           //day,channelname,tabname,play_user,play_num
           mysql_result_df.collect.foreach(row => {
-            util.insert(sqlInsert, sqlDate, CHANNEL_MOVIE,row.getString(0) ,new JLong(row.getLong(1)), new JLong(row.getLong(2)))
+            util.insert(sqlInsert, sqlDate, row.getString(0), row.getString(1), row.getString(2),new JLong(row.getLong(3)), new JLong(row.getLong(4)))
           })
         })
       }

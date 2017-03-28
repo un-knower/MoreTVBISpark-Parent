@@ -592,10 +592,10 @@ object PathParser {
     *         Example:
     *
     *         {{{
-    *            sqlContext.sql("
-    *            select pathSpecial,subjectName,subjectCode
-    *            from log_data
-    *            where flag='medusa' and pathSpecial is not null and size(split(pathSpecial,'-'))=2").show(100,false)
+    *                     sqlContext.sql("
+    *                     select pathSpecial,subjectName,subjectCode
+    *                     from log_data
+    *                     where flag='medusa' and pathSpecial is not null and size(split(pathSpecial,'-'))=2").show(100,false)
     *         }}}
 
     **/
@@ -701,7 +701,6 @@ object PathParser {
   }
 
 
-
   //medusa 列表页入口  少儿 正则表达式
   private val regex_medusa_list_category_kids = ("home\\*(classification|my_tv)\\*kids-kids_home-([0-9A-Za-z_-]+)\\*([a-zA-Z0-9-\\u4e00-\\u9fa5]+)").r
   private val regex_medusa_list_category_kids2 = ("(kids_home)-([0-9A-Za-z_]+)\\*([·a-zA-Z0-9-\\u4e00-\\u9fa5]+)").r
@@ -725,6 +724,7 @@ object PathParser {
   private val regex_moretv_filter = (".*multi_search-(hot|new|score)-([\\S]+?)-([\\S]+?)-(all|qita|[0-9]+[-0-9]*)").r
   //private val regex_moretv_filter = (".*multi_search-(hot|new|score)-([\\S]+?)-([\\S]+?)-(.*)").r
   private val regex_medusa_filter = (".*retrieval\\*(hot|new|score)\\*([\\S]+?)\\*([\\S]+?)\\*(all|qita|[0-9]+[\\*0-9]*)").r
+
   /*获取列表页入口信息
    第一步，过滤掉包含search字段的pathMain
    第二步，判别是来自classification还是来自my_tv
@@ -831,59 +831,47 @@ object PathParser {
     result
   }
 
-  private val number_regex = ("^\\d+$").r
   def getListCategoryMoretvETL(path: String, index_input: Int): String = {
     var result: String = null
-    if (index_input == 1) {
-      result = getPathMainInfo(path, 1, 3)
-      if (result != null) {
-        //check if result is number,if result is number:launcher_position_index else launcher_position
-        //home*recommendation*1
-        number_regex findFirstMatchIn result match {
-          case Some(p) => result = ""
-          case None =>
+    if (null != path) {
+      if (index_input == 1) {
+        result = getSplitInfo(path, 2)
+        if (result != null) {
+          // 如果accessArea为“navi”和“classification”，则保持不变，即在launcherAccessLocation中
+          if (!UDFConstant.MoretvLauncherAccessLocation.contains(result)) {
+            // 如果不在launcherAccessLocation中，则判断accessArea是否在uppart中
+            if (UDFConstant.MoretvLauncherUPPART.contains(result)) {
+              result = "MoretvLauncherUPPART"
+            } else {
+              result = null
+            }
+          }
         }
-
-        if (getPathMainInfo(path, 1, 2) == UDFConstant.MedusaLive || !UDFConstant.MedusaLauncherAccessLocation
-          .contains(result)) {
-          result = ""
+      }
+      else if (index_input == 2) {
+        result = getSplitInfo(path, 3)
+        if (result != null) {
+          if (getSplitInfo(path, 2) == "search") {
+            result = ""
+          }
+          if (getSplitInfo(path, 2) == "kids_home" || getSplitInfo(path, 2) == "sports") {
+            result = getSplitInfo(path, 3) + "-" + getSplitInfo(path, 4)
+          }
         }
-      } else {
-        // 处理launcher的搜索和设置的点击事件
-        if (getPathMainInfo(path, 2, 1) == "search") {
-          result = "search"
-        } else if (getPathMainInfo(path, 2, 1) == "setting") {
-          result = "setting"
+        // 将English转为Chinese
+        if (UDFConstant.MoretvPageInfo.contains(getSplitInfo(path, 2))) {
+          val page = getSplitInfo(path, 2)
+          if (UDFConstant.MoretvPageDetailInfo.contains(result)) {
+            result = transformEng2Chinese(page, result)
+          }
         }
         if (null == result) {
           result = ""
         }
       }
     }
-    else if (index_input == 2) {
-      result = getSplitInfo(path, 3)
-      if (result != null) {
-        if (getSplitInfo(path, 2) == "search") {
-          result = ""
-        }
-        if (getSplitInfo(path, 2) == "kids_home" || getSplitInfo(path, 2) == "sports") {
-          result = getSplitInfo(path, 3) + "-" + getSplitInfo(path, 4)
-        }
-      }
-      // 将English转为Chinese
-      if (UDFConstant.MoretvPageInfo.contains(getSplitInfo(path, 2))) {
-        val page = getSplitInfo(path, 2)
-        if (UDFConstant.MoretvPageDetailInfo.contains(result)) {
-          result = transformEng2Chinese(page, result)
-        }
-      }
-      if (null == result) {
-        result = ""
-      }
-    }
     result
   }
-
 
 
   def main(args: Array[String]) {

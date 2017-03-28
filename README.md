@@ -56,5 +56,7 @@ mysql -hbigdata-extsvr-db_bi1 -ubi -Dmedusa -pmlw321@moretv
 mysql -hbigdata-appsvr-130-1 -ubi -Dmedusa -pmlw321@moretv
 
 ### 本地jar包上传服务器
-1. cp /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/MoreTVBISpark-1.0.0.jar ~/Documents/MoreTVBISpark-1.0.0-michael.jar
-2. md5 /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/MoreTVBISpark-1.0.0.jar
+1. 
+cp /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/MoreTVBISpark-1.0.0.jar ~/Documents/MoreTVBISpark-1.0.0-michael.jar
+2. 
+md5 /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/MoreTVBISpark-1.0.0.jar
