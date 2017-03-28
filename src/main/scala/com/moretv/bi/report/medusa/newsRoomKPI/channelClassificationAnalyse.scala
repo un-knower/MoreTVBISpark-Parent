@@ -114,6 +114,7 @@ object channelClassificationAnalyse extends BaseClass {
             val medusa_table_step2_df=sqlContext.sql(sqlStr)
             medusa_table_step2_df.cache()
             medusa_table_step2_df.registerTempTable("medusa_table_step2")
+            writeToHDFSForCheck(date, "medusa_table_step2_df", medusa_table_step2_df, p.deleteOld)
             sqlStr =
               s"""
                  |select a.userId,
@@ -148,6 +149,7 @@ object channelClassificationAnalyse extends BaseClass {
             val moretv_table_step2_df=sqlContext.sql(sqlStr)
             moretv_table_step2_df.cache()
             moretv_table_step2_df.registerTempTable("moretv_table_step2")
+            writeToHDFSForCheck(date, "moretv_table_step2_df", moretv_table_step2_df, p.deleteOld)
             sqlStr =
               s"""
                  |select a.userId,

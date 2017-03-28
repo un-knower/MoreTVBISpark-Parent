@@ -860,13 +860,9 @@ object PathParser {
         }
         // 将English转为Chinese
         if (UDFConstant.MoretvPageInfo.contains(getSplitInfo(path, 2))) {
-          val page = getSplitInfo(path, 2)
-          if (UDFConstant.MoretvPageDetailInfo.contains(result)) {
-            result = transformEng2Chinese(page, result)
+          if (!UDFConstant.MoretvPageDetailInfo.contains(result)) {
+            result =null
           }
-        }
-        if (null == result) {
-          result = ""
         }
       }
     }
@@ -877,9 +873,9 @@ object PathParser {
   def main(args: Array[String]) {
     //val pathSpecial="subject-儿歌一周热播榜"
     //val pathSpecial="subject-六一儿歌行-kid8"
-    val pathSpecial = "subject-往事岂能如烟-julu33"
-    println(getSubjectCodeByPathETL(pathSpecial, "medusa"))
-    println(getSubjectNameByPathETL(pathSpecial))
+    val path = "subject-往事岂能如烟-julu33"
+    println(PathParser.getListCategoryMoretvETL(path, 1))
+    println(PathParser.getListCategoryMoretvETL(path, 2))
   }
 }
 
