@@ -721,11 +721,11 @@ object PathParser {
   private val MEDUSA_LIST_PAGE_LEVEL_1_REGEX = UDFConstantDimension.MEDUSA_LIST_Page_LEVEL_1.mkString("|")
   private val MEDUSA_LIST_PAGE_LEVEL_2_REGEX = UDFConstantDimension.MedusaPageDetailInfo.filter(!_.contains("*")).mkString("|")
   private val regex_medusa_list_category_other = (s"home\\*(classification|my_tv)\\*($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)\\*($MEDUSA_LIST_PAGE_LEVEL_2_REGEX)").r
-  private val regex_medusa_list_category_other_short = (s"home\\*live\\*eagle-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)\\*($MEDUSA_LIST_PAGE_LEVEL_2_REGEX)").r
-  private val regex_medusa_list_retrieval = (s"home\\*(classification|my_tv|live\\*eagle)\\*($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-${UDFConstantDimension.RETRIEVAL_DIMENSION}.*").r
-  private val regex_medusa_list_retrieval_short = (s"($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-${UDFConstantDimension.RETRIEVAL_DIMENSION}.*").r
-  private val regex_medusa_list_search = (s"home\\*(classification|my_tv)\\*($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-${UDFConstantDimension.SEARCH_DIMENSION}.*").r
-  private val regex_medusa_list_search_short = (s"($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-${UDFConstantDimension.SEARCH_DIMENSION}.*").r
+  private val regex_medusa_list_category_other_short = (s"($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)\\*($MEDUSA_LIST_PAGE_LEVEL_2_REGEX)").r
+  private val regex_medusa_list_retrieval = (s"home\\*(classification|my_tv|live\\*eagle)\\*($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)[-*]?(${UDFConstantDimension.RETRIEVAL_DIMENSION}|${UDFConstantDimension.RETRIEVAL_DIMENSION_CHINESE}).*").r
+  private val regex_medusa_list_retrieval_short = (s"($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)[-*]?(${UDFConstantDimension.RETRIEVAL_DIMENSION}|${UDFConstantDimension.RETRIEVAL_DIMENSION_CHINESE}).*").r
+  private val regex_medusa_list_search = (s"home\\*(classification|my_tv)\\*($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)[-*]?(${UDFConstantDimension.SEARCH_DIMENSION}|${UDFConstantDimension.SEARCH_DIMENSION_CHINESE}).*").r
+  private val regex_medusa_list_search_short = (s"($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)[-*]?(${UDFConstantDimension.SEARCH_DIMENSION}|${UDFConstantDimension.SEARCH_DIMENSION_CHINESE}).*").r
   private val regex_moretv_filter = (".*multi_search-(hot|new|score)-([\\S]+?)-([\\S]+?)-(all|qita|[0-9]+[-0-9]*)").r
   //private val regex_moretv_filter = (".*multi_search-(hot|new|score)-([\\S]+?)-([\\S]+?)-(.*)").r
   private val regex_medusa_filter = (".*retrieval\\*(hot|new|score)\\*([\\S]+?)\\*([\\S]+?)\\*(all|qita|[0-9]+[\\*0-9]*)").r
@@ -749,7 +749,10 @@ object PathParser {
       || pathMain.contains(UDFConstantDimension.HOME_LIVE_EAGLE)
       || pathMain.contains(UDFConstantDimension.KIDS_HOME)
       /**为了统计频道分类入口的 搜索 和 筛选 维度，添加*/
-      ||pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)||pathMain.contains(UDFConstantDimension.SEARCH_DIMENSION)
+      ||pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)
+      ||pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION_CHINESE)
+      ||pathMain.contains(UDFConstantDimension.SEARCH_DIMENSION)
+      ||pathMain.contains(UDFConstantDimension.SEARCH_DIMENSION_CHINESE)
     ) {
       /*少儿
       home*classification*kids-kids_home-kids_anim*动画专题    拆分出   kids_anim，动画专题
@@ -829,8 +832,10 @@ object PathParser {
         * home*my_tv*tv-tv-retrieval*hot*xiju*neidi*2000*2009
         * movie-retrieval*hot*xiju*gangtai*all
         * home*live*eagle-movie-retrieval*hot*kehuan*meiguo*all
+        *  home*classification*movie-movie*筛选
+        *  home*my_tv*movie-movie*筛选
         * */
-      else if (pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)){
+      else if (pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)||pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION_CHINESE)){
         regex_medusa_list_retrieval findFirstMatchIn pathMain match{
           case Some(p) => {
             if (index_input == 1) {
@@ -861,8 +866,10 @@ object PathParser {
         * home*classification*tv-tv-search*SHALA
         * home*my_tv*tv-tv-search*DQD
         * tv-search*SHALA
+        * home*my_tv*movie-movie*搜索
+        * home*classification*movie-movie*搜索
         * */
-      else if (pathMain.contains(UDFConstantDimension.SEARCH_DIMENSION)){
+      else if (pathMain.contains(UDFConstantDimension.SEARCH_DIMENSION)||pathMain.contains(UDFConstantDimension.SEARCH_DIMENSION_CHINESE)){
         regex_medusa_list_search findFirstMatchIn pathMain match{
           case Some(p) => {
             if (index_input == 1) {
@@ -908,8 +915,9 @@ object PathParser {
         }
         /**
           * home*live*eagle-movie*系列电影
+          * pathMain='movie*院线大片' 在线上统计逻辑忽略，在数仓正则里也忽略
           * */
-        regex_medusa_list_category_other_short findFirstMatchIn pathMain match {
+         regex_medusa_list_category_other_short findFirstMatchIn pathMain match {
           case Some(p) => {
             if (index_input == 1) {
               result = p.group(1)
@@ -964,11 +972,17 @@ object PathParser {
   }
 
 
+
   def main(args: Array[String]) {
     //val pathMain = "home*live*eagle-movie-retrieval*hot*kehuan*meiguo*all"
-    //val pathMain = "home-movie-search*SHENDENG"
+    //val pathMain = "home*my_tv*movie-movie*筛选"
+    val pathMain = "home*my_tv*movie-movie*搜索"
+    //val pathMain = "home*classification*movie-movie*搜索"
+    //val pathMain = "home*classification*movie-movie*筛选"
     //val pathMain = "movie-retrieval*hot*xiju*gangtai*all"
-    val pathMain = "home-movie-retrieval*hot*dongzuo*gangtai*qita"
+    //val pathMain = "home-movie-retrieval*hot*dongzuo*gangtai*qita"
+    //val pathMain = "home*my_tv*movie-movie*搜索"
+    println(pathMain)
     //val pathMain = "home*classification*mv-mv*电台*电台"
     //val pathMain = "home*live*eagle-movie*院线大片"
     println(PathParser.getListCategoryMedusaETL(pathMain, 1))
