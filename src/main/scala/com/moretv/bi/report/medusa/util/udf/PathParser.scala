@@ -825,7 +825,9 @@ object PathParser {
       else if (pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)){
         regex_medusa_list_retrieval findFirstMatchIn pathMain match{
           case Some(p) => {
-            if (index_input == 2) {
+            if (index_input == 1) {
+              result = p.group(3)
+            }else if (index_input == 2) {
               result=UDFConstantDimension.RETRIEVAL_DIMENSION_CHINESE
             }
           }
@@ -841,7 +843,9 @@ object PathParser {
       else if (pathMain.contains(UDFConstantDimension.SEARCH_DIMENSION)){
         regex_medusa_list_search findFirstMatchIn pathMain match{
           case Some(p) => {
-            if (index_input == 2) {
+            if (index_input == 1) {
+              result = p.group(3)
+            }else if (index_input == 2) {
               result=UDFConstantDimension.SEARCH_DIMENSION_CHINESE
             }
           }
