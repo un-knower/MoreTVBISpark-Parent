@@ -61,9 +61,11 @@ object UDFConstantDimension {
   //用来获取列表页使用
   val HOME_CLASSIFICATION = "home*classification"
   val HOME_MY_TV = "home*my_tv"
+  //小鹰直播
+  val HOME_LIVE_EAGLE = "home*live*eagle"
   val KIDS_HOME = "kids_home-"
 
-  val MEDUSA_LIST_Page_LEVEL_1 = Array("movie","tv","zongyi","jilu","comic","xiqu","collect","accountcenter_home","account")
+  val MEDUSA_LIST_Page_LEVEL_1 = Array("movie","tv","zongyi","jilu","comic","xiqu","collect","accountcenter_home","account","hot")
   // MEDUSA_LIST_Page_LEVEL_2 use MedusaPageDetailInfo , not need mv kids and sport in MEDUSA_LIST_Page_LEVEL_1
 
 
