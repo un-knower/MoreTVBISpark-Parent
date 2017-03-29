@@ -976,17 +976,26 @@ object PathParser {
   def main(args: Array[String]) {
     //val pathMain = "home*live*eagle-movie-retrieval*hot*kehuan*meiguo*all"
     //val pathMain = "home*my_tv*movie-movie*筛选"
-    val pathMain = "home*my_tv*movie-movie*搜索"
+    val pathMain = "kandonghua*ab-kandonghua*ab-kandonghua*ab1"
+    val qqq = (s".*-(.*)\\*(.*)").r
+    qqq findFirstMatchIn pathMain match {
+      case Some(p) => {
+        println(p.group(1))
+        println(p.group(2))
+      }
+      case None =>
+    }
+    //val pathMain = "home*my_tv*movie-movie*搜索"
     //val pathMain = "home*classification*movie-movie*搜索"
     //val pathMain = "home*classification*movie-movie*筛选"
     //val pathMain = "movie-retrieval*hot*xiju*gangtai*all"
     //val pathMain = "home-movie-retrieval*hot*dongzuo*gangtai*qita"
     //val pathMain = "home*my_tv*movie-movie*搜索"
-    println(pathMain)
+    //println(pathMain)
     //val pathMain = "home*classification*mv-mv*电台*电台"
     //val pathMain = "home*live*eagle-movie*院线大片"
-    println(PathParser.getListCategoryMedusaETL(pathMain, 1))
-    println(PathParser.getListCategoryMedusaETL(pathMain, 2))
+    //println(PathParser.getListCategoryMedusaETL(pathMain, 1))
+    //println(PathParser.getListCategoryMedusaETL(pathMain, 2))
    }
 }
 
