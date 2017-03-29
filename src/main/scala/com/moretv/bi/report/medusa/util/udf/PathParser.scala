@@ -841,6 +841,9 @@ object PathParser {
           }
           case None =>
         }
+        /** home-movie-retrieval*hot*dongzuo*gangtai*qita
+          * movie-retrieval*hot*dongzuo*gangtai*qita
+          * */
         regex_medusa_list_retrieval_short findFirstMatchIn pathMain match{
           case Some(p) => {
             if (index_input == 1) {
@@ -870,7 +873,10 @@ object PathParser {
           }
           case None =>
         }
-
+         /**
+           * home-movie-search*SHENDENG
+           * movie-search*SHENDENG
+           * */
         regex_medusa_list_search_short findFirstMatchIn pathMain match{
           case Some(p) => {
             if (index_input == 1) {
@@ -960,7 +966,10 @@ object PathParser {
 
   def main(args: Array[String]) {
     //val pathMain = "home*live*eagle-movie-retrieval*hot*kehuan*meiguo*all"
-    val pathMain = "home*classification*mv-mv*电台*电台"
+    //val pathMain = "home-movie-search*SHENDENG"
+    //val pathMain = "movie-retrieval*hot*xiju*gangtai*all"
+    val pathMain = "home-movie-retrieval*hot*dongzuo*gangtai*qita"
+    //val pathMain = "home*classification*mv-mv*电台*电台"
     //val pathMain = "home*live*eagle-movie*院线大片"
     println(PathParser.getListCategoryMedusaETL(pathMain, 1))
     println(PathParser.getListCategoryMedusaETL(pathMain, 2))
