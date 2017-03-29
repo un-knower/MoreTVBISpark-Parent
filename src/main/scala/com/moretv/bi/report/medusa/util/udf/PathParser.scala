@@ -721,6 +721,8 @@ object PathParser {
   private val MEDUSA_LIST_PAGE_LEVEL_1_REGEX = UDFConstantDimension.MEDUSA_LIST_Page_LEVEL_1.mkString("|")
   private val MEDUSA_LIST_PAGE_LEVEL_2_REGEX = UDFConstantDimension.MedusaPageDetailInfo.filter(!_.contains("*")).mkString("|")
   private val regex_medusa_list_category_other = (s"home\\*(classification|my_tv)\\*($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)\\*($MEDUSA_LIST_PAGE_LEVEL_2_REGEX)").r
+  private val regex_medusa_list_retrieval = (s"home\\*(classification|my_tv)\\*($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-${UDFConstantDimension.RETRIEVAL_DIMENSION}.*").r
+  private val regex_medusa_list_search = (s"home\\*(classification|my_tv)\\*($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-${UDFConstantDimension.SEARCH_DIMENSION}.*").r
   private val regex_moretv_filter = (".*multi_search-(hot|new|score)-([\\S]+?)-([\\S]+?)-(all|qita|[0-9]+[-0-9]*)").r
   //private val regex_moretv_filter = (".*multi_search-(hot|new|score)-([\\S]+?)-([\\S]+?)-(.*)").r
   private val regex_medusa_filter = (".*retrieval\\*(hot|new|score)\\*([\\S]+?)\\*([\\S]+?)\\*(all|qita|[0-9]+[\\*0-9]*)").r
@@ -734,10 +736,15 @@ object PathParser {
     if (null == pathMain) {
       result = null
     } else if (pathMain.contains(UDFConstantDimension.HORIZONTAL) || pathMain.contains(UDFConstantDimension.MV_RECOMMEND_HOME_PAGE) ||
-      pathMain.contains(UDFConstantDimension.MV_TOP_HOME_PAGE) || pathMain.contains(UDFConstantDimension.HOME_SEARCH) ||
-      pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)) {
+      pathMain.contains(UDFConstantDimension.MV_TOP_HOME_PAGE) || pathMain.contains(UDFConstantDimension.HOME_SEARCH)
+      /**为了统计频道分类入口的 搜索 和 筛选 维度，注释掉*/
+      //||pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)
+    ) {
       result = null
-    } else if (pathMain.contains(UDFConstantDimension.HOME_CLASSIFICATION) || pathMain.contains(UDFConstantDimension.HOME_MY_TV) || pathMain.contains(UDFConstantDimension.KIDS_HOME)) {
+    } else if (pathMain.contains(UDFConstantDimension.HOME_CLASSIFICATION) || pathMain.contains(UDFConstantDimension.HOME_MY_TV) || pathMain.contains(UDFConstantDimension.KIDS_HOME)
+      /**为了统计频道分类入口的 搜索 和 筛选 维度，添加*/
+      ||pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)
+    ) {
       /*少儿
       home*classification*kids-kids_home-kids_anim*动画专题    拆分出   kids_anim，动画专题
       home*classification*kids-kids_home-kandonghua*4-6岁     拆分出    kandonghua，4-6岁
@@ -809,6 +816,38 @@ object PathParser {
           }
         }
       }
+
+      /**
+        * 拆分出筛选维度,为了统计频道分类入口
+        * home*classification*movie-movie-retrieval*hot*xiju*gangtai*all
+        * home*my_tv*tv-tv-retrieval*hot*xiju*neidi*2000*2009
+        * */
+      else if (pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)){
+        regex_medusa_list_retrieval findFirstMatchIn pathMain match{
+          case Some(p) => {
+            if (index_input == 2) {
+              result=UDFConstantDimension.RETRIEVAL_DIMENSION_CHINESE
+            }
+          }
+          case None =>
+        }
+      }
+
+      /**
+        * 拆分出搜索维度，为了统计频道分类入口
+        * home*classification*tv-tv-search*SHALA
+        * home*my_tv*tv-tv-search*DQD
+        * */
+      else if (pathMain.contains(UDFConstantDimension.SEARCH_DIMENSION)){
+        regex_medusa_list_search findFirstMatchIn pathMain match{
+          case Some(p) => {
+            if (index_input == 2) {
+              result=UDFConstantDimension.SEARCH_DIMENSION_CHINESE
+            }
+          }
+          case None =>
+        }
+      }
       /*其他
       home*classification*jilu-jilu*前沿科技
       home*classification*movie-movie*动画电影
@@ -871,11 +910,8 @@ object PathParser {
 
 
   def main(args: Array[String]) {
-    //val pathSpecial="subject-儿歌一周热播榜"
-    //val pathSpecial="subject-六一儿歌行-kid8"
-    val path = "subject-往事岂能如烟-julu33"
-    println(PathParser.getListCategoryMoretvETL(path, 1))
-    println(PathParser.getListCategoryMoretvETL(path, 2))
-  }
+    val pathMain = "home*classification*movie-movie-search*DIRENJIE"
+    println(PathParser.getListCategoryMedusaETL(pathMain, 2))
+   }
 }
 

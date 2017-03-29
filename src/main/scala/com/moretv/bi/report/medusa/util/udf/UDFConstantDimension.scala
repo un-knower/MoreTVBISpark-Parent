@@ -42,11 +42,14 @@ object UDFConstantDimension {
   /*------------------------------------------add by michael start------------------------------------------*/
   // pathMain from medusa
   val RETRIEVAL_DIMENSION = "retrieval"
+  val RETRIEVAL_DIMENSION_CHINESE = "筛选"
 
   //path from moretv
   val MULTI_SEARCH = "multi_search"
 
   val SEARCH_DIMENSION = "search"
+  val SEARCH_DIMENSION_CHINESE = "搜索"
+
   val HOME_SEARCH = "home-search"
 
 
