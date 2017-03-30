@@ -30,6 +30,10 @@ trait LogConfig {
   val CHANNEL_MOVIE="movie"
   val CHANNEL_TV="tv"
   val CHANNEL_HOT="hot"
+  val CHANNEL_VARIETY_PROGRAM="zongyi"
+  val CHANNEL_OPERA="xiqu"
+  val CHANNEL_COMIC="comic"
+  val CHANNEL_RECORD="jilu"
 
 
 }

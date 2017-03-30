@@ -306,6 +306,6 @@ object UDFConstantDimension {
     "kids_anim*动画专题","kids_anim*少儿电影","kids_anim*儿童综艺","kids_anim*0-3岁","kids_anim*最新出炉",
     "kids_anim*4-6岁","kids_anim*7-10岁","kids_anim*英文动画","kids_anim*搞笑","kids_anim*机战","kids_anim*亲子","kids_anim*探险",
     "kids_anim*中文动画","kids_anim*亲子交流","kids_anim*益智启蒙","kids_anim*童话故事","kids_anim*教育课堂","kids_rhymes*随便听听",
-    "kids_rhymes*儿歌明星","kids_rhymes*儿歌热播","kids_rhymes*儿歌专题","kids_rhymes*英文儿歌","kids_rhymes*舞蹈律动","午夜场","抢鲜预告")
+    "kids_rhymes*儿歌明星","kids_rhymes*儿歌热播","kids_rhymes*儿歌专题","kids_rhymes*英文儿歌","kids_rhymes*舞蹈律动","午夜场","抢鲜预告","重磅追剧")
 
 }

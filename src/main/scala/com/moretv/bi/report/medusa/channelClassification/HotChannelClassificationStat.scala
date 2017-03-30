@@ -259,3 +259,19 @@ object HotChannelClassificationStat extends BaseClass {
 
 
 }
+
+/**
+  * 比对逻辑：
+  * 1.首先比对movie频道下的分类个数，
+  * 2.比对各个分类下的数据差异，找差异比较大的记录，然后根据写在HDFS的中间结果进行分析
+  * */
+
+/**遇到的问题
+  * 1.今日焦点 差异较大
+  * 在原有分析中
+  * pathMain                             pageDetailInfoFromPath
+  * home*recommendation*1-hot*今日焦点    |今日焦点
+  *
+  * 在新的逻辑中，home*recommendation*1-hot*今日焦点 ，一级入口和二级入口都为null
+  *
+  * */
