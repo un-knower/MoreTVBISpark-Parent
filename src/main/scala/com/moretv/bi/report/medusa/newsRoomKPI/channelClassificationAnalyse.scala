@@ -1,14 +1,13 @@
 package com.moretv.bi.report.medusa.newsRoomKPI
 
-import java.lang.{Double => JDouble, Long => JLong}
+import java.lang.{Long => JLong}
 import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
 import cn.whaley.sdk.parse.ReadConfig
-import com.moretv.bi.etl.MvDimensionClassificationETL
 import com.moretv.bi.global.{DataBases, DimensionTypes, LogTypes}
 import com.moretv.bi.report.medusa.util.FilesInHDFS
-import com.moretv.bi.report.medusa.util.udf.{UDFConstantDimension, PathParser}
+import com.moretv.bi.report.medusa.util.udf.PathParser
 import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.sql.{DataFrame, SQLContext}
@@ -54,6 +53,7 @@ object channelClassificationAnalyse extends BaseClass {
   private val playNumLimit = 5000
   private val analyse_source_data_df_name = "channel_classification_analyse_source_data_df"
   private val analyse_result_df_name = "channel_classification_analyse_result_df"
+  private val isDebug = false
 
   def main(args: Array[String]) {
     ModuleClass.executor(this, args)
@@ -68,12 +68,12 @@ object channelClassificationAnalyse extends BaseClass {
         sqlContext.udf.register("getListCategoryMedusa", PathParser.getListCategoryMedusaETL _)
         sqlContext.udf.register("getListCategoryMoretv", PathParser.getListCategoryMoretvETL _)
         //引入维度表
-        val dimension_source_site_input_dir =DataIO.getDataFrameOps.getDimensionPath(MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SOURCE_SITE)
+        val dimension_source_site_input_dir = DataIO.getDataFrameOps.getDimensionPath(MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SOURCE_SITE)
         val dimensionSourceSiteFlag = FilesInHDFS.IsInputGenerateSuccess(dimension_source_site_input_dir)
         println(s"--------------------dimensionSourceSiteFlag is ${dimensionSourceSiteFlag}")
         if (dimensionSourceSiteFlag) {
-          DataIO.getDataFrameOps.getDimensionDF(sqlContext, p.paramMap,MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SOURCE_SITE).registerTempTable(DimensionTypes.DIM_MEDUSA_SOURCE_SITE)
-        }else{
+          DataIO.getDataFrameOps.getDimensionDF(sqlContext, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SOURCE_SITE).registerTempTable(DimensionTypes.DIM_MEDUSA_SOURCE_SITE)
+        } else {
           throw new RuntimeException(s"--------------------dimension not exist")
         }
 
@@ -96,16 +96,16 @@ object channelClassificationAnalyse extends BaseClass {
           val medusaFlag = FilesInHDFS.IsInputGenerateSuccess(medusa_input_dir)
           val moretvFlag = FilesInHDFS.IsInputGenerateSuccess(moretv_input_dir)
           if (medusaFlag && moretvFlag) {
-            val medusa_table_df=DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MEDUSA, LogTypes.PLAY, date)
+            val medusa_table_df = DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MEDUSA, LogTypes.PLAY, date)
             medusa_table_df.cache()
             medusa_table_df.registerTempTable("medusa_table")
-            val moretv_table_df=DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MORETV, LogTypes.PLAYVIEW, date)
+            val moretv_table_df = DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MORETV, LogTypes.PLAYVIEW, date)
             medusa_table_df.cache()
             moretv_table_df.registerTempTable("moretv_table")
 
             /**
               * step1 解析出列表页维度，一级入口，二级入口 */
-            /** 3.x 使用站点树维度表对3.x的二级入口进行过滤，防止日志里脏数据*/
+            /** 3.x 使用站点树维度表对3.x的二级入口进行过滤，防止日志里脏数据 */
             sqlStr =
               s"""
                  |select userId,
@@ -118,7 +118,7 @@ object channelClassificationAnalyse extends BaseClass {
                  |from medusa_table
                      """.stripMargin
             println("--------------------" + sqlStr)
-            val medusa_table_step2_df=sqlContext.sql(sqlStr)
+            val medusa_table_step2_df = sqlContext.sql(sqlStr)
             medusa_table_step2_df.cache()
             medusa_table_step2_df.registerTempTable("medusa_table_step2")
             writeToHDFSForCheck(date, "medusa_table_step2_df", medusa_table_step2_df, p.deleteOld)
@@ -140,7 +140,7 @@ object channelClassificationAnalyse extends BaseClass {
             val medusa_table_rdd = sqlContext.sql(sqlStr).toJSON
             medusa_table_rdd.cache()
 
-            /** 2.x 使用站点树维度表对2.x的二级入口进行过滤，英文转中文*/
+            /** 2.x 使用站点树维度表对2.x的二级入口进行过滤，英文转中文 */
             sqlStr =
               s"""
                  |select userId,
@@ -153,7 +153,7 @@ object channelClassificationAnalyse extends BaseClass {
                  |from moretv_table
                      """.stripMargin
             println("--------------------" + sqlStr)
-            val moretv_table_step2_df=sqlContext.sql(sqlStr)
+            val moretv_table_step2_df = sqlContext.sql(sqlStr)
             moretv_table_step2_df.cache()
             moretv_table_step2_df.registerTempTable("moretv_table_step2")
             writeToHDFSForCheck(date, "moretv_table_step2_df", moretv_table_step2_df, p.deleteOld)
@@ -214,6 +214,7 @@ object channelClassificationAnalyse extends BaseClass {
           } else {
             throw new RuntimeException("2.x or 3.x log data is not exist")
           }
+
           /** 最终此逻辑会合并进入事实表的ETL过程-end */
 
           /** 进入分析代码，以后分析脚本编写、HUE查询、kylin查询只需要编写如下sql */
@@ -235,7 +236,7 @@ object channelClassificationAnalyse extends BaseClass {
           }
           //day,channelname,tabname,play_user,play_num
           mysql_result_df.collect.foreach(row => {
-            util.insert(sqlInsert, sqlDate, CHANNEL_MOVIE,row.getString(0) ,new JLong(row.getLong(1)), new JLong(row.getLong(2)))
+            util.insert(sqlInsert, sqlDate, CHANNEL_MOVIE, row.getString(0), new JLong(row.getLong(1)), new JLong(row.getLong(2)))
           })
         })
       }
@@ -246,12 +247,14 @@ object channelClassificationAnalyse extends BaseClass {
 
   //用来写入HDFS，测试数据是否正确
   def writeToHDFSForCheck(date: String, logType: String, df: DataFrame, isDeleteOld: Boolean): Unit = {
-    println(s"--------------------$logType is write done.")
-    val outputPath = DataIO.getDataFrameOps.getPath(MERGER, logType, date)
-    if (isDeleteOld) {
-      HdfsUtil.deleteHDFSFile(outputPath)
+    if (isDebug) {
+      println(s"--------------------$logType is write done.")
+      val outputPath = DataIO.getDataFrameOps.getPath(MERGER, logType, date)
+      if (isDeleteOld) {
+        HdfsUtil.deleteHDFSFile(outputPath)
+      }
+      df.write.parquet(outputPath)
     }
-    df.write.parquet(outputPath)
   }
 
 

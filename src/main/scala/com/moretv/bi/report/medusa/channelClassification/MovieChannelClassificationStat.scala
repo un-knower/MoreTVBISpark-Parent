@@ -27,17 +27,17 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
   * 【各个频道的分析sql是分布在资源调度平台上，需整理到一起，分析共性】
   *
   * 需要做：
-  * 1.解析出列表页维度  一级入口，二级入口
-  * 2.对3.x日志的筛选和搜索入口，需要对日志格式做特殊处理
-  * pathMain like '%movie-search%'     为3.x的搜索入口
-  * pathMain like '%movie-retrieval%'  为3.x的筛选入口
+  *       1.解析出列表页维度  一级入口，二级入口
+  *       2.对3.x日志的筛选和搜索入口，需要对日志格式做特殊处理
+  *         pathMain like '%movie-search%'     为3.x的搜索入口
+  *         pathMain like '%movie-retrieval%'  为3.x的筛选入口
   *
   * 使用事实表：
-  * 2.x playview and 3.x play 原始日志生成分析用playview日志
+  *           2.x playview and 3.x play 原始日志生成分析用playview日志
   * 使用维度表：
-  * 站点树维度表   dim_medusa_source_site [关联此表做过滤]
-  * 2.x 使用second_category_code字段关联，获得二级入口的中文名字，以及过滤脏字段
-  * 3.x 使用second_category字段关联，过滤脏字段
+  *           站点树维度表   dim_medusa_source_site [关联此表做过滤]
+  *           2.x 使用second_category_code字段关联，获得二级入口的中文名字，以及过滤脏字段
+  *           3.x 使用second_category字段关联，过滤脏字段
 
   * 使用的分析字段（从事实表获得）:
   * userId           度量值
