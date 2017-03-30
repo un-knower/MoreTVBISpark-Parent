@@ -259,3 +259,14 @@ object TvChannelClassificationStat extends BaseClass {
 
 
 }
+
+/**
+  * 比对逻辑：
+  * 1.首先比对movie频道下的分类个数，
+  * 2.比对各个分类下的数据差异，找差异比较大的记录，然后根据写在HDFS的中间结果进行分析
+  * */
+
+/**遇到的问题
+  * 1.粤语佳片，科学幻想 ,韩剧热流,dim_medusa_source_site站点数里面没有
+  * 2.重磅追剧 ,MedusaPageDetailInfo没有已经添加
+  * */
