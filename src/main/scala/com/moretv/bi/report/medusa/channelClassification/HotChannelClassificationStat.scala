@@ -271,7 +271,10 @@ object HotChannelClassificationStat extends BaseClass {
   * 在原有分析中
   * pathMain                             pageDetailInfoFromPath
   * home*recommendation*1-hot*今日焦点    |今日焦点
+  * home*recommendation*hot*五花八门      | null     [线上也没有解析这个格式，数仓暂时保持数据一致，也不解析]
   *
   * 在新的逻辑中，home*recommendation*1-hot*今日焦点 ，一级入口和二级入口都为null
+  * 这部分日志是从今日推荐入口【位于分类的上面】里面的位置的最右下角落进入咨询短片频道的
+  * 需要做正则表达解析
   *
   * */

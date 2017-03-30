@@ -730,6 +730,10 @@ object PathParser {
   //private val regex_moretv_filter = (".*multi_search-(hot|new|score)-([\\S]+?)-([\\S]+?)-(.*)").r
   private val regex_medusa_filter = (".*retrieval\\*(hot|new|score)\\*([\\S]+?)\\*([\\S]+?)\\*(all|qita|[0-9]+[\\*0-9]*)").r
 
+  //用于频道分类入口统计，解析出资讯的一级入口、二级入口
+  private val regex_medusa_recommendation  = (s"home\\*recommendation\\*[\\d]{1}-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)\\*(.*)").r
+
+
   /*获取列表页入口信息
    第一步，过滤掉包含search字段的pathMain
    第二步，判别是来自classification还是来自my_tv
@@ -753,6 +757,7 @@ object PathParser {
       ||pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION_CHINESE)
       ||pathMain.contains(UDFConstantDimension.SEARCH_DIMENSION)
       ||pathMain.contains(UDFConstantDimension.SEARCH_DIMENSION_CHINESE)
+      ||pathMain.contains(UDFConstantDimension.HOME_RECOMMENDATION)
     ) {
       /*少儿
       home*classification*kids-kids_home-kids_anim*动画专题    拆分出   kids_anim，动画专题
@@ -895,6 +900,24 @@ object PathParser {
           case None =>
         }
       }
+
+      /**
+        *
+      home*recommendation*1-hot*今日焦点 解析出 hot,今日焦点
+        * */
+      else if (pathMain.contains(UDFConstantDimension.HOME_RECOMMENDATION)){
+        regex_medusa_recommendation findFirstMatchIn pathMain match{
+          case Some(p) => {
+            if (index_input == 1) {
+              result = p.group(1)
+            }else if (index_input == 2) {
+              result = p.group(2)
+            }
+          }
+          case None =>
+        }
+      }
+
       /**其他频道，例如 电影，电视剧
       home*classification*jilu-jilu*前沿科技
       home*classification*movie-movie*动画电影
@@ -976,7 +999,7 @@ object PathParser {
   def main(args: Array[String]) {
     //val pathMain = "home*live*eagle-movie-retrieval*hot*kehuan*meiguo*all"
     //val pathMain = "home*my_tv*movie-movie*筛选"
-    val pathMain = "kandonghua*ab-kandonghua*ab-kandonghua*ab1"
+ /*   val pathMain = "kandonghua*ab-kandonghua*ab-kandonghua*ab1"
     val qqq = (s".*-(.*)\\*(.*)").r
     qqq findFirstMatchIn pathMain match {
       case Some(p) => {
@@ -984,7 +1007,7 @@ object PathParser {
         println(p.group(2))
       }
       case None =>
-    }
+    }*/
     //val pathMain = "home*my_tv*movie-movie*搜索"
     //val pathMain = "home*classification*movie-movie*搜索"
     //val pathMain = "home*classification*movie-movie*筛选"
@@ -994,8 +1017,9 @@ object PathParser {
     //println(pathMain)
     //val pathMain = "home*classification*mv-mv*电台*电台"
     //val pathMain = "home*live*eagle-movie*院线大片"
-    //println(PathParser.getListCategoryMedusaETL(pathMain, 1))
-    //println(PathParser.getListCategoryMedusaETL(pathMain, 2))
+    val pathMain = "home*recommendation*1-hot*今日焦点"
+    println(PathParser.getListCategoryMedusaETL(pathMain, 1))
+    println(PathParser.getListCategoryMedusaETL(pathMain, 2))
    }
 }
 

@@ -63,6 +63,12 @@ object UDFConstantDimension {
   val HOME_MY_TV = "home*my_tv"
   //小鹰直播
   val HOME_LIVE_EAGLE = "home*live*eagle"
+
+  /**用于频道分类入口统计，解析出资讯的一级入口、二级入口
+    * 从今日推荐入口【位于分类的上面】里面的位置的最右下角落进入咨询短片频道的
+  home*recommendation*1-hot*五花八门*/
+  val HOME_RECOMMENDATION = "home*recommendation"
+
   val KIDS_HOME = "kids_home-"
 
   val MEDUSA_LIST_Page_LEVEL_1 = Array("movie","tv","zongyi","jilu","comic","xiqu","collect","accountcenter_home","account","hot")
