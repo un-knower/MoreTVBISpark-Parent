@@ -719,9 +719,12 @@ object PathParser {
   //medusa 列表页入口  其他简单类型 正则表达式
   // home*classification*jilu-jilu*前沿科技
   private val MEDUSA_LIST_PAGE_LEVEL_1_REGEX = UDFConstantDimension.MEDUSA_LIST_Page_LEVEL_1.mkString("|")
-  private val MEDUSA_LIST_PAGE_LEVEL_2_REGEX = UDFConstantDimension.MedusaPageDetailInfo.filter(!_.contains("*")).mkString("|")
-  private val regex_medusa_list_category_other = (s"home\\*(classification|my_tv)\\*($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)\\*($MEDUSA_LIST_PAGE_LEVEL_2_REGEX)").r
-  private val regex_medusa_list_category_other_short = (s"($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)\\*($MEDUSA_LIST_PAGE_LEVEL_2_REGEX)").r
+
+  //需要数组来解析 'home*classification*comic-comic*二次元*电台' 错误格式
+  private val MEDUSA_LIST_PAGE_LEVEL_2_REGEX = UDFConstantDimension.MedusaPageDetailInfoFromSite.filter(!_.contains("*")).mkString("|")
+
+  private val regex_medusa_list_category_other = (s"home\\*(classification|my_tv)\\*($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)\\*([a-zA-Z0-9&\u4e00-\u9fa5]+)").r
+  private val regex_medusa_list_category_other_short = (s"($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)\\*([a-zA-Z0-9&\u4e00-\u9fa5]+)").r
   private val regex_medusa_list_retrieval = (s"home\\*(classification|my_tv|live\\*eagle)\\*($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)[-*]?(${UDFConstantDimension.RETRIEVAL_DIMENSION}|${UDFConstantDimension.RETRIEVAL_DIMENSION_CHINESE}).*").r
   private val regex_medusa_list_retrieval_short = (s"($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)[-*]?(${UDFConstantDimension.RETRIEVAL_DIMENSION}|${UDFConstantDimension.RETRIEVAL_DIMENSION_CHINESE}).*").r
   private val regex_medusa_list_search = (s"home\\*(classification|my_tv)\\*($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)[-*]?(${UDFConstantDimension.SEARCH_DIMENSION}|${UDFConstantDimension.SEARCH_DIMENSION_CHINESE}).*").r
@@ -934,23 +937,22 @@ object PathParser {
               result = p.group(4)
             }
           }
-          case None =>
-        }
-        /**
-          * home*live*eagle-movie*系列电影
-          * pathMain='movie*院线大片' 在线上统计逻辑忽略，在数仓正则里也忽略
-          * */
-         regex_medusa_list_category_other_short findFirstMatchIn pathMain match {
-          case Some(p) => {
-            if (index_input == 1) {
-              result = p.group(1)
-            } else if (index_input == 2) {
-              result = p.group(2)
+          case None =>{
+            /**
+              * pathMain='movie*院线大片' 在线上统计逻辑忽略，在数仓正则里也忽略
+              * */
+            regex_medusa_list_category_other_short findFirstMatchIn pathMain match {
+              case Some(p) => {
+                if (index_input == 1) {
+                  result = p.group(1)
+                } else if (index_input == 2) {
+                  result = p.group(2)
+                }
+              }
+              case None =>
             }
           }
-          case None =>
         }
-
       }
     }
     result
@@ -1017,7 +1019,8 @@ object PathParser {
     //println(pathMain)
     //val pathMain = "home*classification*mv-mv*电台*电台"
     //val pathMain = "home*live*eagle-movie*院线大片"
-    val pathMain = "home*recommendation*1-hot*今日焦点"
+    //println(MEDUSA_LIST_PAGE_LEVEL_2_REGEX)
+    val pathMain = "home*classification*comic-comic*二次元*电台"
     println(PathParser.getListCategoryMedusaETL(pathMain, 1))
     println(PathParser.getListCategoryMedusaETL(pathMain, 2))
    }

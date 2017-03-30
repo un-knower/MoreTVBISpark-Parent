@@ -129,10 +129,10 @@ object ComicChannelClassificationStat extends BaseClass {
                  |       a.pathMain,
                  |       a.event,
                  |       a.main_category,
-                 |       b.second_category,
+                 |       if(b.second_category is null,'other',b.second_category) as second_category,
                  |       a.flag
                  |from medusa_table_step2                       a
-                 |join
+                 |left join
                  |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}  b
                  |    on a.main_category=b.site_content_type and a.second_category=b.second_category
                      """.stripMargin
@@ -164,10 +164,10 @@ object ComicChannelClassificationStat extends BaseClass {
                  |       a.path,
                  |       a.event,
                  |       a.main_category,
-                 |       b.second_category,
+                 |       if(b.second_category is null,'other',b.second_category) as second_category,
                  |       a.flag
                  |from comic_moretv_table_step2                 a
-                 |join
+                 |left join
                  |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}  b
                  |    on a.main_category=b.site_content_type and a.second_category=b.second_category_code
                      """.stripMargin
@@ -256,6 +256,12 @@ object ComicChannelClassificationStat extends BaseClass {
       df.write.parquet(outputPath)
     }
   }
+
+  /**遇到的问题
+    *
+    * 名作之壁 在站点树里解析为黑马之作
+    * 黑马之作 包含两个部分，一个是2.x的名作之壁，另一个是3.x黑马之作
+    * */
 
 
 }

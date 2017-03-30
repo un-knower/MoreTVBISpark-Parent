@@ -225,7 +225,7 @@ object RecordChannelClassificationStat extends BaseClass {
                |        count(userId)             as playNum
                |from $analyse_source_data_df_name
                |where event in ('$MEDUSA_EVENT_START_PLAY','$MORETV_EVENT_START_PLAY') and
-               |      main_category='$CHANNEL_OPERA'
+               |      main_category='$CHANNEL_RECORD'
                |group by second_category
                    """.stripMargin
           println("--------------------" + sqlStr)
