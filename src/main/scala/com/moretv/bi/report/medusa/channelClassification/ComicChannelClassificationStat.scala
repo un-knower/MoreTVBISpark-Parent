@@ -46,14 +46,14 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
   *
   */
 object ComicChannelClassificationStat extends BaseClass {
-  private val tableName = "medusa_channel_eachtab_play_zongyi_info"
+  private val tableName = "medusa_channel_eachtab_play_comic_info"
   private val fields = "day,channelname,tabname,play_user,play_num"
   private val sqlInsert = s"insert into $tableName($fields) values(?,?,?,?,?)"
   private val deleteSql = s"delete from $tableName where day = ? "
   private val playNumLimit = 5000
-  private val analyse_source_data_df_name = "zongyi_channel_classification_analyse_source_data_df"
-  private val analyse_result_df_name = "zongyi_channel_classification_analyse_result_df"
-  private val isDebug = true
+  private val analyse_source_data_df_name = "comic_channel_classification_analyse_source_data_df"
+  private val analyse_result_df_name = "comic_channel_classification_analyse_result_df"
+  private val isDebug = false
 
   def main(args: Array[String]) {
     ModuleClass.executor(this, args)
@@ -118,10 +118,10 @@ object ComicChannelClassificationStat extends BaseClass {
                  |from medusa_table
                      """.stripMargin
             println("--------------------" + sqlStr)
-            val zongyi_medusa_table_step2_df = sqlContext.sql(sqlStr)
-            zongyi_medusa_table_step2_df.cache()
-            zongyi_medusa_table_step2_df.registerTempTable("medusa_table_step2")
-            writeToHDFSForCheck(date, "zongyi_medusa_table_step2_df", zongyi_medusa_table_step2_df, p.deleteOld)
+            val comic_medusa_table_step2_df = sqlContext.sql(sqlStr)
+            comic_medusa_table_step2_df.cache()
+            comic_medusa_table_step2_df.registerTempTable("medusa_table_step2")
+            writeToHDFSForCheck(date, "comic_medusa_table_step2_df", comic_medusa_table_step2_df, p.deleteOld)
             sqlStr =
               s"""
                  |select a.userId,
@@ -153,10 +153,10 @@ object ComicChannelClassificationStat extends BaseClass {
                  |from moretv_table
                      """.stripMargin
             println("--------------------" + sqlStr)
-            val zongyi_moretv_table_step2_df = sqlContext.sql(sqlStr)
-            zongyi_moretv_table_step2_df.cache()
-            zongyi_moretv_table_step2_df.registerTempTable("zongyi_moretv_table_step2")
-            writeToHDFSForCheck(date, "zongyi_moretv_table_step2_df", zongyi_moretv_table_step2_df, p.deleteOld)
+            val comic_moretv_table_step2_df = sqlContext.sql(sqlStr)
+            comic_moretv_table_step2_df.cache()
+            comic_moretv_table_step2_df.registerTempTable("comic_moretv_table_step2")
+            writeToHDFSForCheck(date, "comic_moretv_table_step2_df", comic_moretv_table_step2_df, p.deleteOld)
             sqlStr =
               s"""
                  |select a.userId,
@@ -166,7 +166,7 @@ object ComicChannelClassificationStat extends BaseClass {
                  |       a.main_category,
                  |       b.second_category,
                  |       a.flag
-                 |from zongyi_moretv_table_step2                       a
+                 |from comic_moretv_table_step2                 a
                  |join
                  |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}  b
                  |    on a.main_category=b.site_content_type and a.second_category=b.second_category_code
@@ -178,16 +178,16 @@ object ComicChannelClassificationStat extends BaseClass {
             //scheme merge
             val mergerRDD = medusa_table_rdd.union(moretv_table_rdd)
             mergerRDD.cache()
-            val zongyi_step1_table_df = sqlContext.read.json(mergerRDD)
-            zongyi_step1_table_df.cache()
-            zongyi_step1_table_df.registerTempTable("zongyi_step1_table")
-            writeToHDFSForCheck(date, "cc_zongyi_step1_table_df", zongyi_step1_table_df, p.deleteOld)
+            val comic_step1_table_df = sqlContext.read.json(mergerRDD)
+            comic_step1_table_df.cache()
+            comic_step1_table_df.registerTempTable("comic_step1_table")
+            writeToHDFSForCheck(date, "cc_comic_step1_table_df", comic_step1_table_df, p.deleteOld)
 
             /** step2 用于过滤单个用户播放当个视频量过大的情况 */
             sqlStr =
               s"""
                  |select concat(userId,videoSid) as filterColumn
-                 |from zongyi_step1_table
+                 |from comic_step1_table
                  |group by concat(userId,videoSid)
                  |having count(1)>=$playNumLimit
                      """.stripMargin
@@ -200,7 +200,7 @@ object ComicChannelClassificationStat extends BaseClass {
                  |       a.event,
                  |       a.main_category,
                  |       a.second_category
-                 |from zongyi_step1_table           a
+                 |from comic_step1_table           a
                  |     left join
                  |     step2_table_filter    b
                  |     on concat(a.userId,a.videoSid)=b.filterColumn

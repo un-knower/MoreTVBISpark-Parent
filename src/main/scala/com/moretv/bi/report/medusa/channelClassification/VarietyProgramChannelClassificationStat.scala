@@ -53,7 +53,7 @@ object VarietyProgramChannelClassificationStat extends BaseClass {
   private val playNumLimit = 5000
   private val analyse_source_data_df_name = "zongyi_channel_classification_analyse_source_data_df"
   private val analyse_result_df_name = "zongyi_channel_classification_analyse_result_df"
-  private val isDebug = true
+  private val isDebug = false
 
   def main(args: Array[String]) {
     ModuleClass.executor(this, args)

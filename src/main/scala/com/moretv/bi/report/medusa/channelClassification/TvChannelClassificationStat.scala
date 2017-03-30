@@ -53,7 +53,7 @@ object TvChannelClassificationStat extends BaseClass {
   private val playNumLimit = 5000
   private val analyse_source_data_df_name = "tv_channel_classification_analyse_source_data_df"
   private val analyse_result_df_name = "tv_channel_classification_analyse_result_df"
-  private val isDebug = true
+  private val isDebug = false
 
   def main(args: Array[String]) {
     ModuleClass.executor(this, args)
@@ -269,4 +269,5 @@ object TvChannelClassificationStat extends BaseClass {
 /**遇到的问题
   * 1.粤语佳片，科学幻想 ,韩剧热流,dim_medusa_source_site站点数里面没有
   * 2.重磅追剧 ,MedusaPageDetailInfo没有已经添加
+  * 3.sql表达正则错误，like '%tv*%',会把 home*my_tv*zongyi-zongyi*搜索
   * */
