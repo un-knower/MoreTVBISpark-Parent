@@ -51,9 +51,9 @@ object MovieChannelClassificationStat extends BaseClass {
   private val sqlInsert = s"insert into $tableName($fields) values(?,?,?,?,?)"
   private val deleteSql = s"delete from $tableName where day = ? "
   private val playNumLimit = 5000
-  private val analyse_source_data_df_name = "channel_classification_analyse_source_data_df"
-  private val analyse_result_df_name = "channel_classification_analyse_result_df"
-  private val isDebug = false
+  private val analyse_source_data_df_name = "movie_channel_classification_analyse_source_data_df"
+  private val analyse_result_df_name = "movie_channel_classification_analyse_result_df"
+  private val isDebug = true
 
   def main(args: Array[String]) {
     ModuleClass.executor(this, args)
@@ -118,10 +118,10 @@ object MovieChannelClassificationStat extends BaseClass {
                  |from medusa_table
                      """.stripMargin
             println("--------------------" + sqlStr)
-            val medusa_table_step2_df = sqlContext.sql(sqlStr)
-            medusa_table_step2_df.cache()
-            medusa_table_step2_df.registerTempTable("medusa_table_step2")
-            writeToHDFSForCheck(date, "medusa_table_step2_df", medusa_table_step2_df, p.deleteOld)
+            val movie_medusa_table_step2_df = sqlContext.sql(sqlStr)
+            movie_medusa_table_step2_df.cache()
+            movie_medusa_table_step2_df.registerTempTable("medusa_table_step2")
+            writeToHDFSForCheck(date, "movie_medusa_table_step2_df", movie_medusa_table_step2_df, p.deleteOld)
             sqlStr =
               s"""
                  |select a.userId,
@@ -153,10 +153,10 @@ object MovieChannelClassificationStat extends BaseClass {
                  |from moretv_table
                      """.stripMargin
             println("--------------------" + sqlStr)
-            val moretv_table_step2_df = sqlContext.sql(sqlStr)
-            moretv_table_step2_df.cache()
-            moretv_table_step2_df.registerTempTable("moretv_table_step2")
-            writeToHDFSForCheck(date, "moretv_table_step2_df", moretv_table_step2_df, p.deleteOld)
+            val movie_moretv_table_step2_df = sqlContext.sql(sqlStr)
+            movie_moretv_table_step2_df.cache()
+            movie_moretv_table_step2_df.registerTempTable("moretv_table_step2")
+            writeToHDFSForCheck(date, "movie_moretv_table_step2_df", movie_moretv_table_step2_df, p.deleteOld)
             sqlStr =
               s"""
                  |select a.userId,
@@ -181,7 +181,7 @@ object MovieChannelClassificationStat extends BaseClass {
             val step1_table_df = sqlContext.read.json(mergerRDD)
             step1_table_df.cache()
             step1_table_df.registerTempTable("step1_table")
-            writeToHDFSForCheck(date, "cc_step1_table_df", step1_table_df, p.deleteOld)
+            writeToHDFSForCheck(date, "movie_cc_step1_table_df", step1_table_df, p.deleteOld)
 
             /** step2 用于过滤单个用户播放当个视频量过大的情况 */
             sqlStr =
