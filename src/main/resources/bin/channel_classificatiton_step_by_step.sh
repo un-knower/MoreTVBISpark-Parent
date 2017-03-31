@@ -15,8 +15,8 @@ sh submit.sh com.moretv.bi.report.medusa.channelClassification.RecordChannelClas
 echo "综艺"
 sh submit.sh com.moretv.bi.report.medusa.channelClassification.VarietyProgramChannelClassificationStat --startDate ${one_day} --deleteOld true
 
-#echo "动漫"
-#sh submit.sh com.moretv.bi.report.medusa.channelClassification.ComicChannelClassificationStat --startDate ${one_day} --deleteOld true
+echo "动漫"
+sh submit.sh com.moretv.bi.report.medusa.channelClassification.ComicChannelClassificationStat --startDate ${one_day} --deleteOld true
 
 echo "资讯"
 sh submit.sh com.moretv.bi.report.medusa.channelClassification.HotChannelClassificationStat --startDate ${one_day} --deleteOld true
