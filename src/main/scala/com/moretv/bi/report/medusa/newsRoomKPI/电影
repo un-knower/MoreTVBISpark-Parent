@@ -1,0 +1,63 @@
+  * 1.原有电影统计逻辑：
+  * table2：count(distinct userId),count(userId)
+  *  filter：event in ('startplay','playview') and (pageDetailInfoFromPath in ('院线大片','七日更新','电影聚焦点',
+  *  '电影专题','特色影院','影人专区','抢先预告','亿元票房','系列电影','战争风云','奥斯卡佳片',
+  *  '动画电影','好莱坞巨制','华语精选','日韩亚太','冷门佳片','犀利动作','科学幻想','粤语佳片',
+  *  '搜索','筛选','已收藏') or (pageDetailInfoFromPath='猜你喜欢' and contentType='movie'))
+  *   and (pathMain like '%movie*%' or path like '%movie%')
+  *  group by pageDetailInfoFromPath"
+  *
+  *  pageDetailInfoFromPath是原有PlayViewLogMerger解析pathMain或者path得出的的字段
+  *  改为：
+  *  pageDetailInfoFromPath 在事实表ETL过程中拆分为 列表入口一级分类，列表入口二级分类
+  *  例如：
+  *      home*classification*kids-kids_home-kandonghua*动画明星 【少儿以后改，一级入口变为kids】
+  *      解析出  一级入口 ：kandonghua    二级入口：动画明星
+  *
+  *      home*classification*tv-tv*抗战风云
+  *      解析出  一级入口 ：tv    二级入口：抗战风云
+  *
+  *
+  * select b.SECOND_CATEGORY, count(distinct a.USERID) as people_count,count(1) as people_times
+  * from DW_FACT_MEDUSA.FACT_MEDUSA_PLAY                a
+  * left join DW_DIMENSIONS.DIM_MEDUSA_SOURCE_LIST      b     on a.SOURCE_LIST_SK = b.SOURCE_LIST_SK
+  * left join dw_dimensions.dim_medusa_source_recommend c     on a.source_recommend_sk= c.source_recommend_sk
+  * where  a.event in ('startplay','playview') and
+  *        a.day_p = 20170104 and
+  *       (b.MAIN_CATEGORY = 'movie' or  (c.recommend_source_type='similar' and pre_content_type='movie'))
+  * group by b.SECOND_CATEGORY
+  * order by people_times desc;
+
+
+  资源调度平台里面的逻辑
+  {
+      "sqlSpark":"select case when pathMain like '%movie-search%' then '搜索' when pathMain like '%movie-retrieval%' then '筛选' else pageDetailInfoFromPath end,count(distinct userId),count(userId) from log_data where event in ('startplay','playview') and (pageDetailInfoFromPath in ('院线大片','七日更新','电影聚焦点','电影专题','特色影院','影人专区','抢先预告','亿元票房','系列电影','战争风云','奥斯卡佳片','动画电影','好莱坞巨制','华语精选','日韩亚太','冷门佳片','犀利动作','科学幻想','粤语佳片','搜索','筛选','已收藏','午夜场') or (pageDetailInfoFromPath='猜你喜欢' and contentType='movie') or pathMain like '%movie-search%' or pathMain like '%movie-retrieval%') and (pathMain like '%movie%' or path like '%movie%') group by case when pathMain like '%movie-search%' then '搜索' when pathMain like '%movie-retrieval%' then '筛选' else pageDetailInfoFromPath end",
+      "sqlDelete":"delete from medusa_channel_eachtab_play_movie_info where day = ?",
+      "sqlInsert":"insert into medusa_channel_eachtab_play_movie_info (day,channelname,tabname,play_user,play_num) values(?,'movie',?,?,?)",
+      "database":"medusa_mysql",
+      "columns":"event,userId,contentType,pageDetailInfoFromPath,pathMain,path"
+  }
+  select case when pathMain like '%movie-search%' then '搜索' when pathMain like '%movie-retrieval%' then '筛选' else pageDetailInfoFromPath end,
+  count(distinct userId),count(userId)
+   from log_data
+  where event in ('startplay','playview') and
+  (pageDetailInfoFromPath in
+  ('院线大片','七日更新','电影聚焦点','电影专题','特色影院','影人专区','抢先预告','亿元票房','系列电影','战争风云',
+  '奥斯卡佳片','动画电影','好莱坞巨制','华语精选','日韩亚太','冷门佳片','犀利动作','科学幻想','粤语佳片','搜索','筛选','已收藏','午夜场') or
+   (pageDetailInfoFromPath='猜你喜欢' and contentType='movie') or
+    pathMain like '%movie-search%' or pathMain like '%movie-retrieval%')
+    and (pathMain like '%movie%' or path like '%movie%')
+    group by case when pathMain like '%movie-search%' then '搜索'
+                  when pathMain like '%movie-retrieval%' then '筛选'
+                  else pageDetailInfoFromPath
+                  end
+
+
+
+ select * from medusa_channel_eachtab_play_movie_info where day='2017-03-20';
+
+
+--频道分类入口，电影统计，脏数据
+sqlContext.sql("select path,pathMain,pageDetailInfoFromPath,flag from log_data where flag='medusa' and pageDetailInfoFromPath='院线大片' and ( pathMain like '%home-movie%'  )    ").show(200,false)
+pathMain
+home-movie*院线大片

@@ -1,0 +1,30 @@
+------------------------------kids 少儿各个入口的播放情况------------------------------
+sqlurl:medusa.channelAndPrograma.kidsChannel.queryEachPlatePlayData
+统计字段：day,plate,play_num,play_user,play_num/play_user
+table1:medusa_channel_collectplate_play_kids_info 作业名：ChannelKidsCollectPlatePlayInfo 所属项目：medusaAndMoretvMerger 日志类型：playview
+统计逻辑： count(distinct userId),count(userId)
+filter：event in ('startplay','playview') and (pathMain like '%kids_home-kids_collect%' or path like '%kids_cathouse%')
+
+table2:medusa_channel_donghuaplate_play_kids_info 作业名：ChannelKidAnimPlatePlayInfo 所属项目：medusaAndMoretvMerger 日志类型：playview
+统计逻辑： count(distinct userId),count(userId)
+filter：event in ('startplay','playview') and (pathMain like '%kids_home-kandonghua%' or path like '%kids_seecartoon%')
+
+table3:medusa_channel_recommendplate_play_kids_info 作业名：ChannelKidsRecommendPlatePlayInfo 所属项目：medusaAndMoretvMerger 日志类型：playview
+统计逻辑： count(distinct userId),count(userId)
+filter：event in ('startplay','playview') and (path like '%kids_recommend%')
+
+table4:medusa_channel_songplate_play_kids_info 作业名：ChannelKidRhymesPlatePlayInfo 所属项目：medusaAndMoretvMerger 日志类型：playview
+统计逻辑： count(distinct userId),count(userId)
+filter：event in ('startplay','playview') and (pathMain like '%kids_home-kids_rhymes%' or pathMain like '%kids_home-tingerge%' or path like '%kids_songhome%')
+
+table5:medusa_channel_xuezhishiplate_play_kids_info 作业名：ChannelKidsXuezhishiPlayInfo 所属项目：medusa 日志类型：play
+统计逻辑： count(distinct userId),count(userId)
+filter：pathMain like '%kids_home-xuezhishi%' and event in ('startplay','playview')
+
+sh variety_program_channel_classification.sh
+sh record_channel_classification.sh
+sh opera_channel_classification.sh
+sh comic_channel_classification.sh
+sh hot_channel_classification.sh
+sh tv_channel_classification.sh
+sh movie_channel_classification.sh
