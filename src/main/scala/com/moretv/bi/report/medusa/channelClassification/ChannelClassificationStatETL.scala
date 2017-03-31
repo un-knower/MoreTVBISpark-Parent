@@ -45,15 +45,20 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
   * pathMain         解析出一级入口，二级入口  维度值
   *
   */
-object ComicChannelClassificationStat extends BaseClass {
-  private val tableName = "medusa_channel_eachtab_play_comic_info"
+object ChannelClassificationStatETL extends BaseClass {
   private val fields = "day,channelname,tabname,play_user,play_num"
-  private val sqlInsert = s"insert into $tableName($fields) values(?,?,?,?,?)"
-  private val deleteSql = s"delete from $tableName where day = ? "
   private val playNumLimit = 5000
-  private val analyse_source_data_df_name = "comic_channel_classification_analyse_source_data_df"
-  private val analyse_result_df_name = "comic_channel_classification_analyse_result_df"
-  private val isDebug = true
+  private val analyse_source_data_df_name = "all_channel_classification_analyse_source_data_df"
+  private val analyse_result_df_name = "all_channel_classification_analyse_result_df"
+  private val isDebug = false
+  private val channel_to_mysql_table=Map(
+    CHANNEL_COMIC->"medusa_channel_eachtab_play_comic_info",
+    CHANNEL_MOVIE->"medusa_channel_eachtab_play_movie_info",
+    CHANNEL_TV->"medusa_channel_eachtab_play_tv_info",
+    CHANNEL_HOT->"medusa_channel_eachtab_play_hot_info",
+    CHANNEL_VARIETY_PROGRAM->"medusa_channel_eachtab_play_zongyi_info",
+    CHANNEL_OPERA->"medusa_channel_eachtab_play_xiqu_info",
+    CHANNEL_RECORD->"medusa_channel_eachtab_play_jilu_info")
 
   def main(args: Array[String]) {
     ModuleClass.executor(this, args)
@@ -118,10 +123,10 @@ object ComicChannelClassificationStat extends BaseClass {
                  |from medusa_table
                      """.stripMargin
             println("--------------------" + sqlStr)
-            val comic_medusa_table_step2_df = sqlContext.sql(sqlStr)
-            comic_medusa_table_step2_df.cache()
-            comic_medusa_table_step2_df.registerTempTable("medusa_table_step2")
-            writeToHDFSForCheck(date, "comic_medusa_table_step2_df", comic_medusa_table_step2_df, p.deleteOld)
+            val all_medusa_table_step2_df = sqlContext.sql(sqlStr)
+            all_medusa_table_step2_df.cache()
+            all_medusa_table_step2_df.registerTempTable("medusa_table_step2")
+            writeToHDFSForCheck(date, "all_medusa_table_step2_df", all_medusa_table_step2_df, p.deleteOld)
             sqlStr =
               s"""
                  |select a.userId,
@@ -129,7 +134,7 @@ object ComicChannelClassificationStat extends BaseClass {
                  |       a.pathMain,
                  |       a.event,
                  |       a.main_category,
-                 |       if(b.second_category is null,'other',b.second_category) as second_category,
+                 |       if(b.second_category is null,'其他分类',b.second_category) as second_category,
                  |       a.flag
                  |from medusa_table_step2                       a
                  |left join
@@ -153,10 +158,10 @@ object ComicChannelClassificationStat extends BaseClass {
                  |from moretv_table
                      """.stripMargin
             println("--------------------" + sqlStr)
-            val comic_moretv_table_step2_df = sqlContext.sql(sqlStr)
-            comic_moretv_table_step2_df.cache()
-            comic_moretv_table_step2_df.registerTempTable("comic_moretv_table_step2")
-            writeToHDFSForCheck(date, "comic_moretv_table_step2_df", comic_moretv_table_step2_df, p.deleteOld)
+            val all_moretv_table_step2_df = sqlContext.sql(sqlStr)
+            all_moretv_table_step2_df.cache()
+            all_moretv_table_step2_df.registerTempTable("all_moretv_table_step2")
+            writeToHDFSForCheck(date, "all_moretv_table_step2_df", all_moretv_table_step2_df, p.deleteOld)
             sqlStr =
               s"""
                  |select a.userId,
@@ -164,9 +169,9 @@ object ComicChannelClassificationStat extends BaseClass {
                  |       a.path,
                  |       a.event,
                  |       a.main_category,
-                 |       if(b.second_category is null,'other',b.second_category) as second_category,
+                 |       if(b.second_category is null,'其他分类',b.second_category) as second_category,
                  |       a.flag
-                 |from comic_moretv_table_step2                 a
+                 |from all_moretv_table_step2                 a
                  |left join
                  |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}  b
                  |    on a.main_category=b.site_content_type and a.second_category=b.second_category_code
@@ -178,16 +183,16 @@ object ComicChannelClassificationStat extends BaseClass {
             //scheme merge
             val mergerRDD = medusa_table_rdd.union(moretv_table_rdd)
             mergerRDD.cache()
-            val comic_step1_table_df = sqlContext.read.json(mergerRDD)
-            comic_step1_table_df.cache()
-            comic_step1_table_df.registerTempTable("comic_step1_table")
-            writeToHDFSForCheck(date, "cc_comic_step1_table_df", comic_step1_table_df, p.deleteOld)
+            val all_step1_table_df = sqlContext.read.json(mergerRDD)
+            all_step1_table_df.cache()
+            all_step1_table_df.registerTempTable("all_step1_table")
+            writeToHDFSForCheck(date, "cc_all_step1_table_df", all_step1_table_df, p.deleteOld)
 
             /** step2 用于过滤单个用户播放当个视频量过大的情况 */
             sqlStr =
               s"""
                  |select concat(userId,videoSid) as filterColumn
-                 |from comic_step1_table
+                 |from all_step1_table
                  |group by concat(userId,videoSid)
                  |having count(1)>=$playNumLimit
                      """.stripMargin
@@ -200,7 +205,7 @@ object ComicChannelClassificationStat extends BaseClass {
                  |       a.event,
                  |       a.main_category,
                  |       a.second_category
-                 |from comic_step1_table           a
+                 |from all_step1_table           a
                  |     left join
                  |     step2_table_filter    b
                  |     on concat(a.userId,a.videoSid)=b.filterColumn
@@ -214,29 +219,39 @@ object ComicChannelClassificationStat extends BaseClass {
           } else {
             throw new RuntimeException("2.x or 3.x log data is not exist")
           }
-
           /** 最终此逻辑会合并进入事实表的ETL过程-end */
 
           /** 进入分析代码，以后分析脚本编写、HUE查询、kylin查询只需要编写如下sql */
           sqlStr =
             s"""
-               |select  second_category           as tabname,
+               |select  main_category             as channelname,
+               |        second_category           as tabname,
                |        count(distinct userId)    as playUser,
                |        count(userId)             as playNum
                |from $analyse_source_data_df_name
                |where event in ('$MEDUSA_EVENT_START_PLAY','$MORETV_EVENT_START_PLAY') and
-               |      main_category='$CHANNEL_COMIC'
-               |group by second_category
+               |      main_category in ('$CHANNEL_MOVIE','$CHANNEL_COMIC','$CHANNEL_TV','$CHANNEL_HOT','$CHANNEL_VARIETY_PROGRAM','$CHANNEL_OPERA','$CHANNEL_RECORD')
+               |group by main_category,
+               |         second_category
                    """.stripMargin
           println("--------------------" + sqlStr)
+
           val mysql_result_df = sqlContext.sql(sqlStr)
           writeToHDFSForCheck(date, analyse_result_df_name, mysql_result_df, p.deleteOld)
           if (p.deleteOld) {
-            util.delete(deleteSql, sqlDate)
+            val channelArray=Array(CHANNEL_MOVIE,CHANNEL_COMIC,CHANNEL_TV,CHANNEL_HOT,CHANNEL_VARIETY_PROGRAM,CHANNEL_OPERA,CHANNEL_RECORD)
+            for(channel_name <-channelArray){
+              val tableName=channel_to_mysql_table.get(channel_name).get
+              val deleteSql = s"delete from $tableName where day = ? "
+              util.delete(deleteSql, sqlDate)
+            }
           }
           //day,channelname,tabname,play_user,play_num
           mysql_result_df.collect.foreach(row => {
-            util.insert(sqlInsert, sqlDate, CHANNEL_COMIC, row.getString(0), new JLong(row.getLong(1)), new JLong(row.getLong(2)))
+            val channel_name=row.getString(0)
+            val tableName=channel_to_mysql_table.get(channel_name).get
+            val sqlInsert = s"insert into $tableName($fields) values(?,?,?,?,?)"
+            util.insert(sqlInsert, sqlDate, channel_name, row.getString(1), new JLong(row.getLong(2)), new JLong(row.getLong(3)))
           })
         })
       }

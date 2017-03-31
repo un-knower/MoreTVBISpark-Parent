@@ -984,12 +984,13 @@ object PathParser {
           if (getSplitInfo(path, 2) == "kids_home" || getSplitInfo(path, 2) == "sports") {
             result = getSplitInfo(path, 3) + "-" + getSplitInfo(path, 4)
           }
-        }
-        // 将English转为Chinese
-        if (UDFConstant.MoretvPageInfo.contains(getSplitInfo(path, 2))) {
-          if (!UDFConstant.MoretvPageDetailInfo.contains(result)) {
+
+        if (!UDFConstant.MoretvPageInfo.contains(getSplitInfo(path, 2))) {
+          result=null
+         /* if (!UDFConstant.MoretvPageDetailInfo.contains(result)) {
             result =null
-          }
+          }*/
+         }
         }
       }
     }
@@ -1020,7 +1021,7 @@ object PathParser {
     //val pathMain = "home*classification*mv-mv*电台*电台"
     //val pathMain = "home*live*eagle-movie*院线大片"
     //println(MEDUSA_LIST_PAGE_LEVEL_2_REGEX)
-    val pathMain = "home*classification*comic-comic*二次元*电台"
+    val pathMain = "home*classification*comic-comic*二次元0234*电台"
     println(PathParser.getListCategoryMedusaETL(pathMain, 1))
     println(PathParser.getListCategoryMedusaETL(pathMain, 2))
    }
