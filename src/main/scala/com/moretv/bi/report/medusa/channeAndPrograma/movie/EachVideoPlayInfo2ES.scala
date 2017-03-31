@@ -36,9 +36,9 @@ object EachVideoPlayInfo2ES extends BaseClass {
           calendar.add(Calendar.DAY_OF_MONTH, -1)
 
           DataIO.getDataFrameOps.getDF(sc, p.paramMap, MERGER, LogTypes.PLAYVIEW, date)
-            .filter("event is not null and contentType is not null and videoSid is not null and episodeSid is not null")
+            .filter("event is not null and contentType is not null and videoSid is not null")
             .filter("event in ('startplay','playview')")
-            .select("userId", "contentType", "videoSid", "episodeSid")
+            .select("userId", "contentType", "videoSid")
             .registerTempTable("log_data")
 
           val videoDf = sqlContext.sql(
@@ -52,22 +52,35 @@ object EachVideoPlayInfo2ES extends BaseClass {
             HttpUtils.delete(url)
           }
 
+          val videoList = new util.ArrayList[util.Map[String, Object]]()
+          videoDf.map(e=>(e.getString(0),e.getString(1),e.getLong(2),e.getLong(3))).collect().foreach(e=>{
+            val resMap = new util.HashMap[String, Object]()
+            resMap.put("contentType", e._1)
+            resMap.put("sid", e._2)
+            resMap.put("title", ProgramRedisUtil.getTitleBySid(e._2))
+            resMap.put("day", insertDate.toString)
+            resMap.put("userNum", new JLong(e._3))
+            resMap.put("accessNum", new JLong(e._4))
+            videoList.add(resMap)
+          })
+          ElasticSearchUtil.bulkCreateIndex(videoList, "medusa", "programPlay")
+
 
           // 将数据插入ES
-          videoDf.foreachPartition(partititon => {
-            val videoList = new util.ArrayList[util.Map[String, Object]]()
-            partititon.foreach(e => {
-              val resMap = new util.HashMap[String, Object]()
-              resMap.put("contentType", e.getString(0))
-              resMap.put("sid", e.getString(1))
-              resMap.put("title", e.getString(1))
-              resMap.put("day", insertDate.toString)
-              resMap.put("userNum", new JLong(e.getLong(2)))
-              resMap.put("accessNum", new JLong(e.getLong(3)))
-              videoList.add(resMap)
-            })
-            ElasticSearchUtil.bulkCreateIndex(videoList, "medusa", "programPlay")
-          })
+//          videoDf.foreachPartition(partititon => {
+//            val videoList = new util.ArrayList[util.Map[String, Object]]()
+//            partititon.foreach(e => {
+//              val resMap = new util.HashMap[String, Object]()
+//              resMap.put("contentType", e.getString(0))
+//              resMap.put("sid", e.getString(1))
+//              resMap.put("title", e.getString(1))
+//              resMap.put("day", insertDate.toString)
+//              resMap.put("userNum", new JLong(e.getLong(2)))
+//              resMap.put("accessNum", new JLong(e.getLong(3)))
+//              videoList.add(resMap)
+//            })
+//            ElasticSearchUtil.bulkCreateIndex(videoList, "medusa", "programPlay")
+//          })
         })
       }
       case None => {
