@@ -1021,7 +1021,7 @@ object PathParser {
     //val pathMain = "home*classification*mv-mv*电台*电台"
     //val pathMain = "home*live*eagle-movie*院线大片"
     //println(MEDUSA_LIST_PAGE_LEVEL_2_REGEX)
-    val pathMain = "home*classification*comic-comic*二次元0234*电台"
+    val pathMain = "home*recommendation*1-hot*今日焦点"
     println(PathParser.getListCategoryMedusaETL(pathMain, 1))
     println(PathParser.getListCategoryMedusaETL(pathMain, 2))
    }
