@@ -229,7 +229,13 @@ object EachChannelSubjectPlayInfoETL extends BaseClass {
           val analyse_resul_df = sqlContext.sql(sqlStr)
 
           analyse_resul_df.collect.foreach(row => {
-            util.insert(sqlInsert, insertDate, row.getString(0), new JLong(row.getLong(1)), new JLong(row.getLong(2)))
+            var subject_content_type_name=row.getString(0)
+            if(subject_content_type_name.equalsIgnoreCase("电视剧")){
+              subject_content_type_name="电视"
+            }else if(subject_content_type_name.equalsIgnoreCase("记录片")){
+              subject_content_type_name="纪实"
+            }
+            util.insert(sqlInsert, insertDate, subject_content_type_name, new JLong(row.getLong(1)), new JLong(row.getLong(2)))
           })
         })
       }
