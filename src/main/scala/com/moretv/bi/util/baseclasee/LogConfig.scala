@@ -28,6 +28,7 @@ trait LogConfig {
   /**
     * 频道类型 */
   val CHANNEL_MOVIE="movie"
+  val CHANNEL_KIDS = "kids"
 
 
 }
