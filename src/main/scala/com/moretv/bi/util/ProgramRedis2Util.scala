@@ -9,6 +9,7 @@ import redis.clients.jedis.{JedisPool, JedisPoolConfig, Protocol}
  * Created by 连凯 on 2016-07-04.
   * 连接redis，通过sid查询节目对应的title
  */
+@deprecated
 object ProgramRedis2Util {
 
   /**

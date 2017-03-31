@@ -5,7 +5,7 @@ import java.sql.SQLException
 import com.moretv.bi.util.SparkSetting
 import cn.whaley.sdk.dataexchangeio.DataIO
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.global.{DataBases, DimensionTypes, LogTypes}
 import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
@@ -28,14 +28,21 @@ object ProductBrandPromotionChannelNewDist extends BaseClass{
       case Some(p) => {
         val day = DateFormatUtils.toDateCN(p.startDate, -1)
         val inputDate = DateFormatUtils.enDateAdd(p.startDate,-1)
-        sqlContext.udf.register("getBrand",ProductModelUtils.getProductBrand _)
+//        sqlContext.udf.register("getBrand",ProductModelUtils.getProductBrand _)
 
         DataIO.getDataFrameOps.getDF(sc,p.paramMap,DBSNAPSHOT,LogTypes.MORETV_MTV_ACCOUNT,inputDate).
           registerTempTable("log_data")
 
-        val result = sqlContext.sql("select getBrand(product_model),promotion_channel,count(distinct mac) from log_data " +
-          s"where openTime between '$day 00:00:00' and '$day 23:59:59' group by getBrand(product_model),promotion_channel").
-          collectAsList()
+        DataIO.getDataFrameOps.getDimensionDF(
+          sqlContext, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_PRODUCT_MODEL
+        ).registerTempTable("dim_product")
+
+        val result = sqlContext.sql(
+          "select (case when b.brand_name is null then '其他品牌' else b.brand_name end), promotion_channel, count(distinct mac)" +
+            " from log_data a left join dim_product b on a.product_model = b.product_model and b.dim_invalid_time is null" +
+          s" where openTime between '$day 00:00:00' and '$day 23:59:59'" +
+            " group by (case when b.brand_name is null then '其他品牌' else b.brand_name end), promotion_channel")
+          .collectAsList()
 
         val db = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         if(p.deleteOld){

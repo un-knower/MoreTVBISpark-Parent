@@ -1,6 +1,4 @@
 type=command
 dependencies=other_isExist
-#mainclass=com.moretv.bi.report.medusa.channeAndPrograma.kids.KidsEachTabViewInfo
-mainclass=com.moretv.bi.report.medusa.channeAndPrograma.kids.KidsEachTabViewInfoDWVersion
+mainclass=com.moretv.bi.medusa.playqos.PlayCodeSourceStat200
 command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}
-

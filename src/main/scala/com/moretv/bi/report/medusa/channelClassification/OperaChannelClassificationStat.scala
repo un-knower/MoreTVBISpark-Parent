@@ -1,4 +1,4 @@
-package com.moretv.bi.report.medusa.newsRoomKPI
+package com.moretv.bi.report.medusa.channelClassification
 
 import java.lang.{Long => JLong}
 import java.util.Calendar
@@ -14,7 +14,7 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
 
 
 /**
-  * Created by baozhi.wang on 2017/3/27.
+  * Created by baozhi.wang on 2017/3/30.
   * 脚本作用： 1.作为解析列表页维度的示范例子
   * 2.频道分类统计的播放次数播放人数统计【频道及栏目编排-频道分类统计-「电影,电视剧」-频道分类统计】
   *
@@ -45,14 +45,14 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
   * pathMain         解析出一级入口，二级入口  维度值
   *
   */
-object channelClassificationAnalyse extends BaseClass {
-  private val tableName = "medusa_channel_eachtab_play_movie_info"
+object OperaChannelClassificationStat extends BaseClass {
+  private val tableName = "medusa_channel_eachtab_play_xiqu_info"
   private val fields = "day,channelname,tabname,play_user,play_num"
   private val sqlInsert = s"insert into $tableName($fields) values(?,?,?,?,?)"
   private val deleteSql = s"delete from $tableName where day = ? "
   private val playNumLimit = 5000
-  private val analyse_source_data_df_name = "channel_classification_analyse_source_data_df"
-  private val analyse_result_df_name = "channel_classification_analyse_result_df"
+  private val analyse_source_data_df_name = "xiqu_channel_classification_analyse_source_data_df"
+  private val analyse_result_df_name = "xiqu_channel_classification_analyse_result_df"
   private val isDebug = false
 
   def main(args: Array[String]) {
@@ -118,10 +118,10 @@ object channelClassificationAnalyse extends BaseClass {
                  |from medusa_table
                      """.stripMargin
             println("--------------------" + sqlStr)
-            val medusa_table_step2_df = sqlContext.sql(sqlStr)
-            medusa_table_step2_df.cache()
-            medusa_table_step2_df.registerTempTable("medusa_table_step2")
-            writeToHDFSForCheck(date, "medusa_table_step2_df", medusa_table_step2_df, p.deleteOld)
+            val xiqu_medusa_table_step2_df = sqlContext.sql(sqlStr)
+            xiqu_medusa_table_step2_df.cache()
+            xiqu_medusa_table_step2_df.registerTempTable("medusa_table_step2")
+            writeToHDFSForCheck(date, "xiqu_medusa_table_step2_df", xiqu_medusa_table_step2_df, p.deleteOld)
             sqlStr =
               s"""
                  |select a.userId,
@@ -153,10 +153,10 @@ object channelClassificationAnalyse extends BaseClass {
                  |from moretv_table
                      """.stripMargin
             println("--------------------" + sqlStr)
-            val moretv_table_step2_df = sqlContext.sql(sqlStr)
-            moretv_table_step2_df.cache()
-            moretv_table_step2_df.registerTempTable("moretv_table_step2")
-            writeToHDFSForCheck(date, "moretv_table_step2_df", moretv_table_step2_df, p.deleteOld)
+            val xiqu_moretv_table_step2_df = sqlContext.sql(sqlStr)
+            xiqu_moretv_table_step2_df.cache()
+            xiqu_moretv_table_step2_df.registerTempTable("xiqu_moretv_table_step2")
+            writeToHDFSForCheck(date, "xiqu_moretv_table_step2_df", xiqu_moretv_table_step2_df, p.deleteOld)
             sqlStr =
               s"""
                  |select a.userId,
@@ -166,7 +166,7 @@ object channelClassificationAnalyse extends BaseClass {
                  |       a.main_category,
                  |       b.second_category,
                  |       a.flag
-                 |from moretv_table_step2                       a
+                 |from xiqu_moretv_table_step2                       a
                  |join
                  |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}  b
                  |    on a.main_category=b.site_content_type and a.second_category=b.second_category_code
@@ -178,16 +178,16 @@ object channelClassificationAnalyse extends BaseClass {
             //scheme merge
             val mergerRDD = medusa_table_rdd.union(moretv_table_rdd)
             mergerRDD.cache()
-            val step1_table_df = sqlContext.read.json(mergerRDD)
-            step1_table_df.cache()
-            step1_table_df.registerTempTable("step1_table")
-            writeToHDFSForCheck(date, "cc_step1_table_df", step1_table_df, p.deleteOld)
+            val xiqu_step1_table_df = sqlContext.read.json(mergerRDD)
+            xiqu_step1_table_df.cache()
+            xiqu_step1_table_df.registerTempTable("xiqu_step1_table")
+            writeToHDFSForCheck(date, "cc_xiqu_step1_table_df", xiqu_step1_table_df, p.deleteOld)
 
             /** step2 用于过滤单个用户播放当个视频量过大的情况 */
             sqlStr =
               s"""
                  |select concat(userId,videoSid) as filterColumn
-                 |from step1_table
+                 |from xiqu_step1_table
                  |group by concat(userId,videoSid)
                  |having count(1)>=$playNumLimit
                      """.stripMargin
@@ -200,7 +200,7 @@ object channelClassificationAnalyse extends BaseClass {
                  |       a.event,
                  |       a.main_category,
                  |       a.second_category
-                 |from step1_table           a
+                 |from xiqu_step1_table           a
                  |     left join
                  |     step2_table_filter    b
                  |     on concat(a.userId,a.videoSid)=b.filterColumn
@@ -225,7 +225,7 @@ object channelClassificationAnalyse extends BaseClass {
                |        count(userId)             as playNum
                |from $analyse_source_data_df_name
                |where event in ('$MEDUSA_EVENT_START_PLAY','$MORETV_EVENT_START_PLAY') and
-               |      main_category='$CHANNEL_MOVIE'
+               |      main_category='$CHANNEL_OPERA'
                |group by second_category
                    """.stripMargin
           println("--------------------" + sqlStr)
@@ -236,7 +236,7 @@ object channelClassificationAnalyse extends BaseClass {
           }
           //day,channelname,tabname,play_user,play_num
           mysql_result_df.collect.foreach(row => {
-            util.insert(sqlInsert, sqlDate, CHANNEL_MOVIE, row.getString(0), new JLong(row.getLong(1)), new JLong(row.getLong(2)))
+            util.insert(sqlInsert, sqlDate, CHANNEL_OPERA, row.getString(0), new JLong(row.getLong(1)), new JLong(row.getLong(2)))
           })
         })
       }

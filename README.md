@@ -15,29 +15,49 @@
 
 
 ## 维度逻辑解析进度
-1. subjectCode【Done】
-具体过程：subjectCode不存在，需要subjectName去维度表dim_medusa_subject里查询subjectCode补全
-代码例子：
-com.moretv.bi.report.medusa.channeAndPrograma.movie.EachChannelSubjectPlayInfoExample
-2. 解析出各个频道的一级分类，二级分类，三级分类，四级分类入口维度【需要收集分布在资源调度平台的sql语句】
-com.moretv.bi.report.medusa.newsRoomKPI.channelClassificationAnalyse【Doing】
 
-## 分析脚本改造
-### 工作内容:
-1. 阅读原有分析脚本代码逻辑，将RDD写法逻辑改为使用DataFrame API，以操作表的方式做join，filter逻辑，
-   关联维度表获取分析结果
-2. 分析结果与线上结果验证比对
+a.频道分类入口统计
+统计页面：【频道及栏目编排-频道分类统计-「电影,电视剧,咨询短片，综艺，动漫，纪实，戏曲」-频道分类统计】
+原有方式为：
+ 1.写在资源调度平台里面【http://115.231.96.78:1337/login】
+ 2.原有分析代码，以sql方式编写,需要维护二级入口字段，
+参考泰迪：http://172.16.17.100:8090/pages/viewpage.action?pageId=4424217
 
-### 进度
-1. 脚本作用：统计不同入口播放统计 【频道及栏目编排-频道概况-「电影」-不同入口播放统计】Done
-com.moretv.bi.report.medusa.newsRoomKPI.ChannelEntrancePlayStatExample
+数据仓库方式改为：
+解析维度：一级入口，二级入口
+1.停止使用硬编码做二级入口过滤，改为正则匹配
+2.使用站点树维度表dim_medusa_source_site过滤
+3.在站点数里没有的二级分类入口，归入“其他分类”(原有展现已经有其他分类作为二级入口)
+4.七个资源调度任务合成一个类com.moretv.bi.report.medusa.channelClassification.ChannelClassificationStatETL
 
-2. 脚本作用：统计不同频道的专题播放量，用于展示在各个频道的专题播放趋势图以及内容评估的专题趋势图 Done
-com.moretv.bi.report.medusa.channeAndPrograma.movie.EachChannelSubjectPlayInfoExample
 
-3. 脚本作用：频道分类统计的播放次数播放人数统计 【Doing】
-com.moretv.bi.report.medusa.newsRoomKPI.channelClassificationAnalyse
 
+b.统计不同频道的专题播放量
+统计页面：【频道及栏目编排-节目与专题统计 「体育,动漫,少儿,电影,电视,纪实,资讯短片」】
+原有方式为：
+   1.需要查询mysql
+    2.RDD写法
+参考泰迪：http://172.16.17.100:8090/pages/viewpage.action?pageId=4424309
+
+数据仓库方式改为：
+解析维度：subject code
+1.subjectCode补全移动到事实表ETL(关联维度表dim_medusa_subject补全)
+2.Rdd改为DataFrame表方式分析
+3.代码com.moretv.bi.report.medusa.subject.EachChannelSubjectPlayInfoETL
+
+
+
+c.统计不同入口播放统计
+统计页面：【频道及栏目编排-频道概况-「体育,动漫,音乐,少儿,电影,电视,综艺,纪实,戏曲,资讯短片」-不同入口播放统计 】
+原有方式为：
+    1.需要查询mysql
+    2.RDD写法
+参考泰迪：http://172.16.17.100:8090/pages/viewpage.action?pageId=4424092
+
+数据仓库方式改为：
+解析维度：首页入口
+1.Rdd改为DataFrame表方式分析
+2.代码com.moretv.bi.report.medusa.entrance.ChannelEntrancePlayStatETL
 
 
 ### 开发测试
@@ -56,5 +76,7 @@ mysql -hbigdata-extsvr-db_bi1 -ubi -Dmedusa -pmlw321@moretv
 mysql -hbigdata-appsvr-130-1 -ubi -Dmedusa -pmlw321@moretv
 
 ### 本地jar包上传服务器
-1. cp /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/MoreTVBISpark-1.0.0.jar ~/Documents/MoreTVBISpark-1.0.0-michael.jar
-2. md5 /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/MoreTVBISpark-1.0.0.jar
+1. 
+cp /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/MoreTVBISpark-1.0.0.jar ~/Documents/MoreTVBISpark-1.0.0-michael.jar
+2. 
+md5 /Users/baozhiwang/Documents/nut/cloud/codes/MoreTVBISpark-Parent/target/MoreTVBISpark-1.0.0-release/lib/MoreTVBISpark-1.0.0.jar

@@ -5,7 +5,7 @@ import java.lang.{Long => JLong}
 
 import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, ProductModelUtils}
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.global.{DataBases, DimensionTypes, LogTypes}
 import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
@@ -59,18 +59,22 @@ object ChannelProductActiveStat extends BaseClass {
             .select("productModel", "promotionChannel", "userId")
             .registerTempTable("log_data")
 
+          DataIO.getDataFrameOps.getDimensionDF(
+            sqlContext, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_PRODUCT_MODEL
+          ).registerTempTable("dim_product")
+
           val df = sqlContext.sql(
             """
-              |select productModel, promotionChannel, count(userId) as pv, count(distinct userId) as uv
-              |from log_data
-              |group by productModel, promotionChannel
+              |select (case when b.brand_name is null then '其他品牌' else b.brand_name end), promotionChannel, count(userId) as pv, count(distinct userId) as uv
+              |from log_data a left join dim_product b on a.productModel = b.product_model and b.dim_invalid_time is null
+              |group by (case when b.brand_name is null then '其他品牌' else b.brand_name end), promotionChannel
             """.stripMargin)
 
           util.delete(deleteSql, "day", sqlDate)
 
           df.collect.foreach(w => {
 
-            val productModel = ProductModelUtils.getProductBrand(w.getString(0))
+            val productModel = w.getString(0)
             val promotionChannel = w.getString(1)
             val pv = new JLong(w.getLong(2))
             val uv = new JLong(w.getLong(3))

@@ -10,7 +10,7 @@
 *.jar
 *.class
 
-/*/target
+/target
 
 target
 # output file

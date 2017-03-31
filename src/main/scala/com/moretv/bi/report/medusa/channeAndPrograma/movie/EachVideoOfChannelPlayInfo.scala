@@ -48,21 +48,35 @@ object EachVideoOfChannelPlayInfo extends BaseClass{
             util.delete(deleteSql,insertDate)
           }
 
-          rdd.foreachPartition(partition=>{
-            val util1 = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
-            partition.foreach(e=>{
-              val title=ProgramRedisUtil.getTitleBySid(e._2)
-              try{
-                util1.insert(insertSql,insertDate,e._1,e._2,title,new JLong(e._3),
-                  new JLong(e._4))
-              }catch {
-                case e:java.sql.SQLException => {
-                  println(s"insert errror: $title")
-                }
-                case e:Exception => throw e
+
+          rdd.collect().foreach(e=>{
+            val title=ProgramRedisUtil.getTitleBySid(e._2)
+            try{
+              util.insert(insertSql,insertDate,e._1,e._2,title,new JLong(e._3),
+                new JLong(e._4))
+            }catch {
+              case e:java.sql.SQLException => {
+                println(s"insert errror: $title")
               }
-            })
+              case e:Exception =>
+            }
           })
+//
+//          rdd.foreachPartition(partition=>{
+//            val util1 = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+//            partition.foreach(e=>{
+//              val title=ProgramRedisUtil.getTitleBySid(e._2)
+//              try{
+//                util1.insert(insertSql,insertDate,e._1,e._2,title,new JLong(e._3),
+//                  new JLong(e._4))
+//              }catch {
+//                case e:java.sql.SQLException => {
+//                  println(s"insert errror: $title")
+//                }
+//                case e:Exception => throw e
+//              }
+//            })
+//          })
 
         })
         ElasticSearchUtil.close

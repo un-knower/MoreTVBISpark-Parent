@@ -4,6 +4,7 @@ package com.moretv.bi.util
   * Created by Will on 2016/8/3.
   * 白名单和黑名单工具类，存放渠道号的白名单和黑名单
   */
+@deprecated
 object PromotionChannelListUtil {
 
   val regex = "^[\\w\\-]+$".r

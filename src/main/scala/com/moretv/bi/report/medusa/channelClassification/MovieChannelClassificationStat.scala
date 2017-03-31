@@ -1,4 +1,4 @@
-package com.moretv.bi.report.medusa.newsRoomKPI
+package com.moretv.bi.report.medusa.channelClassification
 
 import java.lang.{Long => JLong}
 import java.util.Calendar
@@ -45,14 +45,14 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
   * pathMain         解析出一级入口，二级入口  维度值
   *
   */
-object channelClassificationAnalyse extends BaseClass {
+object MovieChannelClassificationStat extends BaseClass {
   private val tableName = "medusa_channel_eachtab_play_movie_info"
   private val fields = "day,channelname,tabname,play_user,play_num"
   private val sqlInsert = s"insert into $tableName($fields) values(?,?,?,?,?)"
   private val deleteSql = s"delete from $tableName where day = ? "
   private val playNumLimit = 5000
-  private val analyse_source_data_df_name = "channel_classification_analyse_source_data_df"
-  private val analyse_result_df_name = "channel_classification_analyse_result_df"
+  private val analyse_source_data_df_name = "movie_channel_classification_analyse_source_data_df"
+  private val analyse_result_df_name = "movie_channel_classification_analyse_result_df"
   private val isDebug = false
 
   def main(args: Array[String]) {
@@ -118,10 +118,10 @@ object channelClassificationAnalyse extends BaseClass {
                  |from medusa_table
                      """.stripMargin
             println("--------------------" + sqlStr)
-            val medusa_table_step2_df = sqlContext.sql(sqlStr)
-            medusa_table_step2_df.cache()
-            medusa_table_step2_df.registerTempTable("medusa_table_step2")
-            writeToHDFSForCheck(date, "medusa_table_step2_df", medusa_table_step2_df, p.deleteOld)
+            val movie_medusa_table_step2_df = sqlContext.sql(sqlStr)
+            movie_medusa_table_step2_df.cache()
+            movie_medusa_table_step2_df.registerTempTable("medusa_table_step2")
+            writeToHDFSForCheck(date, "movie_medusa_table_step2_df", movie_medusa_table_step2_df, p.deleteOld)
             sqlStr =
               s"""
                  |select a.userId,
@@ -153,10 +153,10 @@ object channelClassificationAnalyse extends BaseClass {
                  |from moretv_table
                      """.stripMargin
             println("--------------------" + sqlStr)
-            val moretv_table_step2_df = sqlContext.sql(sqlStr)
-            moretv_table_step2_df.cache()
-            moretv_table_step2_df.registerTempTable("moretv_table_step2")
-            writeToHDFSForCheck(date, "moretv_table_step2_df", moretv_table_step2_df, p.deleteOld)
+            val movie_moretv_table_step2_df = sqlContext.sql(sqlStr)
+            movie_moretv_table_step2_df.cache()
+            movie_moretv_table_step2_df.registerTempTable("moretv_table_step2")
+            writeToHDFSForCheck(date, "movie_moretv_table_step2_df", movie_moretv_table_step2_df, p.deleteOld)
             sqlStr =
               s"""
                  |select a.userId,
@@ -181,7 +181,7 @@ object channelClassificationAnalyse extends BaseClass {
             val step1_table_df = sqlContext.read.json(mergerRDD)
             step1_table_df.cache()
             step1_table_df.registerTempTable("step1_table")
-            writeToHDFSForCheck(date, "cc_step1_table_df", step1_table_df, p.deleteOld)
+            writeToHDFSForCheck(date, "movie_cc_step1_table_df", step1_table_df, p.deleteOld)
 
             /** step2 用于过滤单个用户播放当个视频量过大的情况 */
             sqlStr =
@@ -259,3 +259,13 @@ object channelClassificationAnalyse extends BaseClass {
 
 
 }
+
+/**
+  * 比对逻辑：
+  * 1.首先比对movie频道下的分类个数，
+  * 2.比对各个分类下的数据差异，找差异比较大的记录，然后根据写在HDFS的中间结果进行分析
+  * */
+
+/**遇到的问题
+  *
+  * */
