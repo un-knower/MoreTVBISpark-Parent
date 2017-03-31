@@ -28,16 +28,11 @@ trait LogConfig {
   /**
     * 频道类型 */
   val CHANNEL_MOVIE="movie"
-<<<<<<< HEAD
   val CHANNEL_KIDS = "kids"
-=======
   val CHANNEL_TV="tv"
   val CHANNEL_HOT="hot"
   val CHANNEL_VARIETY_PROGRAM="zongyi"
   val CHANNEL_OPERA="xiqu"
   val CHANNEL_COMIC="comic"
   val CHANNEL_RECORD="jilu"
->>>>>>> 94f9426c4ecf82fd4b8ee2e998892d699fd649d6
-
-
 }
