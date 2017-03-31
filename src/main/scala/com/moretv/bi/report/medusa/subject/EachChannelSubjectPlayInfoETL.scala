@@ -230,7 +230,9 @@ object EachChannelSubjectPlayInfoETL extends BaseClass {
 
           analyse_resul_df.collect.foreach(row => {
             var subject_content_type_name=row.getString(0)
-            if(subject_content_type_name.equalsIgnoreCase("电视剧")){
+            if(null==subject_content_type_name){
+              subject_content_type_name=row.getString(0)
+            } else if(subject_content_type_name.equalsIgnoreCase("电视剧")){
               subject_content_type_name="电视"
             }else if(subject_content_type_name.equalsIgnoreCase("记录片")){
               subject_content_type_name="纪实"
