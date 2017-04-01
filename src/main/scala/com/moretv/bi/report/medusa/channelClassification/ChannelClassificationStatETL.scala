@@ -127,6 +127,7 @@ object ChannelClassificationStatETL extends BaseClass {
             all_medusa_table_step2_df.cache()
             all_medusa_table_step2_df.registerTempTable("medusa_table_step2")
             writeToHDFSForCheck(date, "all_medusa_table_step2_df", all_medusa_table_step2_df, p.deleteOld)
+            /**禁用left join维度表，会引入其他频道的数据量*/
             sqlStr =
               s"""
                  |select a.userId,
@@ -134,12 +135,13 @@ object ChannelClassificationStatETL extends BaseClass {
                  |       a.pathMain,
                  |       a.event,
                  |       a.main_category,
-                 |       if(b.second_category is null,'其他分类',b.second_category) as second_category,
+                 |       b.second_category as second_category,
                  |       a.flag
                  |from medusa_table_step2                       a
-                 |left join
+                 |join
                  |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}  b
                  |    on a.main_category=b.site_content_type and a.second_category=b.second_category
+                 |where b.main_category_code!='program_site'
                      """.stripMargin
             println("--------------------" + sqlStr)
             val medusa_table_rdd = sqlContext.sql(sqlStr).toJSON
@@ -169,12 +171,13 @@ object ChannelClassificationStatETL extends BaseClass {
                  |       a.path,
                  |       a.event,
                  |       a.main_category,
-                 |       if(b.second_category is null,'其他分类',b.second_category) as second_category,
+                 |       b.second_category as second_category,
                  |       a.flag
-                 |from all_moretv_table_step2                 a
-                 |left join
+                 |from all_moretv_table_step2                   a
+                 |join
                  |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}  b
                  |    on a.main_category=b.site_content_type and a.second_category=b.second_category_code
+                 |where b.main_category_code!='program_site'
                      """.stripMargin
             println("--------------------" + sqlStr)
             val moretv_table_rdd = sqlContext.sql(sqlStr).toJSON
@@ -274,8 +277,18 @@ object ChannelClassificationStatETL extends BaseClass {
 
   /**遇到的问题
     *
-    * 名作之壁 在站点树里解析为黑马之作
+    * 1.名作之壁 在站点树里解析为黑马之作
     * 黑马之作 包含两个部分，一个是2.x的名作之壁，另一个是3.x黑马之作
+    *
+    *
+    * 2.在站点树里没有
+    *  动漫： 名作之壁
+    *  戏曲： 戏曲综艺
+    *  记录： 猫叔推荐 、 军事风云
+    *  综艺： 2016新歌声
+    *  资讯： 资讯专题
+    *  电视： 韩剧热流、粤语佳片、科学幻想
+    *  电影： 已收藏、日韩亚太
     * */
 
 
