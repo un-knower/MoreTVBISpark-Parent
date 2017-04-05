@@ -1,4 +1,4 @@
-package com.moretv.bi.report.medusa.medusaAndMoretvParquetMerger
+package com.moretv.bi.etl
 
 import java.util.Calendar
 
@@ -15,11 +15,11 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
   * This object is used to merge the parquet data of medusa and moretv into one parquet!
   * input: /log/medusa/parquet/$date/play
   * input: /mbi/parquet/playview/$date
-  * output: /log/medusaAndMoretv/parquet/$date/playview2filterETL
+  * output: /log/medusaAndMoretv/parquet/$date/playviewETL
   *
   * play事实表ETL需要做的任务：
-  * 1.过滤播放量大于5000的记录【参考com.moretv.bi.report.medusa.channeAndPrograma.movie.EachChannelSubjectPlayInfoExample代码】
-  * 2.解析出所有分析脚本可以使用的subject code【参考com.moretv.bi.report.medusa.channeAndPrograma.movie.EachChannelSubjectPlayInfoExample代码】
+  * 1.过滤播放量大于5000的记录【参考com.moretv.bi.report.medusa.subject.EachChannelSubjectPlayInfoETL代码】
+  * 2.解析出所有分析脚本可以使用的subject code【参考com.moretv.bi.report.medusa.subject.EachChannelSubjectPlayInfoETL代码】
   * 3.解析出不同入口维度【参考com.moretv.bi.report.medusa.newsRoomKPI.ChannelEntrancePlayStatExample代码】
   *
   */
