@@ -1,5 +1,6 @@
 type=command
 dependencies=merger_playview_isExist
-mainclass=com.moretv.bi.report.medusa.channeAndPrograma.kids.KidsEachTabPlayInfo
+#mainclass=com.moretv.bi.report.medusa.channeAndPrograma.kids.KidsEachTabPlayInfo
+mainclass=com.moretv.bi.report.medusa.channeAndPrograma.kids.KidsEachTabPlayInfoDWVersion
 command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}
 
