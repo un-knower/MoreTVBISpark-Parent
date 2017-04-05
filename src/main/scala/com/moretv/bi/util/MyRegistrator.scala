@@ -6,6 +6,7 @@ import org.apache.spark.serializer.KryoRegistrator
 /**
  * Created by Will on 2015/8/10.
  */
+@deprecated
 class MyRegistrator extends KryoRegistrator {
   override def registerClasses(kryo: Kryo) {
 

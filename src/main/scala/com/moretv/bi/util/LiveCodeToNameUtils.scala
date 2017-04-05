@@ -110,6 +110,7 @@ object LiveCodeToNameUtils {
 
   }
 
+  @deprecated
   def getMVSubjectName(sid:String) = {
 //    if(mvSubjectNameMap.isEmpty){
 //      initSidMap(url_mtv_cms_23,mvSubjectNameSql,mvSubjectNameMap,user1,password1)

@@ -6,6 +6,7 @@ import scala.reflect.runtime.universe._
 /**
   * Created by 连凯 on 2016/4/23.
   */
+@deprecated
 object ImplicitClass {
 
   implicit class Row2Tuple(row:Row){

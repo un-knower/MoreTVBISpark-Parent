@@ -9,6 +9,8 @@ import com.moretv.bi.util.baseclasee.{ModuleClass, BaseClass}
 /**
  * Created by Administrator on 2017/1/5.
  */
+
+@deprecated //相关信息添加到用户维度表
 object UserAreaInfoMap extends BaseClass{
 
   def main(args: Array[String]) {

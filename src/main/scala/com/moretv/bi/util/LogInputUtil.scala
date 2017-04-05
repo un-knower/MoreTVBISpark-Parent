@@ -3,6 +3,7 @@ package com.moretv.bi.util
 /**
  * Created by Will on 2015/9/12.
  */
+@deprecated
 object LogInputUtil {
 
   /**

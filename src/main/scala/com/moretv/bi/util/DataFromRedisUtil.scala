@@ -8,6 +8,7 @@ import org.json.JSONObject
  * Created by xia jun on 2016/9/4.
  * 该类用于从redis数据库中提取相关信息
  */
+@deprecated
 object DataFromRedisUtil {
 
   val TITLE = "title"

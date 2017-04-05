@@ -1,5 +1,5 @@
 type=command
 dependencies=merger_playview_isExist
-mainclass=com.moretv.bi.report.medusa.newsRoomKPI.ChannelEntrancePlayStat
+mainclass=com.moretv.bi.report.medusa.entrance.ChannelEntrancePlayStatETL
 command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}
 

@@ -13,6 +13,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
  * Created by xiajun on 2016/5/16.
  * 推荐位节目、精选集播放情况
  */
+@deprecated
 object MVEachAreaPlayInfo extends BaseClass{
 
 

@@ -10,6 +10,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 /**
   * Created by Will on 2016/2/16.
   */
+@deprecated
 object ProvinceTotal extends BaseClass{
 
   def main(args: Array[String]): Unit = {

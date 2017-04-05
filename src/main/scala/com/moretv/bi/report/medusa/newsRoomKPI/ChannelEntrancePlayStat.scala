@@ -93,6 +93,7 @@ object ChannelEntrancePlayStat extends BaseClass {
             """.stripMargin
           )
 
+          //(channel,入口),userId
           val userRdd = contentFilter(dfUser)
             .map(e => ((e._1, e._2), e._4))
 
@@ -140,7 +141,8 @@ object ChannelEntrancePlayStat extends BaseClass {
 
   }
 
-
+  //dfUser: userId,pathMain,path,contentType,pathIdentificationFromPath,flag,cast(0 as Long)
+  //dfDuration : userId,pathMain,path,contentType,pathIdentificationFromPath,flag,duration
   def contentFilter(df: DataFrame): RDD[(String, String, Long, String)] = {
 
     val rdd = df.map(e => {
@@ -156,7 +158,7 @@ object ChannelEntrancePlayStat extends BaseClass {
           }
         }
       }
-
+      //                    pathMain        path             flag              0             userId
       (channel, splitSource(e.getString(1), e.getString(2), e.getString(5)), e.getLong(6), e.getString(0))
 
     })
@@ -187,6 +189,7 @@ object ChannelEntrancePlayStat extends BaseClass {
     }
   }
 
+  //pathMain        path             flag
   def splitSource(pathMain: String, path: String, flag: String): String = {
     val specialPattern = "home\\*my_tv\\*[a-zA-Z0-9&\\u4e00-\\u9fa5]{1,}".r
     flag match {

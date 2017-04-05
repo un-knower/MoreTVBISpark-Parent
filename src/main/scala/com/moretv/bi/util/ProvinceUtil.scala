@@ -3,6 +3,7 @@ package com.moretv.bi.util
 /**
   * Created by Will on 2016/6/4.
   */
+@deprecated
 object ProvinceUtil {
 
   val provinces = List("上海", "云南", "内蒙古", "北京", "台湾", "吉林", "四川",

@@ -3,6 +3,7 @@ package com.moretv.bi.util
 /**
  * Created by Will on 2015/8/5.
  */
+@deprecated
 object ProductModelUtil {
 
   def getProductBrand(productModel: String): String = {

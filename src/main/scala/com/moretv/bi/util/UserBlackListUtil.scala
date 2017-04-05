@@ -4,6 +4,7 @@ package com.moretv.bi.util
   * Created by Will on 2016/8/3.
   * 用户黑名单，存放总是产生脏数据的用户的userId
   */
+@deprecated
 object UserBlackListUtil {
 
   private val blackList = List("eee3fe94a7b248105ae8507e6ac641af",

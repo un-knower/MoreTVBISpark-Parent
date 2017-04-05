@@ -8,6 +8,7 @@ import com.moretv.bi.global.DataBases
 /**
  * Created by mycomputer on 2015/3/27.
  */
+@deprecated
 trait MysqlSetting {
   val driver = "com.mysql.jdbc.Driver"
   val db = DataIO.getMySqlOps(DataBases.MORETV_BI_MYSQL)

@@ -11,6 +11,7 @@ import scala.collection.mutable.Map
   * Created by xiajun on 2016/8/2.
   * 用于获取账户的相关信息
   */
+@deprecated
 object AccountIDInfoUtils {
   /**
     * 定义一些map集合

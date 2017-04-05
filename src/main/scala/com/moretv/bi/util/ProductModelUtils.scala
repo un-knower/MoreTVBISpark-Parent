@@ -10,6 +10,7 @@ import scala.io.Source
 /**
   * Created by Will on 2016/2/23.
   */
+@deprecated
 object ProductModelUtils {
   val rootDir = SparkFiles.getRootDirectory()
   private val NON_OTT = s"${rootDir}/non_ott.properties"

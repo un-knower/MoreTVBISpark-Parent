@@ -14,6 +14,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
  * Created by xiajun on 2016/5/16.
  *
  */
+@deprecated
 object EachVideoOfMVPlayInfo extends BaseClass{
   def main(args: Array[String]): Unit = {
     ModuleClass.executor(this,args)

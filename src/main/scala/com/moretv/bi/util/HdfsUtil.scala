@@ -9,12 +9,15 @@ import org.apache.hadoop.fs.{FileUtil, Path, FileSystem}
 object HdfsUtil {
 
   def deleteHDFSFile(file:String){
+    if(null!=file && !file.isEmpty){
     val conf = new Configuration()
     val fs= FileSystem.get(conf)
-
     val path = new Path(file)
     if(fs.exists(path)){
       fs.delete(path,true)
+    }
+    }else{
+      println("deleteHDFSFile failed")
     }
   }
 

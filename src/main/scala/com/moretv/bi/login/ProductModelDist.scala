@@ -7,7 +7,8 @@ import org.apache.spark.sql.SQLContext
 import java.lang.{Long => JLong}
 
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.global.{DataBases, DimensionTypes, LogTypes}
+import org.apache.spark.sql.functions._
 import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
@@ -31,13 +32,22 @@ object ProductModelDist extends BaseClass {
 
         val inputDate = p.startDate
 
-        val logRdd = DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LOGINLOG)
-          .select("productModel", "mac").
-          map(row => if (row.getString(0) == null) {
+        val productDf = DataIO.getDataFrameOps.getDimensionDF(
+          sqlContext, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_PRODUCT_MODEL
+        )
+
+        val logDf = DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LOGINLOG)
+          .select("productModel", "mac")
+
+        val logRdd = logDf.as("a").join(productDf.as("b"),
+          productDf("product_model") === logDf("productModel") && isnull(productDf("dim_invalid_time")),
+          "leftouter")
+          .selectExpr("a.productModel", "a.mac", "case when b.brand_name is null then '其他品牌' else b.brand_name end")
+          .map(row => if (row.getString(0) == null) {
             (("null", "null"), row.getString(1))
           } else {
             val productModel = row.getString(0)
-            val productBrand = ProductModelUtils.getBrand(productModel)
+            val productBrand = row.getString(2)
             ((productModel, productBrand), row.getString(1))
           }).cache()
         val loginMap = logRdd.countByKey()

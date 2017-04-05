@@ -1,5 +1,5 @@
 type=command
 dependencies=merger_playview_isExist
-mainclass=com.moretv.bi.report.medusa.channeAndPrograma.movie.EachChannelSubjectPlayInfo
+mainclass=com.moretv.bi.report.medusa.subject.EachChannelSubjectPlayInfoETL
 command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}
 
