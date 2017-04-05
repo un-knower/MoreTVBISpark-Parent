@@ -1,3 +1,0 @@
-type=command
-dependencies=medusa_moretv_end
-command=sh ${working.dir}/curl.sh medusa_bi medusa_play_end ${username} ${password} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld} 

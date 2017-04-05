@@ -1,3 +1,0 @@
-type=command
-dependencies=dbsnapshot,loginlog,medusa_launchclick,merger_app_recommend,medusa_play,merger_playview,other
-command=echo "medusa2parquet is end ..."
