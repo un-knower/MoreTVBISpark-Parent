@@ -1,4 +1,0 @@
-type=command
-dependencies=medusaparquet
-command=echo "medusa_moretv is exist ..."
-

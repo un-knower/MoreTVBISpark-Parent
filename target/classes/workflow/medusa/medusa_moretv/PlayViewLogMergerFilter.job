@@ -1,5 +1,0 @@
-type=command
-dependencies=PlayViewLogMerger
-mainclass=com.moretv.bi.report.medusa.medusaAndMoretvParquetMerger.PlayViewLogMergerFilter
-command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}
-
