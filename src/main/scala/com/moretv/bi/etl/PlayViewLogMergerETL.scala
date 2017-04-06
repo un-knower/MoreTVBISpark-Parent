@@ -158,7 +158,7 @@ object PlayViewLogMergerETL extends BaseClass {
                        |select $medusaColNames,
                        |    getEntranceType(pathMain,'medusa')    as entryType,
                        |    getSubjectName(pathSpecial)           as subjectName,
-                       |    getSubjectCode(pathSpecial,'medusa')  as subjectCode
+                       |    getSubjectCode(pathSpecial,'medusa')  as subjectCode,
                        |    getListCategoryMedusa(pathMain,1)     as main_category,
                        |    getListCategoryMedusa(pathMain,2)     as second_category,
                        |    getListCategoryMedusa(pathMain,3)     as third_category
