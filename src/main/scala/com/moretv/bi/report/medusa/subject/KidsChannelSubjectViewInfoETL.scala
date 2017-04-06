@@ -15,7 +15,7 @@ import org.apache.spark.sql.SQLContext
   * 数据输入：
   * 数据输出：
   */
-object KidsChannelSubjectPlayInfoETL extends BaseClass  {
+object KidsChannelSubjectViewInfoETL extends BaseClass  {
   private val tableName = "medusa_channel_view_kids_info "
   private val fields = "day,channel,view_user,view_num"
   private val sqlInsert = s"insert into $tableName($fields) values(?,?,?,?)"
