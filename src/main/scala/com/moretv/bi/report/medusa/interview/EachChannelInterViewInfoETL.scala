@@ -44,7 +44,7 @@ object EachChannelInterViewInfoETL extends BaseClass  {
           val date = DateFormatUtils.readFormat.format(cal.getTime)
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
-          DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MERGER, LogTypes.INTERVIEW_ETL, date).registerTempTable("interview_etl")
+          DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MERGER, LogTypes.INTERVIEW_ETL, date).registerTempTable("interview-etl")
 
           //删除历史记录
           val channelArray=Array(CHANNEL_KIDS,CHANNEL_OPERA,CHANNEL_COMIC,CHANNEL_VARIETY_PROGRAM,CHANNEL_HOT,CHANNEL_MV,CHANNEL_RECORD,CHANNEL_TV,CHANNEL_MOVIE)
@@ -63,7 +63,7 @@ object EachChannelInterViewInfoETL extends BaseClass  {
             val sql=
               s"""
                  | select count(distinct userId) as view_user ,count(userId) as view_num
-                 | from interview_etl
+                 | from interview-etl
                  | where contentType='$channel_name' and event='enter'
              """.stripMargin
 
