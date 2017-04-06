@@ -26,14 +26,15 @@ object SubjectInterviewLogMergerETL extends BaseClass {
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-        //引入维度表
+        //引入专题维度表
         val dimension_subject_input_dir = DataIO.getDataFrameOps.getDimensionPath(MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SUBJECT)
         val dimensionSubjectFlag = FilesInHDFS.IsInputGenerateSuccess(dimension_subject_input_dir)
         println(s"--------------------dimensionSubjectFlag is ${dimensionSubjectFlag}")
         if (dimensionSubjectFlag) {
-          DataIO.getDataFrameOps.getDimensionDF(sqlContext, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SUBJECT).registerTempTable(DimensionTypes.DIM_MEDUSA_SUBJECT)
+          val dimension_subject_df = DataIO.getDataFrameOps.getDimensionDF(sqlContext,p.paramMap,MEDUSA_DIMENSION,DimensionTypes.DIM_MEDUSA_SUBJECT)
+          dimension_subject_df.registerTempTable(DimensionTypes.DIM_MEDUSA_SUBJECT)
         } else {
-          throw new RuntimeException(s"--------------------dimension not exist")
+          throw new RuntimeException(s"--------------------dimension subject not exist")
         }
 
         var sqlStr: String = ""
@@ -51,69 +52,98 @@ object SubjectInterviewLogMergerETL extends BaseClass {
           if (medusaFlag && moretvFlag) {
             val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MEDUSA, LogTypes.SUBJECT, inputDate)
             val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MORETV, LogTypes.DETAIL_SUBJECT, inputDate)
+            medusaDf.cache()
+            moretvDf.cache()
+            medusaDf.registerTempTable("medusa_table")
+            moretvDf.registerTempTable("moretv_table")
+
             val medusaColNames = medusaDf.columns.toList.filter(e => {
               ParquetSchema.schemaArr.contains(e)
             }).mkString(",")
             val moretvColNames = moretvDf.columns.toList.filter(e => {
               ParquetSchema.schemaArr.contains(e)
             }).mkString(",")
-            medusaDf.cache()
-            moretvDf.cache()
-            medusaDf.registerTempTable("log_data_1")
-            moretvDf.registerTempTable("log_data_2")
 
-            /* val sqlSelectMedusa = s"select $medusaColNames,getSubjectName(subjectCode) as subjectTitle,'medusa' as " +
-               "flag from log_data_1"
-             val sqlSelectMoretv = s"select $moretvColNames,date as day,getSubjectName(subjectCode) as subjectTitle," +
-               s"'moretv' as flag  from log_data_2"*/
+            sqlStr =
+              s"""
+                |select $medusaColNames,
+                |'medusa' as flag
+                |from medusa_table
+              """.stripMargin
+            val medusaDfSelect = sqlContext.sql(sqlStr).toJSON
 
-            val sqlSelectMedusa = s"select $medusaColNames,'medusa' as " +
-              "flag from log_data_1"
-            val sqlSelectMoretv = s"select $moretvColNames,date as day," +
-              s"'moretv' as flag  from log_data_2"
+            sqlStr =
+              s"""
+                |select $moretvColNames,
+                |'moretv' flag
+                |from moretv_table
+              """.stripMargin
+            val moretvDfSelect = sqlContext.sql(sqlStr).toJSON
 
-            val df1 = sqlContext.sql(sqlSelectMedusa).toJSON
-            val df2 = sqlContext.sql(sqlSelectMoretv).toJSON
-            val mergerRdd = df1.union(df2)
+            //merge medusa and moretv
+            val mergerRdd = medusaDfSelect.union(moretvDfSelect)
             if (p.deleteOld) {
               HdfsUtil.deleteHDFSFile(outputPath)
             }
-            val mergered_df = sqlContext.read.json(mergerRdd).toDF()
-            mergered_df.cache()
-            mergered_df.registerTempTable("mergered_df_table")
-            val mergerColNamesWithTable = mergered_df.columns.toList.filter(e => {
+            val mergeredDf = sqlContext.read.json(mergerRdd).toDF()
+            mergeredDf.cache()
+            mergeredDf.registerTempTable("mergered_df_table")
+            val mergerColNamesWithTable = mergeredDf.columns.toList.filter(e => {
               ParquetSchema.schemaArr.contains(e)
             }).map(e => {
               "a." + e
             }).mkString(",")
+
             sqlStr =
               s"""
-                         select  $mergerColNamesWithTable,
-                 |       b.subject_name,
+                 |select $mergerColNamesWithTable,
+                 |b.subject_name subjectTitle
                  |from mergered_df_table a
                  |left join
-                 |    ${DimensionTypes.DIM_MEDUSA_SUBJECT} b
+                 |${DimensionTypes.DIM_MEDUSA_SUBJECT} b
                  |on trim(a.subject_code)=trim(b.subject_code)
                      """.stripMargin
-            val result_df = sqlContext.sql(sqlStr)
-            result_df.write.parquet(outputPath)
+            val resultDf = sqlContext.sql(sqlStr)
+            resultDf.write.parquet(outputPath)
           } else if (!medusaFlag && moretvFlag) {
-             val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MORETV, LogTypes.DETAIL_SUBJECT, inputDate).repartition(24).persist(StorageLevel.MEMORY_AND_DISK)
+            val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MORETV, LogTypes.DETAIL_SUBJECT, inputDate)
+            moretvDf.cache()
+            moretvDf.registerTempTable("moretv_table")
+            val moretvColNames = moretvDf.columns.toList.map(e=> {
+              "a." + e
+            }).mkString(",")
 
-            val moretvColNames = moretvDf.columns.toList.mkString(",")
-            moretvDf.registerTempTable("log_data_2")
-            val sqlSelectMoretv = s"select $moretvColNames,date as day,getSubjectName(subjectCode) as subjectTitle," +
-              s"'moretv' as flag " +
-              " from log_data_2"
-            sqlContext.sql(sqlSelectMoretv).write.parquet(outputPath)
+            sqlStr =
+              s"""
+                |select $moretvColNames,
+                |date as day,
+                |b.subject_name as subjectTitle,
+                |'moretv' flag
+                |from moretv_table a
+                |left join
+                |${DimensionTypes.DIM_MEDUSA_SUBJECT} b
+                |on trim(a.subject_code)=trim(b.subject_code)
+              """.stripMargin
+            sqlContext.sql(sqlStr).write.parquet(outputPath)
           } else if (medusaFlag && !moretvFlag) {
-            //val medusaDf = sqlContext.read.parquet(logDir1)
-            val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MEDUSA, LogTypes.SUBJECT, inputDate).repartition(24).persist(StorageLevel.MEMORY_AND_DISK)
-            val medusaColNames = medusaDf.columns.toList.mkString(",")
-            medusaDf.registerTempTable("log_data_1")
-            val sqlSelectMedusa = s"$medusaColNames,getSubjectName(subjectCode) as subjectTitle,'medusa' as flag " +
-              " from log_data_1"
-            sqlContext.sql(sqlSelectMedusa).write.parquet(outputPath)
+            val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MEDUSA, LogTypes.SUBJECT, inputDate)
+            medusaDf.cache()
+            medusaDf.registerTempTable("medusa_table")
+            val medusaColNames = medusaDf.columns.toList.map(e=>{
+              "a." + e
+            }).mkString(",")
+
+            sqlStr =
+              s"""
+                |select $medusaColNames,
+                |b.subject_name as subjectTitle,
+                |'medusa' as flag
+                |from medusa_table a
+                |left join
+                |${DimensionTypes.DIM_MEDUSA_SUBJECT} b
+                |on trim(a.subject_code)=trim(b.subject_code)
+              """.stripMargin
+            sqlContext.sql(sqlStr).write.parquet(outputPath)
           }
           cal.add(Calendar.DAY_OF_MONTH, -1)
         })
