@@ -108,7 +108,7 @@ object SingerPlayStat extends BaseClass {
 
             val df = DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MEDUSA, LogTypes.PLAY, loadDate)
 
-              .filter($"date" === sqlDate && $"contentType" === contentType && $"event" === "startplay")
+              .filter( $"contentType" === contentType && $"event" === "startplay")
               .withColumn("pagePath", explode(split($"pathMain", "-")))
               .withColumn("entrance_code",
                 explode(
