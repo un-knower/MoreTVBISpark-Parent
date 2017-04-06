@@ -3,6 +3,7 @@ package com.moretv.bi.etl
 /**
   * Created by baozhi.wang on 2017/3/24.
   */
+@deprecated
 object TabPathConstETL {
 
   // 一级目录
