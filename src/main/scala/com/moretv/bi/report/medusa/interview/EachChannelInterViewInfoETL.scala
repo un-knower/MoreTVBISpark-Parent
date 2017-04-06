@@ -59,14 +59,12 @@ object EachChannelInterViewInfoETL extends BaseClass  {
           for(channel_name <-channelArray){
             val tableName=channel_to_mysql_table.get(channel_name).get
             val sqlInsert = s"insert into $tableName($fields) values(?,?,?,?)"
-
-            val channelLike= "'"+channel_name+"%'"
-
+//            val channelLike= "'"+channel_name+"%'"
             val sql=
               s"""
                  | select count(distinct userId) as view_user ,count(userId) as view_num
                  | from interview_etl
-                 | where contentType='$channelLike' and event='enter'
+                 | where contentType='$channel_name' and event='enter'
              """.stripMargin
 
           sqlContext.sql(sql).collect.foreach(row=>{
