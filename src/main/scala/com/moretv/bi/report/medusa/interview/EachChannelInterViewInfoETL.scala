@@ -19,14 +19,16 @@ import org.apache.spark.sql.SQLContext
 object EachChannelInterViewInfoETL extends BaseClass  {
   private val fields = "day,channelname,view_user,view_num"
   private val channel_to_mysql_table=Map(
-    CHANNEL_COMIC->"medusa_channel_subject_view_comic_info",
-    CHANNEL_MOVIE->"medusa_channel_subject_view_movie_info",
-    CHANNEL_TV->"medusa_channel_subject_view_tv_info",
-    CHANNEL_HOT->"medusa_channel_subject_view_hot_info",
-    CHANNEL_VARIETY_PROGRAM->"medusa_channel_subject_view_zongyi_info",
-    CHANNEL_OPERA->"medusa_channel_subject_view_xiqu_info",
-    CHANNEL_RECORD->"medusa_channel_subject_view_jilu_info",
-    CHANNEL_KIDS->"medusa_channel_view_kids_info")
+    CHANNEL_KIDS->"medusa_channel_view_kids_info",
+    CHANNEL_OPERA->"medusa_channel_view_xiqu_info",
+    CHANNEL_COMIC->"medusa_channel_view_comic_info",
+    CHANNEL_VARIETY_PROGRAM->"medusa_channel_view_zongyi_info",
+    CHANNEL_HOT->"medusa_channel_view_hot_info",
+    CHANNEL_MV->"medusa_channel_view_mv_info",
+    CHANNEL_RECORD->"medusa_channel_view_jilu_info",
+    CHANNEL_TV->"medusa_channel_view_tv_info",
+    CHANNEL_MOVIE->"medusa_channel_view_movie_info"
+  )
   def main(args: Array[String]): Unit = {
     ModuleClass.executor(this, args)
   }
@@ -45,7 +47,7 @@ object EachChannelInterViewInfoETL extends BaseClass  {
           DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MERGER, LogTypes.INTERVIEW_ETL, date).registerTempTable(LogTypes.INTERVIEW_ETL)
 
           //删除历史记录
-          val channelArray=Array(CHANNEL_MOVIE,CHANNEL_COMIC,CHANNEL_TV,CHANNEL_HOT,CHANNEL_VARIETY_PROGRAM,CHANNEL_OPERA,CHANNEL_RECORD)
+          val channelArray=Array(CHANNEL_KIDS,CHANNEL_OPERA,CHANNEL_COMIC,CHANNEL_VARIETY_PROGRAM,CHANNEL_HOT,CHANNEL_MV,CHANNEL_RECORD,CHANNEL_TV,CHANNEL_MOVIE)
           if (p.deleteOld) {
             for(channel_name <-channelArray){
               val tableName=channel_to_mysql_table.get(channel_name).get
@@ -63,8 +65,8 @@ object EachChannelInterViewInfoETL extends BaseClass  {
             val sql=
               s"""
                  | select count(distinct userId) as view_user ,count(userId) as view_num
-                 | from $LogTypes.INTERVIEW_ETL
-                 | where subjectCode like $channelLike and event in ('enter','view')
+                 | from ${LogTypes.INTERVIEW_ETL}
+                 | where contentType='$channelLike' and event='enter'
              """.stripMargin
 
           sqlContext.sql(sql).collect.foreach(row=>{

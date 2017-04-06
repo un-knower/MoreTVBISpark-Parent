@@ -35,6 +35,7 @@ trait LogConfig {
   val CHANNEL_OPERA="xiqu"
   val CHANNEL_COMIC="comic"
   val CHANNEL_RECORD="jilu"
+  val CHANNEL_MV="mv"
 
 
 }
