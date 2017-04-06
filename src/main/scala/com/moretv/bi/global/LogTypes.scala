@@ -101,6 +101,9 @@ object LogTypes {
   val STEP3 = "step3" //subjectType is subject
 
 
+  val INTERVIEW_ETL = "interview_etl"
+
+
 
 
 }
