@@ -164,6 +164,7 @@ object PlayViewLogMergerETL extends BaseClass {
                        |    getListCategoryMedusa(pathMain,3)     as third_category
                        |from $medusa_table_filtered
                      """.stripMargin
+            println("--------------------" + sqlStr)
             val medusa_table_init_table_df=sqlContext.sql(sqlStr)
             medusa_table_init_table_df.registerTempTable("medusa_table_init_table")
             //解析subject code维度,解析不到，使用subject维度表补全
@@ -184,15 +185,16 @@ object PlayViewLogMergerETL extends BaseClass {
                         |    ) b
                         |on trim(a.subjectName)=trim(b.subject_name)
                      """.stripMargin
+            println("--------------------" + sqlStr)
             sqlContext.sql(sqlStr)
             val medusa_rdd = sqlContext.sql(sqlStr).toJSON
 
             val sqlSelectMoretv =s"""select $moretvColNames,
-                                     |  getEntranceType(pathMain,'moretv') as entryType,
+                                     |  getEntranceType(path,'moretv') as entryType,
                                      |  getSubjectCode(path,'moretv')      as subjectCode,
                                      |  getListCategoryMoretv(path,1)      as main_category,
                                      |  getListCategoryMoretv(path,2)      as second_category,
-                                     |  getListCategoryMedusa(path,3)      as third_category
+                                     |  getListCategoryMoretv(path,3)      as third_category
                                      |from $moretv_table
                      """.stripMargin
             val moretv_rdd = sqlContext.sql(sqlSelectMoretv).toJSON
