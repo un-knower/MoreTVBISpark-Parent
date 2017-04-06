@@ -92,6 +92,9 @@ object InterviewLogMergerETL extends BaseClass{
       if (path.contains("-")) {
         if (path.split("-").length >= 2) {
           contentType = path.split("-")(1)
+          if("kids_home".equalsIgnoreCase(contentType)){
+            contentType="kids"
+          }
         }
       }
     }
