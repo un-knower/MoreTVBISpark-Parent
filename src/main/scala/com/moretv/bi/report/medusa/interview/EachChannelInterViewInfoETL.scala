@@ -17,7 +17,7 @@ import org.apache.spark.sql.SQLContext
   * 数据输出：
   */
 object EachChannelInterViewInfoETL extends BaseClass  {
-  private val fields = "day,channelname,view_user,view_num"
+  private val fields = "day,channel,view_user,view_num"
   private val channel_to_mysql_table=Map(
     CHANNEL_KIDS->"medusa_channel_view_kids_info",
     CHANNEL_OPERA->"medusa_channel_view_xiqu_info",
