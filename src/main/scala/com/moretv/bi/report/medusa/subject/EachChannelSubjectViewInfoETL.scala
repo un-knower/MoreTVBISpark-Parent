@@ -25,7 +25,8 @@ object EachChannelSubjectViewInfoETL extends BaseClass  {
     CHANNEL_HOT->"medusa_channel_subject_view_hot_info",
     CHANNEL_VARIETY_PROGRAM->"medusa_channel_subject_view_zongyi_info",
     CHANNEL_OPERA->"medusa_channel_subject_view_xiqu_info",
-    CHANNEL_RECORD->"medusa_channel_subject_view_jilu_info")
+    CHANNEL_RECORD->"medusa_channel_subject_view_jilu_info",
+    CHANNEL_KIDS->"medusa_channel_subject_view_kids_info")
   def main(args: Array[String]): Unit = {
     ModuleClass.executor(this, args)
   }
@@ -44,7 +45,7 @@ object EachChannelSubjectViewInfoETL extends BaseClass  {
           DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MERGER, LogTypes.SUBJECT_INTERVIEW_ETL, date).registerTempTable("suject_interview_table")
 
           //删除历史记录
-          val channelArray=Array(CHANNEL_MOVIE,CHANNEL_COMIC,CHANNEL_TV,CHANNEL_HOT,CHANNEL_VARIETY_PROGRAM,CHANNEL_OPERA,CHANNEL_RECORD)
+          val channelArray=Array(CHANNEL_MOVIE,CHANNEL_COMIC,CHANNEL_TV,CHANNEL_HOT,CHANNEL_VARIETY_PROGRAM,CHANNEL_OPERA,CHANNEL_RECORD,CHANNEL_KIDS)
           if (p.deleteOld) {
             for(channel_name <-channelArray){
               val tableName=channel_to_mysql_table.get(channel_name).get
