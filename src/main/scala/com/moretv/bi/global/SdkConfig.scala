@@ -1,9 +1,9 @@
 package com.moretv.bi.global
 
 /**
-  * Created by Will on 12/14/2016.
+  * 作为测试分支，保持测试数据库配置
   */
 object SdkConfig {
-
-  val CONFIG_PATH = "hdfs://hans/libs/config/bisdk-config.json"
+  //TODO 测试环境数据库
+  val CONFIG_PATH = "hdfs://hans/libs/config/bisdk-config-test.json"
 }

@@ -76,6 +76,7 @@ object LogTypes {
   val OPERATION_MM = "operation-mm"
   val PLAY_VIEW_2_FILTER = "playview2filter"
   val PLAY_VIEW_2_FILTER_ETL = "playview2filterETL"
+  val PLAY_VIEW_ETL = "playviewETL"
   val PLAY_VIEW_2 = "playview2"
   val DETAIL_SUBJECT = "detail-subject"
   val SUBJECT_INTERVIEW = "subject-interview"
