@@ -101,7 +101,7 @@ object SubjectInterviewLogMergerETL extends BaseClass {
                  |from mergered_df_table a
                  |left join
                  |${DimensionTypes.DIM_MEDUSA_SUBJECT} b
-                 |on trim(a.subject_code)=trim(b.subject_code)
+                 |on trim(a.subjectCode)=trim(b.subject_code)
                      """.stripMargin
             val resultDf = sqlContext.sql(sqlStr)
             resultDf.write.parquet(outputPath)

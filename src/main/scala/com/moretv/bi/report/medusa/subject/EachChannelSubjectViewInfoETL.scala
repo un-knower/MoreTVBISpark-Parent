@@ -5,7 +5,6 @@ import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import com.moretv.bi.report.medusa.channelClassification.ChannelClassificationStatETL._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import org.apache.spark.sql.SQLContext
@@ -20,13 +19,13 @@ import org.apache.spark.sql.SQLContext
 object EachChannelSubjectViewInfoETL extends BaseClass  {
   private val fields = "day,channelname,view_user,view_num"
   private val channel_to_mysql_table=Map(
-    CHANNEL_COMIC->"medusa_channel_eachtab_play_comic_info",
-    CHANNEL_MOVIE->"medusa_channel_eachtab_play_movie_info",
-    CHANNEL_TV->"medusa_channel_eachtab_play_tv_info",
-    CHANNEL_HOT->"medusa_channel_eachtab_play_hot_info",
-    CHANNEL_VARIETY_PROGRAM->"medusa_channel_eachtab_play_zongyi_info",
-    CHANNEL_OPERA->"medusa_channel_eachtab_play_xiqu_info",
-    CHANNEL_RECORD->"medusa_channel_eachtab_play_jilu_info")
+    CHANNEL_COMIC->"medusa_channel_subject_view_comic_info",
+    CHANNEL_MOVIE->"medusa_channel_subject_view_movie_info",
+    CHANNEL_TV->"medusa_channel_subject_view_tv_info",
+    CHANNEL_HOT->"medusa_channel_subject_view_hot_info",
+    CHANNEL_VARIETY_PROGRAM->"medusa_channel_subject_view_zongyi_info",
+    CHANNEL_OPERA->"medusa_channel_subject_view_xiqu_info",
+    CHANNEL_RECORD->"medusa_channel_subject_view_jilu_info")
   def main(args: Array[String]): Unit = {
     ModuleClass.executor(this, args)
   }
@@ -57,13 +56,17 @@ object EachChannelSubjectViewInfoETL extends BaseClass  {
           for(channel_name <-channelArray){
             val tableName=channel_to_mysql_table.get(channel_name).get
             val sqlInsert = s"insert into $tableName($fields) values(?,?,?,?)"
+
+            val channelLike= "'"+channel_name+"%'"
+
             val sql=
               s"""
                  | select count(distinct userId) as view_user ,count(userId) as view_num
-                 | from interview_kids_table
-                 | where subjectCode like $channel_name'%' and event in ('enter','view')
+                 | from suject_interview_table
+                 | where subjectCode like $channelLike and event in ('enter','view')
              """.stripMargin
-            sqlContext.sql(sql).collect.foreach(row=>{
+
+          sqlContext.sql(sql).collect.foreach(row=>{
               val channelname = channel_name
               val view_user = new JLong(row.getLong(0))
               val view_num = new JLong(row.getLong(1))
