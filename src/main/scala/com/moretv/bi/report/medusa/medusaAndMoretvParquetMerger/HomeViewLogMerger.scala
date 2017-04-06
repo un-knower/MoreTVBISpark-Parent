@@ -24,37 +24,20 @@ object HomeViewLogMerger extends BaseClass{
    override def execute(args: Array[String]) {
      ParamsParseUtil.parse(args) match {
        case Some(p)=>{
-        /* val logType = "homeview"
-         val medusaLogType = "homeview"
-         val moretvLogType = "homeview"*/
          val cal = Calendar.getInstance()
-        /* val medusaDir ="/log/medusa/parquet"
-         val moretvDir = "/mbi/parquet"*/
          cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))
 
          (0 until p.numOfDays).foreach(i=>{
            val inputDate = DateFormatUtils.readFormat.format(cal.getTime)
-          /* val logDir1 = s"/log/medusa/parquet/$inputDate/$logType"
-           val logDir2 = s"/mbi/parquet/$logType/$inputDate"
-           val medusaFlag = FilesInHDFS.fileIsExist(s"$medusaDir/$inputDate",medusaLogType)
-           val moretvFlag = FilesInHDFS.fileIsExist(s"$moretvDir/$moretvLogType",inputDate)
-           val outputPath = s"/log/medusaAndMoretvMerger/$inputDate/$logType"*/
-
            val medusa_input_dir= DataIO.getDataFrameOps.getPath(MEDUSA,LogTypes.HOMEVIEW,inputDate)
            val moretv_input_dir= DataIO.getDataFrameOps.getPath(MORETV,LogTypes.HOMEVIEW,inputDate)
            val outputPath= DataIO.getDataFrameOps.getPath(MERGER,LogTypes.HOMEVIEW,inputDate)
            val medusaFlag = FilesInHDFS.IsInputGenerateSuccess(medusa_input_dir)
            val moretvFlag = FilesInHDFS.IsInputGenerateSuccess(moretv_input_dir)
-
-
-
            if(p.deleteOld){
              HdfsUtil.deleteHDFSFile(outputPath)
            }
            if(medusaFlag && moretvFlag){
-
-            /* val medusaDf = sqlContext.read.parquet(logDir1)
-             val moretvDf = sqlContext.read.parquet(logDir2)*/
              val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.HOMEVIEW,inputDate)
              val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MORETV,LogTypes.HOMEVIEW,inputDate)
 
@@ -70,7 +53,6 @@ object HomeViewLogMerger extends BaseClass{
              val rdd = rdd1.union(rdd2)
              sqlContext.read.json(rdd).write.parquet(outputPath)
            }else if(!medusaFlag && moretvFlag){
-             //val moretvDf = sqlContext.read.parquet(logDir2)
              val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MORETV,LogTypes.HOMEVIEW,inputDate)
 
              val moretvColNames = moretvDf.columns.toList.mkString(",")
@@ -78,7 +60,6 @@ object HomeViewLogMerger extends BaseClass{
              val sqlSelectMoretv = s"select $moretvColNames,date as day,'moretv' as flag from log_data_2"
              sqlContext.sql(sqlSelectMoretv).write.parquet(outputPath)
            }else if(medusaFlag && !moretvFlag){
-             //val medusaDf = sqlContext.read.parquet(logDir1)
              val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.HOMEVIEW,inputDate)
 
              val medusaColNames = medusaDf.columns.toList.mkString(",")
