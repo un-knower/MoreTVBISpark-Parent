@@ -3,6 +3,7 @@ package com.moretv.bi.etl
 /**
   * Created by baozhi.wang on 2017/3/24.
   */
+@deprecated
 object MvDimensionClassificationETL {
 
   private val t = TabPathConstETL

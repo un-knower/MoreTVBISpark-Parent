@@ -80,6 +80,7 @@ object LogTypes {
   val PLAY_VIEW_2 = "playview2"
   val DETAIL_SUBJECT = "detail-subject"
   val SUBJECT_INTERVIEW = "subject-interview"
+  val SUBJECT_INTERVIEW_ETL = "subject-interview-etl"
   val OPERATION_ACW = "operation-acw"
 
   val BULLETSCREEN = "bulletscreen"
