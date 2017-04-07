@@ -70,7 +70,7 @@ object EachChannelInterViewDurationInfoETL extends BaseClass  {
                    | select sum(duration) as view_duration,
                    | count(distinct userId) as user
                    | from interview_etl
-                   | where contentType='$channel_name' and event='exit'
+                   | where contentType ='$channel_name' and event='exit'
                    | and duration>=0 and duration<=36000
              """.stripMargin
             }
@@ -84,9 +84,9 @@ object EachChannelInterViewDurationInfoETL extends BaseClass  {
               sqlSpark =
                 s"""
                    | select sum(duration) as view_duration,
-                   | sum(duration)/count(distinct userId) as avg_duration,
+                   | sum(duration)/count(distinct userId) as avg_duration
                    | from interview_etl
-                   | where contentType='$channel_name' and event='exit' $whereSql
+                   | where contentType ='$channel_name' and event='exit' $whereSql
              """.stripMargin
             }
 
@@ -96,12 +96,13 @@ object EachChannelInterViewDurationInfoETL extends BaseClass  {
                 s"""
                    | select sum(duration) as view_duration
                    | from interview_etl
-                   | where contentType='$channel_name' and event='exit'
+                   | where contentType ='$channel_name' and event='exit'
                    | and duration>=0 and duration<=10800
              """.stripMargin
             }
 
-            sqlContext.sql(sqlSpark).collect.foreach(row=>{
+
+           sqlContext.sql(sqlSpark).collect.foreach(row=>{
               if (channel_name=="jilu" || channel_name=="comic" || channel_name=="xiqu" || channel_name=="zongyi" || channel_name=="hot"){
                 val view_duration = new JLong(row.getLong(0))
                 util.insert(sqlStr,sqlDate,channel_name,view_duration)
