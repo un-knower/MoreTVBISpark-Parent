@@ -76,9 +76,11 @@ object LogTypes {
   val OPERATION_MM = "operation-mm"
   val PLAY_VIEW_2_FILTER = "playview2filter"
   val PLAY_VIEW_2_FILTER_ETL = "playview2filterETL"
+  val PLAY_VIEW_ETL = "playviewETL"
   val PLAY_VIEW_2 = "playview2"
   val DETAIL_SUBJECT = "detail-subject"
   val SUBJECT_INTERVIEW = "subject-interview"
+  val SUBJECT_INTERVIEW_ETL = "subject-interview-etl"
   val OPERATION_ACW = "operation-acw"
 
   val BULLETSCREEN = "bulletscreen"
@@ -98,6 +100,9 @@ object LogTypes {
   val STEP1 = "step1" //2.x and 3.x merge
   val STEP2 = "step2" //2.x and 3.x merge filter 5000
   val STEP3 = "step3" //subjectType is subject
+
+
+  val INTERVIEW_ETL = "interview-etl"
 
 
 

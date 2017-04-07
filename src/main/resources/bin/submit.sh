@@ -2,8 +2,6 @@
 
 cd `dirname $0`
 pwd=`pwd`
-
-
 source /etc/profile
 #source ~/.bash_profile
 source ./envFn.sh
