@@ -4,7 +4,8 @@ import java.lang.{Long => JLong}
 import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.global.{DataBases, DimensionTypes, LogTypes}
+import com.moretv.bi.report.medusa.util.FilesInHDFS
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import org.apache.spark.sql.SQLContext
@@ -12,7 +13,7 @@ import org.apache.spark.sql.SQLContext
 /**
   * 创建人：郭浩
   * 创建时间：2017/4/6
-  * 程序作用：分析各个频道的浏览播放量及用户数
+  * 程序作用：分析各个频道专题的浏览播放量及用户数
   * 数据输入：
   * 数据输出：
   */
@@ -34,6 +35,16 @@ object EachChannelSubjectViewInfoETL extends BaseClass  {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         val sqlContext = new SQLContext(sc)
+        //引入维度表
+        val dimension_subject_input_dir = DataIO.getDataFrameOps.getDimensionPath(MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SUBJECT)
+        val dimensionSubjectFlag = FilesInHDFS.IsInputGenerateSuccess(dimension_subject_input_dir)
+        println(s"--------------------dimensionSubjectFlag is ${dimensionSubjectFlag}")
+        if (dimensionSubjectFlag) {
+          DataIO.getDataFrameOps.getDimensionDF(sqlContext, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SUBJECT).registerTempTable(DimensionTypes.DIM_MEDUSA_SUBJECT)
+        } else {
+          throw new RuntimeException(s"--------------------dimension not exist")
+        }
+
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
         val cal = Calendar.getInstance
@@ -58,14 +69,18 @@ object EachChannelSubjectViewInfoETL extends BaseClass  {
             val tableName=channel_to_mysql_table.get(channel_name).get
             val sqlInsert = s"insert into $tableName($fields) values(?,?,?,?)"
 
-            val channelLike= "'"+channel_name+"%'"
 
             val sql=
               s"""
-                 | select count(distinct userId) as view_user ,count(userId) as view_num
-                 | from suject_interview_table
-                 | where subjectCode like $channelLike and event in ('enter','view')
+                 |select count(distinct a.userId) as view_user ,
+                 |	count(a.userId) as view_num
+                 |from
+                 |	(select userId,subjectCode from suject_interview_table where event in ('enter','view')   ) a
+                 |join
+                 |	${DimensionTypes.DIM_MEDUSA_SUBJECT}  b
+                 |	on a.subjectCode = b.subject_code and b.subject_content_type = "${channel_name}"
              """.stripMargin
+            println(sql)
 
           sqlContext.sql(sql).collect.foreach(row=>{
               val channelname = channel_name
