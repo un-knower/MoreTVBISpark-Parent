@@ -21,11 +21,11 @@ import scala.collection.mutable
   * 统计维度：如果播放节目是属于subject，则按照专题code来归类，否则，按照contentType归类
   *
   */
-object ChannelEntrancePlayStat extends BaseClass {
+object ChannelEntrancePlayStatDetailTemp extends BaseClass {
 
-  private val tableName = "tmp_history_play_detail"
+  private val tableName = "contenttype_play_src_stat"
 
-  private val fields = "day,video_sid,title,contentType,entrance,pv,uv"
+  private val fields = "day,contentType,entrance,pv,uv,duration"
 
   private val insertSql = s"insert into $tableName($fields) values(?,?,?,?,?,?)"
 
@@ -71,44 +71,63 @@ object ChannelEntrancePlayStat extends BaseClass {
           DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MERGER,LogTypes.PLAYVIEW).
             filter("path is not null or pathMain is not null")
             .select(
-              "event", "videoSid","userId", "pathMain", "path", "contentType", "pathIdentificationFromPath", "flag", "duration"
+              "event", "userId", "pathMain", "path", "contentType", "pathIdentificationFromPath", "flag", "duration"
             )
             .registerTempTable("log_data")
 
 
           val dfUser: DataFrame = sqlContext.sql(
             """
-              |select userId,videoSid,pathMain,path,contentType,pathIdentificationFromPath,flag,cast(0 as Long)
+              |select userId,pathMain,path,contentType,pathIdentificationFromPath,flag,cast(0 as Long)
               |  from log_data
               |  where event in ('startplay','playview')
             """.stripMargin
           )
 
+          val dfDuration: DataFrame = sqlContext.sql(
+            """
+              |select userId,pathMain,path,contentType,pathIdentificationFromPath,flag,duration
+              | from log_data
+              | where event not in ('startplay')
+              |   and duration between 1 and 10800
+            """.stripMargin
+          )
 
           //(channel,入口),userId
           val userRdd = contentFilter(dfUser)
-            .map(e => ((e._1, e._2,e._3), e._5))
+            .map(e => ((e._1, e._2), e._4))
 
+          val durationRdd = contentFilter(dfDuration)
+            .map(e => ((e._1, e._2), e._3))
 
           val uvMap = userRdd.distinct.countByKey
 
           val pvMap = userRdd.countByKey
 
+          val durationMap = durationRdd.reduceByKey(_ + _).collectAsMap
+
+
+          if (p.deleteOld) {
+            util.delete(deleteSql, sqlDate)
+          }
 
           uvMap.foreach(w => {
 
             val key = w._1
-            val channel = fromEngToChinese(w._1._2)
+            val channel = fromEngToChinese(w._1._1)
             //val channel = w._1._1
-            val videoSid = w._1._1
-            val source = w._1._3
+            val source = w._1._2
             val uv = new JLong(w._2)
             val pv = new JLong(pvMap.get(key) match {
               case Some(p) => p
               case None => 0
             })
+            val duration = new JFloat(durationMap.get(key) match {
+              case Some(p) => p.toFloat / uv
+              case None => 0
+            })
             //println(channel, uv, pv)
-            util.insert(insertSql, sqlDate, videoSid, ProgramRedisUtil.getTitleBySid(videoSid),channel, source, pv, uv)
+            util.insert(insertSql, sqlDate, channel, source, pv, uv, duration)
           })
 
         })
@@ -124,10 +143,10 @@ object ChannelEntrancePlayStat extends BaseClass {
 
   //dfUser: userId,pathMain,path,contentType,pathIdentificationFromPath,flag,cast(0 as Long)
   //dfDuration : userId,pathMain,path,contentType,pathIdentificationFromPath,flag,duration
-  def contentFilter(df: DataFrame): RDD[(String, String,String, Long, String)] = {
+  def contentFilter(df: DataFrame): RDD[(String, String, Long, String)] = {
 
     val rdd = df.map(e => {
-      var channel = e.getString(4)
+      var channel = e.getString(3)
       if (e.getString(4) != null) {
         channel = regex findFirstMatchIn e.getString(4) match {
           case Some(p) => p.group(1)
@@ -140,7 +159,7 @@ object ChannelEntrancePlayStat extends BaseClass {
         }
       }
       //                    pathMain        path             flag              0             userId
-      (e.getString(1),channel, splitSource(e.getString(2), e.getString(3), e.getString(6)), e.getLong(7), e.getString(0))
+      (channel, splitSource(e.getString(1), e.getString(2), e.getString(5)), e.getLong(6), e.getString(0))
 
     })
       .filter(
@@ -149,7 +168,7 @@ object ChannelEntrancePlayStat extends BaseClass {
           || e._1 == "hot" || e._1 == "xiqu"
           ))
 
-      .filter(_._2 != null).filter(_._2=="历史")
+      .filter(_._2 != null)
     rdd
   }
 
