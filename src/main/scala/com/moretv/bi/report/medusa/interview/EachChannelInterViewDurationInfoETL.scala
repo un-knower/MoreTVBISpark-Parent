@@ -102,19 +102,17 @@ object EachChannelInterViewDurationInfoETL extends BaseClass  {
             }
 
             sqlContext.sql(sqlSpark).collect.foreach(row=>{
-              println("-----"+sqlStr)
-              println("+++++"+sqlSpark)
               if (channel_name=="jilu" || channel_name=="comic" || channel_name=="xiqu" || channel_name=="zongyi" || channel_name=="hot"){
-                val column_value = new JLong(row.getLong(0))
-                util.insert(sqlStr,sqlDate,channel_name,column_value)
+                val view_duration = new JLong(row.getLong(0))
+                util.insert(sqlStr,sqlDate,channel_name,view_duration)
               } else if (channel_name == "mv"){
-                val column_value1 = new JLong(row.getLong(0))
-                val column_value2 = new JLong(row.getLong(1))
-                util.insert(sqlStr,sqlDate,channel_name,column_value1,column_value2)
+                val view_duration = new JLong(row.getLong(0))
+                val user = new JLong(row.getLong(1))
+                util.insert(sqlStr,sqlDate,channel_name,view_duration,user)
               } else {
-                val column_value1 = new JLong(row.getLong(0))
-                val column_value2 = new JDouble(row.getDouble(1))
-                util.insert(sqlStr,sqlDate,channel_name,column_value1,column_value2)
+                val view_duration = new JLong(row.getLong(0))
+                val avg_duration = row.getDouble(1)
+                util.insert(sqlStr,sqlDate,channel_name,view_duration,avg_duration)
               }
             })
 
