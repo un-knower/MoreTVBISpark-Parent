@@ -102,6 +102,8 @@ object EachChannelInterViewDurationInfoETL extends BaseClass  {
             }
 
             sqlContext.sql(sqlSpark).collect.foreach(row=>{
+              println("-----"+sqlStr)
+              println("+++++"+sqlSpark)
               if (channel_name=="jilu" || channel_name=="comic" || channel_name=="xiqu" || channel_name=="zongyi" || channel_name=="hot"){
                 val column_value = new JLong(row.getLong(0))
                 util.insert(sqlStr,sqlDate,channel_name,column_value)
