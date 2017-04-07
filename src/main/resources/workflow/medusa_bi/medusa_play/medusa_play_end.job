@@ -1,4 +1,4 @@
 type=command
-dependencies=MVOminibusSrcStat,MVVideoSrcStat,LauncherPlayStatistic,MVTabPlayStat,MVVideoStat,MVOminibusStat,SportPlayAndLiveTotalUserInfo,EachVideoOfMVPlayInfo,EachMVPlayTopBoard,MVEachAreaPlayInfo,MVRecommendPlay,SearchVideoContentTypeStat,MatchPlayStatistics
+dependencies=MVOminibusSrcStat,MVVideoSrcStat,LauncherPlayStatistic,MVTabPlayStat,MVVideoStat,MVOminibusStat,SportPlayAndLiveTotalUserInfo,EachMVPlayTopBoard,MVEachAreaPlayInfo,MVRecommendPlay,SearchVideoContentTypeStat,MatchPlayStatistics
 command=echo "merger_paly is end ..."
 

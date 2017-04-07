@@ -37,7 +37,7 @@ object EachVideoOfChannelPlayInfo extends BaseClass{
 
           val rdd = sqlContext.sql("select contentType,videoSid,count(userId),count(distinct userId)" +
             " from log_data where event in ('startplay','playview') and contentType in ('movie','tv','hot','zongyi'," +
-            "'comic','xiqu','jilu','kids') group by contentType,videoSid").map(e=>(e.getString(0),e.getString(1),e.getLong(2),e
+            "'comic','xiqu','jilu','kids','mv') group by contentType,videoSid").map(e=>(e.getString(0),e.getString(1),e.getLong(2),e
             .getLong(3))).filter(_._2!=null).filter(_._2.length<=50)
 
           val insertSql="insert into medusa_channel_each_video_play_info(day,channel,video_sid,title,play_num,play_user) " +
