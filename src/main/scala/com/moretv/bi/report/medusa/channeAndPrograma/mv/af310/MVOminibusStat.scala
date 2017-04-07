@@ -1,17 +1,12 @@
 package com.moretv.bi.report.medusa.channeAndPrograma.mv.af310
 
-import java.lang.{Double => JDouble, Long => JLong}
-import java.util
-import java.util.Calendar
+import org.apache.spark.sql.functions._
 
-import com.moretv.bi.report.medusa.channeAndPrograma.mv.MVRecommendPlay._
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.{DataBases, DimensionTypes, LogTypes}
+import com.moretv.bi.global.{DimensionTypes}
 import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.report.medusa.channeAndPrograma.mv.MvStatModel
-import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, LiveCodeToNameUtils, ParamsParseUtil}
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.{DataFrame}
 
 /**
   * Created by witnes on 9/21/16.
@@ -39,19 +34,19 @@ object MVOminibusStat extends MvStatModel {
   override def aggUserStat(ods: DataFrame): DataFrame = {
     val q = sqlContext
     import q.implicits._
-    import org.apache.spark.sql.functions._
 
     ods.filter($"event" === "startplay")
       .groupBy($"omnibusSid")
-      .agg(count($"userId").as("pv"), countDistinct($"userId").as("uv"))
+      .agg(count($"userId").as("vv"), countDistinct($"userId").as("uv"))
 
       .join(
 
         ods.filter($"event" !== "startplay").filter($"duration".between(1, 10800))
           .groupBy($"omnibusSid")
-          .agg(sum($"duration").as("sum_duration"))
+          .agg(sum($"duration").as("sum_duration")),
+        "omnibusSid" :: Nil
       )
-      .select($"omnibusSid".as("mv_topic_sid"), $"pv", $"uv",
+      .select($"omnibusSid".as("mv_topic_sid"), $"vv", $"uv",
         ($"sum_duration" / $"uv").cast("double").as("duration"))
 
   }
@@ -60,7 +55,6 @@ object MVOminibusStat extends MvStatModel {
 
     val q = sqlContext
     import q.implicits._
-    import org.apache.spark.sql.functions._
 
     val mvTopicDim = DataIO.getDataFrameOps.getDimensionDF(
       sc, Map[String, String](), MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_MV_TOPIC
@@ -86,7 +80,6 @@ object MVOminibusStat extends MvStatModel {
     }
 
     agg.collect.foreach(r => {
-      println(readDate, r.getString(0), r.getString(1), r.getLong(2), r.getLong(3), r.getDouble(4), "!!!")
       util.insert(insertSql,
         readDate, r.getString(0), r.getString(1), r.getLong(2), r.getLong(3), r.getDouble(4)
       )
