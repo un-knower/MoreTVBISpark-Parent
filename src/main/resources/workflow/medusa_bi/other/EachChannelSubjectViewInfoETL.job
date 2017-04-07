@@ -1,3 +1,4 @@
+#频道浏览人数和次数
 type=command
 dependencies=other_isExist
 mainclass=com.moretv.bi.report.medusa.interview.EachChannelInterViewInfoETL
