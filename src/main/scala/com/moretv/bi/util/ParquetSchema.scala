@@ -18,6 +18,8 @@ object ParquetSchema {
     "subjectCode","subscribeContent","subscribeType","switch","uploadTime","userId","versionCode","videoName",
     "videoSid","weatherCode")
 
+  val schemaArrFromETL = Array("subjectCode","entryType","main_category","second_category","third_category")
+
   // 处理parquet schema中类型
 
   def schemaTypeConvert(schemaString:Array[String]):Array[String] = {

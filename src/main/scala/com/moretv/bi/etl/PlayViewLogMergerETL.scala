@@ -4,8 +4,6 @@ import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DimensionTypes, LogTypes}
-import com.moretv.bi.logETL.KidsPathParser
-import com.moretv.bi.report.medusa.entrance.ChannelEntrancePlayStatETL._
 import com.moretv.bi.report.medusa.util.FilesInHDFS
 import com.moretv.bi.util._
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
@@ -68,8 +66,8 @@ object PlayViewLogMergerETL extends BaseClass {
         }
         val moretv_table="moretv_table"
         val medusa_table="medusa_table"
-        val moretv_table_filtered="moretv_table_filtered"
-        val medusa_table_filtered="medusa_table_filtered"
+       /* val moretv_table_filtered="moretv_table_filtered"
+        val medusa_table_filtered="medusa_table_filtered"*/
 
         var sqlStr :String=""
         val cal = Calendar.getInstance()
@@ -78,7 +76,7 @@ object PlayViewLogMergerETL extends BaseClass {
           val inputDate = DateFormatUtils.readFormat.format(cal.getTime)
           val medusa_input_dir = DataIO.getDataFrameOps.getPath(MEDUSA, LogTypes.PLAY, inputDate)
           val moretv_input_dir = DataIO.getDataFrameOps.getPath(MORETV, LogTypes.PLAYVIEW, inputDate)
-          val outputPath = DataIO.getDataFrameOps.getPath(MERGER, LogTypes.PLAY_VIEW_2_FILTER_ETL, inputDate)
+          val outputPath = DataIO.getDataFrameOps.getPath(MERGER, LogTypes.PLAY_VIEW_ETL, inputDate)
           val medusaFlag = FilesInHDFS.IsInputGenerateSuccess(medusa_input_dir)
           val moretvFlag = FilesInHDFS.IsInputGenerateSuccess(moretv_input_dir)
 
@@ -99,11 +97,12 @@ object PlayViewLogMergerETL extends BaseClass {
               ParquetSchema.schemaArr.contains(e)
             })
             val moretvColNames = moretvColumnList.mkString(",")
-            val moretvColNamesWithTable = moretvColumnList.map(e=>{
+           /* val moretvColNamesWithTable = moretvColumnList.map(e=>{
               "a."+e
-            }).mkString(",")
+            }).mkString(",")*/
             medusaDf.registerTempTable(medusa_table)
             moretvDf.registerTempTable(moretv_table)
+/*
 
             /** 3.x用于过滤单个用户播放单个视频量过大的情况 */
             sqlStr =
@@ -151,7 +150,7 @@ object PlayViewLogMergerETL extends BaseClass {
             println("--------------------" + sqlStr)
             val moretv_table_after_filter_df = sqlContext.sql(sqlStr)
             moretv_table_after_filter_df.cache()
-            moretv_table_after_filter_df.registerTempTable(moretv_table_filtered)
+            moretv_table_after_filter_df.registerTempTable(moretv_table_filtered)*/
 
             //拆分出维度
             sqlStr = s"""
@@ -162,7 +161,7 @@ object PlayViewLogMergerETL extends BaseClass {
                        |    getListCategoryMedusa(pathMain,1)     as main_category,
                        |    getListCategoryMedusa(pathMain,2)     as second_category,
                        |    getListCategoryMedusa(pathMain,3)     as third_category
-                       |from $medusa_table_filtered
+                       |from $medusa_table
                      """.stripMargin
             println("--------------------" + sqlStr)
             val medusa_table_init_table_df=sqlContext.sql(sqlStr)
@@ -199,8 +198,37 @@ object PlayViewLogMergerETL extends BaseClass {
                      """.stripMargin
             val moretv_rdd = sqlContext.sql(sqlSelectMoretv).toJSON
             //3.x and 2.x log merge
-            val mergerDf = medusa_rdd.union(moretv_rdd)
-            sqlContext.read.json(mergerDf).write.parquet(outputPath)
+            val mergerRDD = medusa_rdd.union(moretv_rdd)
+            val merge_table_df = sqlContext.read.json(mergerRDD).toDF()
+            merge_table_df.cache()
+            merge_table_df.registerTempTable("merge_table")
+
+            /** 用于过滤单个用户播放单个视频量过大的情况 */
+            sqlStr =
+              s"""
+                 |select concat(userId,videoSid) as filterColumn
+                 |from merge_table
+                 |group by concat(userId,videoSid)
+                 |having count(1)>=$playNumLimit
+                     """.stripMargin
+            println("--------------------" + sqlStr)
+            sqlContext.sql(sqlStr).registerTempTable("merge_table_filter")
+
+           val mergeColNamesWithTable= merge_table_df.columns.toList.map(e=>{
+              "a."+e
+            }).mkString(",")
+            sqlStr =
+              s"""
+                 |select $mergeColNamesWithTable
+                 |from merge_table              a
+                 |     left join
+                 |     merge_table_filter       b
+                 |     on concat(a.userId,a.videoSid)=b.filterColumn
+                 |where b.filterColumn is null
+                     """.stripMargin
+            println("--------------------" + sqlStr)
+            val result_df = sqlContext.sql(sqlStr)
+            result_df.write.parquet(outputPath)
           } else if (!medusaFlag && moretvFlag) {
             throw new RuntimeException("medusaFlag is false")
           } else if (medusaFlag && !moretvFlag) {
