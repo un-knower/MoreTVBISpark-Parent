@@ -36,7 +36,7 @@ object TempPlayCodeVideoStatics extends BaseClass {
         }
 
         val rdd1 = sqlContext.read.parquet(inputPath1).select("jsonLog")
-        val sql = "insert into temp_play_code_video_statistics(video_sid,day,play_code,num) values(?,?,?,?)"
+        val sql = "insert into temp_play_code_video_statistics(video_sid,video_source,day,play_code,num) values(?,?,?,?,?)"
 
         //(videoSid, day, playcode)
         val result1 = rdd1.map(e=>getPlayCode(1,"2017-03-31",e.getString(0))).
@@ -44,8 +44,7 @@ object TempPlayCodeVideoStatics extends BaseClass {
           .countByValue()
 
         result1.foreach(x => {
-          util.insert(sql,x._1._1,x._1._2,x._1._3,x._2)
-          println(sql,x._1._1,x._1._2,x._1._3,x._2)
+          util.insert(sql,x._1._1,x._1._2,x._1._3,x._1._4,x._2)
         })
 
         val rdd2 = sqlContext.read.parquet(inputPath2).select("jsonLog")
@@ -56,8 +55,7 @@ object TempPlayCodeVideoStatics extends BaseClass {
           .countByValue()
 
         result2.foreach(x => {
-          util.insert(sql,x._1._1,x._1._2,x._1._3,x._2)
-          println(sql,x._1._1,x._1._2,x._1._3,x._2)
+          util.insert(sql,x._1._1,x._1._2,x._1._3,x._1._4,x._2)
         })
         util.destory()
 
@@ -79,7 +77,7 @@ object TempPlayCodeVideoStatics extends BaseClass {
     */
   def getPlayCode(flag:Int, day: String, str: String) = {
 
-    val res = new ListBuffer[(String, String, Int)]()
+    val res = new ListBuffer[(String, String, String, Int)]()
 
     try {
       val jsObj = new JSONObject(str)
@@ -97,12 +95,13 @@ object TempPlayCodeVideoStatics extends BaseClass {
 
           (0 until playqosArr.length).foreach(i => {
             val playqos = playqosArr.optJSONObject(i)
+            val videoSource = playqos.optString("videoSource")
             val sourcecases = playqos.optJSONArray("sourcecases")
 
             if (sourcecases != null) {
               (0 until sourcecases.length).foreach(w => {
                 val sourcecase = sourcecases.optJSONObject(w)
-                res.+=((videoSid, day,sourcecase.optInt("playCode")))
+                res.+=((videoSid, videoSource,day,sourcecase.optInt("playCode")))
               })
             }
           })
