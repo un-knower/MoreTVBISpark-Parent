@@ -40,7 +40,6 @@ object PlayViewLogMergerETL extends BaseClass {
   override def execute(args: Array[String]) {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-        sqlContext.udf.register("pathParser", PathParserETL.pathParser _)
         sqlContext.udf.register("getSubjectCode", PathParserETL.getSubjectCodeByPathETL _)
         sqlContext.udf.register("getSubjectName", PathParserETL.getSubjectNameByPathETL _)
         sqlContext.udf.register("getEntranceType", PathParserETL.getEntranceTypeByPathETL _)
@@ -66,8 +65,6 @@ object PlayViewLogMergerETL extends BaseClass {
         }
         val moretv_table="moretv_table"
         val medusa_table="medusa_table"
-       /* val moretv_table_filtered="moretv_table_filtered"
-        val medusa_table_filtered="medusa_table_filtered"*/
 
         var sqlStr :String=""
         val cal = Calendar.getInstance()
@@ -97,60 +94,8 @@ object PlayViewLogMergerETL extends BaseClass {
               ParquetSchema.schemaArr.contains(e)
             })
             val moretvColNames = moretvColumnList.mkString(",")
-           /* val moretvColNamesWithTable = moretvColumnList.map(e=>{
-              "a."+e
-            }).mkString(",")*/
             medusaDf.registerTempTable(medusa_table)
             moretvDf.registerTempTable(moretv_table)
-/*
-
-            /** 3.x用于过滤单个用户播放单个视频量过大的情况 */
-            sqlStr =
-              s"""
-                 |select concat(userId,videoSid) as filterColumn
-                 |from $medusa_table
-                 |group by concat(userId,videoSid)
-                 |having count(1)>=$playNumLimit
-                     """.stripMargin
-            println("--------------------" + sqlStr)
-            sqlContext.sql(sqlStr).registerTempTable("medusa_table_filter")
-            sqlStr =
-              s"""
-                 |select $medusaColNamesWithTable
-                 |from $medusa_table             a
-                 |     left join
-                 |     medusa_table_filter       b
-                 |     on concat(a.userId,a.videoSid)=b.filterColumn
-                 |where b.filterColumn is null
-                     """.stripMargin
-            println("--------------------" + sqlStr)
-            val medusa_table_after_filter_df = sqlContext.sql(sqlStr)
-            medusa_table_after_filter_df.cache()
-            medusa_table_after_filter_df.registerTempTable(medusa_table_filtered)
-
-            /** 2.x用于过滤单个用户播放单个视频量过大的情况 */
-            sqlStr =
-              s"""
-                 |select concat(userId,videoSid) as filterColumn
-                 |from $moretv_table
-                 |group by concat(userId,videoSid)
-                 |having count(1)>=$playNumLimit
-                     """.stripMargin
-            println("--------------------" + sqlStr)
-            sqlContext.sql(sqlStr).registerTempTable("moretv_table_filter")
-            sqlStr =
-              s"""
-                 |select $moretvColNamesWithTable
-                 |from $moretv_table             a
-                 |     left join
-                 |     moretv_table_filter       b
-                 |     on concat(a.userId,a.videoSid)=b.filterColumn
-                 |where b.filterColumn is null
-                     """.stripMargin
-            println("--------------------" + sqlStr)
-            val moretv_table_after_filter_df = sqlContext.sql(sqlStr)
-            moretv_table_after_filter_df.cache()
-            moretv_table_after_filter_df.registerTempTable(moretv_table_filtered)*/
 
             //拆分出维度
             sqlStr = s"""
@@ -189,7 +134,7 @@ object PlayViewLogMergerETL extends BaseClass {
             val medusa_rdd = sqlContext.sql(sqlStr).toJSON
 
             val sqlSelectMoretv =s"""select $moretvColNames,
-                                     |  getEntranceType(path,'moretv') as entryType,
+                                     |  getEntranceType(path,'moretv')     as entryType,
                                      |  getSubjectCode(path,'moretv')      as subjectCode,
                                      |  getListCategoryMoretv(path,1)      as main_category,
                                      |  getListCategoryMoretv(path,2)      as second_category,

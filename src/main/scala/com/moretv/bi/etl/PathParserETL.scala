@@ -1031,12 +1031,18 @@ object PathParserETL {
     //val pathMain = "home*classification*mv-mv*电台*电台"
     //val pathMain = "home*live*eagle-movie*院线大片"
     //println(MEDUSA_LIST_PAGE_LEVEL_2_REGEX)
-    val pathMain = " "
-    if (pathMain != " ") {
-      println("aaa")
-    } else {
-      println("bbb")
+    var result:String=null
+    val subjectCode = new String("bb")//MedusaSubjectNameCodeUtil.getSubjectCode(path)
+
+
+    if (subjectCode != "bb") {
+      result = subjectCode
+      println("a")
+    }else{
+      println("ccc")
     }
+    println(result)
+
     /* println(PathParser.getListCategoryMedusaETL(pathMain, 1))
      println(PathParser.getListCategoryMedusaETL(pathMain, 2))*/
   }
