@@ -48,7 +48,7 @@ abstract class PeriodJob extends BaseClass {
           s"delete from $tbl where execute_day = ? and period_type = ? and period_value = ?"
 
         insertSql =
-          s"insert $tbl (${fields.mkString(",")}) values(${List.fill(fields.length)("?").mkString(",")})"
+          s"insert into $tbl (${fields.mkString(",")}) values(${List.fill(fields.length)("?").mkString(",")})"
 
         isDeleteOld = p.deleteOld
 
@@ -72,32 +72,52 @@ abstract class PeriodJob extends BaseClass {
 
     if (dateCondition.getDayOfMonth == 1) {
 
-      periodAggHandle(PeriodType.MONTH, dateCondition.getMonthOfYear.toString, dateCondition)
+      periodAggHandle(
+        PeriodType.MONTH,
+        dateCondition.minusDays(1).getMonthOfYear.toString,
+        dateCondition
+      )
 
       if ((4 :: 7 :: 10 :: Nil).contains(dateCondition.getMonthOfYear)) {
 
-        periodAggHandle(PeriodType.QUARTER,
-          (dateCondition.getMonthOfYear / 3).toString, dateCondition)
+        periodAggHandle(
+          PeriodType.QUARTER,
+          (dateCondition.minusDays(1).getMonthOfYear / 3).toString,
+          dateCondition
+        )
       }
 
       else if (dateCondition.getMonthOfYear == 1) {
 
-        periodAggHandle(PeriodType.QUARTER,
-          (dateCondition.getMonthOfYear / 3).toString, dateCondition)
+        periodAggHandle(
+          PeriodType.QUARTER,
+          (dateCondition.minusDays(1).getMonthOfYear / 3).toString,
+          dateCondition
+        )
 
-        periodAggHandle(PeriodType.YEAR, dateCondition.getYear.toString, dateCondition)
-
+        periodAggHandle(
+          PeriodType.YEAR,
+          dateCondition.minusDays(1).getYear.toString,
+          dateCondition
+        )
       }
 
     }
 
     if (dateCondition.getDayOfWeek == 1) {
 
-      periodAggHandle(PeriodType.WEEK, dateCondition.getWeekOfWeekyear.toString, dateCondition)
+      periodAggHandle(
+        PeriodType.WEEK,
+        dateCondition.minusDays(7).toString("yyyy-MM-dd") + "~" + dateCondition.minusDays(1).toString("yyyy-MM-dd"),
+        dateCondition
+      )
 
     }
-
-    periodAggHandle(PeriodType.DAY, dateCondition.minusDays(1).toString("yyyy-MM-dd"), dateCondition)
+    periodAggHandle(
+      PeriodType.DAY,
+      dateCondition.minusDays(1).toString("yyyy-MM-dd"),
+      dateCondition
+    )
 
   }
 
@@ -190,7 +210,13 @@ abstract class PeriodJob extends BaseClass {
 
 
     snapshotTbl.filter(
-      to_date($"openTime").between(startDate.plusDays(1).toString("yyyy-MM-dd"), endDate.toString("yyyy-MM-dd"))
+
+      to_date($"openTime").between(
+
+        startDate.plusDays(1).toString("yyyy-MM-dd"),
+        endDate.toString("yyyy-MM-dd")
+
+      )
     )
 
   }
