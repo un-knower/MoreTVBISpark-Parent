@@ -64,7 +64,8 @@ object SimiliarContenttypeUserStat extends BaseClass {
 
               similiarOds.filter($"event" !== "startplay").filter($"duration".between(1, 10800))
                 .groupBy($"contentType")
-                .agg(sum($"duration").as("durationSum")),
+                .
+                  agg(sum($"duration").as("durationSum")),
 
               "contentType" :: Nil
             )

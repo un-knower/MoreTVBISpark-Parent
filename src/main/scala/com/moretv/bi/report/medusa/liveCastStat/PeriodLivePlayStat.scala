@@ -21,7 +21,7 @@ import scala.collection.mutable.ListBuffer
   */
 object PeriodLivePlayStat extends PeriodJob {
 
-  pathPatterns = MEDUSA :: Nil
+  pathPatterns = MERGER :: Nil
 
   logTypes = LogTypes.LIVE :: Nil
 
@@ -74,8 +74,7 @@ object PeriodLivePlayStat extends PeriodJob {
     import sq.implicits._
     import org.apache.spark.sql.functions._
 
-    val userCount = ods.filter($"event" === "startplay")
-      .agg(countDistinct($"userId"))
+    val userCount = ods.agg(countDistinct($"userId"))
       .first.getLong(0)
 
     val durationSum = ods.filter($"event" !== "startplay")
