@@ -1,50 +1,17 @@
-bigdata-cmpt-128-2,
-bigdata-cmpt-128-3,
-bigdata-cmpt-128-4,
-bigdata-cmpt-128-5,
-bigdata-cmpt-128-6,
-bigdata-cmpt-128-7,
-bigdata-cmpt-128-8,
-bigdata-cmpt-128-9,
-bigdata-cmpt-128-10
-bigdata-cmpt-128-11
-bigdata-cmpt-128-12
-bigdata-cmpt-128-14
-bigdata-cmpt-128-15
-bigdata-cmpt-128-16
-bigdata-cmpt-128-17
-bigdata-cmpt-128-18
-bigdata-cmpt-128-19
-bigdata-cmpt-128-20
-bigdata-cmpt-128-21
-bigdata-cmpt-128-22
-bigdata-cmpt-128-23
-bigdata-cmpt-128-24
-bigdata-cmpt-128-26
-bigdata-cmpt-128-27
-bigdata-cmpt-128-28
-bigdata-cmpt-128-29
-bigdata-cmpt-128-30
-bigdata-cmpt-128-31
-bigdata-cmpt-128-32
-bigdata-cmpt-128-33
-bigdata-cmpt-128-34
-bigdata-cmpt-128-35
-bigdata-cmpt-128-36
-bigdata-cmpt-128-37
-bigdata-cmpt-128-38
-bigdata-cmpt-128-39
-bigdata-cmpt-128-40
-bigdata-cmpt-128-41
-bigdata-cmpt-128-43
-bigdata-cmpt-128-44
-bigdata-cmpt-128-45
-bigdata-cmpt-128-46
-bigdata-cmpt-128-47
-bigdata-cmpt-128-48
-bigdata-cmpt-128-49
-bigdata-cmpt-128-50
-bigdata-cmpt-128-51
-bigdata-cmpt-128-52
-bigdata-cmpt-128-53
 
+playview事实表和专题维度表关联，得到 统计不同频道的专题播放量
+
+val loadPath="/log/medusaAndMoretvMerger/20170404/playview-etl"
+val df = sqlContext.read.parquet(loadPath)
+df.registerTempTable("log_data")
+val dimPath="/data_warehouse/dw_dimensions/dim_medusa_subject"
+val df = sqlContext.read.parquet(dimPath)
+df.registerTempTable("dim")
+sqlContext.sql("select b.subject_content_type_name,count(userId) as play_num,count(distinct userId) as play_user from log_data  a join dim  b on a.subjectCode=b.subject_code group by b.subject_content_type_name where a.event in ('startplay','playview') ").show(200,false)
+
+
+playview事实表和专题维度表关联，得到 频道分类入口统计
+val loadPath="/log/medusaAndMoretvMerger/20170404/playview-etl"
+val df = sqlContext.read.parquet(loadPath)
+df.registerTempTable("log_data")
+sqlContext.sql("select  main_category, second_category,count(distinct userId) as playUser,count(userId) as playNum from log_data where event in ('startplay','playview') and main_category in ('movie') group by main_category,second_category").show(200,false)

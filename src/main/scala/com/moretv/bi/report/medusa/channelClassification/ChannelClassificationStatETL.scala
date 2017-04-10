@@ -102,10 +102,8 @@ object ChannelClassificationStatETL extends BaseClass {
           val moretvFlag = FilesInHDFS.IsInputGenerateSuccess(moretv_input_dir)
           if (medusaFlag && moretvFlag) {
             val medusa_table_df = DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MEDUSA, LogTypes.PLAY, date)
-            medusa_table_df.cache()
             medusa_table_df.registerTempTable("medusa_table")
             val moretv_table_df = DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MORETV, LogTypes.PLAYVIEW, date)
-            medusa_table_df.cache()
             moretv_table_df.registerTempTable("moretv_table")
 
             /**

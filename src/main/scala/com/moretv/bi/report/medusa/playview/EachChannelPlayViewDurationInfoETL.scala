@@ -1,4 +1,4 @@
-package com.moretv.bi.report.medusa.interview
+package com.moretv.bi.report.medusa.playview
 
 import java.lang.{Long => JLong}
 import java.util.Calendar
@@ -8,29 +8,28 @@ import com.moretv.bi.global.{DataBases, LogTypes}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import org.apache.spark.sql.SQLContext
-import org.json4s.JsonAST.JDouble
 
 /**
   * 创建人：吴久林
-  * 创建时间：2017/4/7
-  * 程序作用：分析各个频道的浏览时长
+  * 创建时间：2017/4/10
+  * 程序作用：分析各个频道的播放总时长
   * 数据输入：
   * 数据输出：
   */
-object EachChannelInterViewDurationInfoETL extends BaseClass  {
-  private val fields_mv = "day,channel,view_duration,user"
-  private val fields_avg = "day,channel,view_duration,avg_duration"
-  private val fields_other = "day,channel,view_duration"
+object EachChannelPlayViewDurationInfoETL extends BaseClass  {
+  private val fields_mv = "day,channel,play_duration,user"
+  private val fields_avg = "day,channel,play_duration,avg_duration"
+  private val fields_other = "day,channel,play_duration"
   private val channel_to_mysql_table=Map(
-    CHANNEL_KIDS->"medusa_channel_view_duration_kids_info",
-    CHANNEL_OPERA->"medusa_channel_view_duration_xiqu_info",
-    CHANNEL_COMIC->"medusa_channel_view_duration_comic_info",
-    CHANNEL_VARIETY_PROGRAM->"medusa_channel_view_duration_zongyi_info",
-    CHANNEL_HOT->"medusa_channel_view_duration_hot_info",
-    CHANNEL_MV->"medusa_channel_view_duration_mv_info",
-    CHANNEL_RECORD->"medusa_channel_view_duration_jilu_info",
-    CHANNEL_TV->"medusa_channel_view_duration_tv_info",
-    CHANNEL_MOVIE->"medusa_channel_view_duration_movie_info"
+    CHANNEL_KIDS->"medusa_channel_play_duration_kids_info",
+    CHANNEL_OPERA->"medusa_channel_play_duration_xiqu_info",
+    CHANNEL_COMIC->"medusa_channel_play_duration_comic_info",
+    CHANNEL_VARIETY_PROGRAM->"medusa_channel_play_duration_zongyi_info",
+    CHANNEL_HOT->"medusa_channel_play_duration_hot_info",
+    CHANNEL_MV->"medusa_channel_play_duration_mv_info",
+    CHANNEL_RECORD->"medusa_channel_play_duration_jilu_info",
+    CHANNEL_TV->"medusa_channel_play_duration_tv_info",
+    CHANNEL_MOVIE->"medusa_channel_play_duration_movie_info"
   )
   def main(args: Array[String]): Unit = {
     ModuleClass.executor(this, args)
@@ -47,7 +46,7 @@ object EachChannelInterViewDurationInfoETL extends BaseClass  {
           val date = DateFormatUtils.readFormat.format(cal.getTime)
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
-          DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MERGER, LogTypes.INTERVIEW_ETL, date).registerTempTable("interview_etl")
+          DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MERGER, LogTypes.PLAYVIEW, date).registerTempTable(LogTypes.PLAYVIEW)
 
           //删除历史记录
           val channelArray = Array(CHANNEL_KIDS,CHANNEL_OPERA,CHANNEL_COMIC,CHANNEL_VARIETY_PROGRAM,CHANNEL_HOT,CHANNEL_MV,CHANNEL_RECORD,CHANNEL_TV,CHANNEL_MOVIE)
@@ -67,26 +66,25 @@ object EachChannelInterViewDurationInfoETL extends BaseClass  {
               sqlStr = s"insert into $tableName($fields_mv) values(?,?,?,?)"
               sqlSpark =
                 s"""
-                   | select sum(duration) as view_duration,
+                   | select sum(duration) as play_duration,
                    | count(distinct userId) as user
-                   | from interview_etl
-                   | where contentType ='$channel_name' and event='exit'
-                   | and duration>=0 and duration<=36000
+                   | from ${LogTypes.PLAYVIEW}
+                   | where contentType ='$channel_name'
+                   | and event in ('playview','userexit','selfend')
+                   | and duration >= 0 and duration<=10800
              """.stripMargin
             }
 
             if (channel_name=="kids" || channel_name=="tv" || channel_name=="movie"){
               sqlStr = s"insert into $tableName($fields_avg) values(?,?,?,?)"
-              var whereSql = " and duration>=0 and duration<=36000"
-              if (channel_name == "tv") {
-                whereSql = " and duration>=0 and duration<=10800"
-              }
               sqlSpark =
                 s"""
-                   | select sum(duration) as view_duration,
+                   | select sum(duration) as play_duration,
                    | sum(duration)/count(distinct userId) as avg_duration
-                   | from interview_etl
-                   | where contentType ='$channel_name' and event='exit' $whereSql
+                   | from ${LogTypes.PLAYVIEW}
+                   | where contentType ='$channel_name'
+                   | and event in ('playview','userexit','selfend')
+                   | and duration >= 0 and duration<=10800
              """.stripMargin
             }
 
@@ -94,26 +92,26 @@ object EachChannelInterViewDurationInfoETL extends BaseClass  {
               sqlStr = s"insert into $tableName($fields_other) values(?,?,?)"
               sqlSpark =
                 s"""
-                   | select sum(duration) as view_duration
-                   | from interview_etl
-                   | where contentType ='$channel_name' and event='exit'
-                   | and duration>=0 and duration<=10800
+                   | select sum(duration) as play_duration
+                   | from ${LogTypes.PLAYVIEW}
+                   | where contentType ='$channel_name'
+                   | and event in ('playview','userexit','selfend')
+                   | and duration >= 0 and duration<=10800
              """.stripMargin
             }
 
-
            sqlContext.sql(sqlSpark).collect.foreach(row=>{
               if (channel_name=="jilu" || channel_name=="comic" || channel_name=="xiqu" || channel_name=="zongyi" || channel_name=="hot"){
-                val view_duration = new JLong(row.getLong(0))
-                util.insert(sqlStr,sqlDate,channel_name,view_duration)
+                val play_duration = new JLong(row.getLong(0))
+                util.insert(sqlStr,sqlDate,channel_name,play_duration)
               } else if (channel_name == "mv"){
-                val view_duration = new JLong(row.getLong(0))
+                val play_duration = new JLong(row.getLong(0))
                 val user = new JLong(row.getLong(1))
-                util.insert(sqlStr,sqlDate,channel_name,view_duration,user)
+                util.insert(sqlStr,sqlDate,channel_name,play_duration,user)
               } else {
-                val view_duration = new JLong(row.getLong(0))
+                val play_duration = new JLong(row.getLong(0))
                 val avg_duration = row.getDouble(1)
-                util.insert(sqlStr,sqlDate,channel_name,view_duration,avg_duration)
+                util.insert(sqlStr,sqlDate,channel_name,play_duration,avg_duration)
               }
             })
 

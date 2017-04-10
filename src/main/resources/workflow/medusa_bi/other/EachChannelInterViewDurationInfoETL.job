@@ -1,7 +1,6 @@
-#频道浏览人数和次数
+#各频道播放总时长以及平均播放时长
 type=command
 dependencies=other_isExist
-mainclass=
-com.moretv.bi.report.medusa.interview.EachChannelInterViewInfoETL
+mainclass=com.moretv.bi.report.medusa.interview.EachChannelInterViewDurationInfoETL
 command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}
 
