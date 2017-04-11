@@ -5,6 +5,8 @@
 *.iml
 .idea
 
+SdkConfig.scala
+
 # class file
 
 *.jar
