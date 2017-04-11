@@ -5,6 +5,7 @@ import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DimensionTypes, LogTypes}
 import com.moretv.bi.report.medusa.channeAndPrograma.mv.MvStatModel
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.functions._
 
 /**
   * Created by witnes on 9/21/16.
@@ -21,7 +22,6 @@ import org.apache.spark.sql.DataFrame
   */
 object MVOminibusSrcStat extends MvStatModel {
 
-
   logType = LogTypes.PLAY
 
   pathPattern = MEDUSA
@@ -35,7 +35,6 @@ object MVOminibusSrcStat extends MvStatModel {
 
     val q = sqlContext
     import q.implicits._
-    import org.apache.spark.sql.functions._
 
 
     val df = ods
@@ -64,7 +63,6 @@ object MVOminibusSrcStat extends MvStatModel {
 
     val q = sqlContext
     import q.implicits._
-    import org.apache.spark.sql.functions._
 
     val mvTopicDim = DataIO.getDataFrameOps.getDimensionDF(
       sc, Map[String, String](), MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_MV_TOPIC
@@ -74,7 +72,7 @@ object MVOminibusSrcStat extends MvStatModel {
       sc, Map[String, String](), MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_PAGE_ENTRANCE
     )
 
-    val odsWIthDim = ods.join(pageDim, "page_entrance_id" :: Nil, "left_outer")
+    ods.join(pageDim, "page_entrance_id" :: Nil, "left_outer")
       .join(mvTopicDim, "mv_topic_sid" :: Nil, "left_outer")
       .select(
         $"page_name", $"area_name", $"location_name",
@@ -84,8 +82,6 @@ object MVOminibusSrcStat extends MvStatModel {
         $"vv",
         $"duration"
       )
-
-    odsWIthDim
   }
 
   override def outputHandle(

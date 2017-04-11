@@ -66,13 +66,12 @@ abstract class MvStatModel extends BaseClass {
 
           //Aggregation
           val aggOds = aggUserStat(ods)
-
           //Join with Dim
           val aggRes = joinStatWithDim(aggOds)
 
-          outputHandle(aggRes, p.deleteOld, readDate.toString("yyyy-MM-dd"), util, deleteSql, insertSql)
+          readDate = readDate.minusDays(1)
 
-          readDate.minusDays(1)
+          outputHandle(aggRes, p.deleteOld, readDate.toString("yyyy-MM-dd"), util, deleteSql, insertSql)
         })
 
 
