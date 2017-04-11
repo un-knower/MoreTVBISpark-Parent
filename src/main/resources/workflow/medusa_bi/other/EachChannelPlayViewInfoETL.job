@@ -1,0 +1,5 @@
+#各个频道的播放次数人数
+type=command
+dependencies=other_isExist
+mainclass=com.moretv.bi.report.medusa.playview.EachChannelPlayViewInfoETL
+command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}
