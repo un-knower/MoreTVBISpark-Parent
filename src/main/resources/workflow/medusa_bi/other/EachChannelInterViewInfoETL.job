@@ -1,7 +1,6 @@
 #频道浏览人数和次数
 type=command
 dependencies=other_isExist
-mainclass=
-com.moretv.bi.report.medusa.interview.EachChannelInterViewInfoETL
+mainclass=com.moretv.bi.report.medusa.interview.EachChannelInterViewInfoETL
 command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}
 
