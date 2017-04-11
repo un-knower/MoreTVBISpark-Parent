@@ -63,6 +63,7 @@ object ShortEachChannelSubjectPlayInfoETL extends BaseClass {
                |from $spark_df_analyze_table                  a join
                |     ${DimensionTypes.DIM_MEDUSA_SUBJECT}     b
                |     on a.subjectCode=b.subject_code
+               |where event in ('$MEDUSA_EVENT_START_PLAY','$MORETV_EVENT_START_PLAY')
                |group by b.subject_content_type_name
            """.stripMargin
           println("analyse--------------------" + sqlStr)
