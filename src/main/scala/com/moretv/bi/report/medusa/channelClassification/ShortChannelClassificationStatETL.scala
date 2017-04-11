@@ -14,35 +14,10 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
 
 
 /**
-  * Created by baozhi.wang on 2017/3/30.
-  * 脚本作用： 1.作为解析列表页维度的示范例子
+  * Created by baozhi.wang on 2017/4/11.
   * 2.频道分类统计的播放次数播放人数统计【频道及栏目编排-频道分类统计-「电影,电视剧」-频道分类统计】
-  *
-  * 参考资料：收集分布在资源调度平台的sql语句【http://172.16.17.100:8090/pages/viewpage.action?pageId=4424217】
-  * 使用事实表解析出来的各个频道的一级分类，二级分类，三级分类，四级分类
-  * 数仓中以表的形式来分析维度：http://172.16.17.100:8090/pages/viewpage.action?pageId=4425569
-  * play事实表维度抽取表达式: http://172.16.17.100:8090/pages/viewpage.action?pageId=4424612
-  *
-  * 原有统计逻辑
-  * 【各个频道的分析sql是分布在资源调度平台上，需整理到一起，分析共性】
-  *
-  * 需要做：
-  *       1.解析出列表页维度  一级入口，二级入口
-  *       2.对3.x日志的筛选和搜索入口，需要对日志格式做特殊处理
-  *         pathMain like '%movie-search%'     为3.x的搜索入口
-  *         pathMain like '%movie-retrieval%'  为3.x的筛选入口
-  *
-  * 使用事实表：
-  *           2.x playview and 3.x play 原始日志生成分析用playview日志
-  * 使用维度表：
-  *           站点树维度表   dim_medusa_source_site [关联此表做过滤]
-  *           2.x 使用second_category_code字段关联，获得二级入口的中文名字，以及过滤脏字段
-  *           3.x 使用second_category字段关联，过滤脏字段
-
-  * 使用的分析字段（从事实表获得）:
-  * userId           度量值
-  * path             解析出一级入口，二级入口  维度值
-  * pathMain         解析出一级入口，二级入口  维度值
+  * 逻辑方式【与ChannelClassificationStatETL代码比较】：
+  *   使用事实表与维度表关联，直接获得分析结果
   *
   */
 object ShortChannelClassificationStatETL extends BaseClass {
@@ -76,7 +51,7 @@ object ShortChannelClassificationStatETL extends BaseClass {
           val date = DateFormatUtils.readFormat.format(cal.getTime)
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
-          DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MERGER, LogTypes.PLAY_VIEW_2_FILTER_ETL, date).registerTempTable(analyse_source_data_df_name)
+          DataIO.getDataFrameOps.getDF(sqlContext, p.paramMap, MERGER, LogTypes.PLAY_VIEW_ETL, date).registerTempTable(analyse_source_data_df_name)
 
           /** 进入分析代码，以后分析脚本编写、HUE查询、kylin查询只需要编写如下sql */
           sqlStr =
