@@ -48,7 +48,7 @@ object SportsPathParser {
           if(pg3.contains("collect")){
             res1 = "collect"
             val (pg3Arr,len) = splitStr(pg3,"-")
-            if(len>1) {
+            if(len>0) {
               SPORTS_LIST_CATEGORY_REGEX findFirstMatchIn pg3Arr(len - 1) match {
                 case Some(p) => {
                   res2 = p.group(1)
@@ -70,7 +70,7 @@ object SportsPathParser {
         res2 = p.group(3)
         val pg4 = p.group(4)
         val (pg3Arr,len) = splitStr(pg4,"-")
-        if(len>1){
+        if(len>0){
         SPORTS_LIST_CATEGORY_REGEX findFirstMatchIn pg3Arr(len-1) match {
           case Some(p) => res3 = p.group(2)
           case None =>
