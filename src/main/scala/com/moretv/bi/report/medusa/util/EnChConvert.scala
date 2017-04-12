@@ -141,6 +141,7 @@ object EnChConvert {
               case "yulebagua_zongyi" => result = "娱乐八卦"
               case "xiangsheng_zongyi" => result = "相声小品"
               case "zongyi_wangpai" => result = "王牌综艺"
+              case "zongyi_benpaoba" => result = "奔跑吧"
               case _ => result=info
             }
           }
