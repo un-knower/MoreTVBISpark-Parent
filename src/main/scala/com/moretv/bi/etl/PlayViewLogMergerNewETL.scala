@@ -148,6 +148,9 @@ object PlayViewLogMergerNewETL extends BaseClass {
             val mergeColNamesWithTableWithout = merge_table_df.columns.toList.filter(e=>{
               e!="main_category" && e!="second_category" && e!="third_category"
             }).mkString(",")
+//            println("----"+mergeColNames)
+//            println("----"+mergeColNamesWithTable)
+//            println("----"+mergeColNamesWithTableWithout)
 
             /** 用于过滤单个用户播放单个视频量过大的情况 */
             sqlStr =
@@ -219,6 +222,8 @@ object PlayViewLogMergerNewETL extends BaseClass {
             val resultRDD = sportsRDD.unionAll(kidsRDD).unionAll(otherRDD)
             val resultDF = resultRDD.toDF()
 //            val result_df = sqlContext.sql(sqlStr)
+//            val resultColNames = resultDF.columns.toList.mkString(",")
+//            println("----"+resultColNames)
             resultDF.write.parquet(outputPath)
           } else if (!medusaFlag && moretvFlag) {
             throw new RuntimeException("medusaFlag is false")
