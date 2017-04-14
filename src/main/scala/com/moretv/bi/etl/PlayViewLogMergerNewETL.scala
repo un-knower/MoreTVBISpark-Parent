@@ -107,6 +107,7 @@ object PlayViewLogMergerNewETL extends BaseClass {
                      """.stripMargin
             println("--------------------" + sqlStr)
             val medusa_table_init_table_df=sqlContext.sql(sqlStr)
+//            println("medusa count1: "+medusa_table_init_table_df.count())
             medusa_table_init_table_df.registerTempTable("medusa_table_init_table")
             //解析subject code维度,解析不到，使用subject维度表补全
             sqlStr = s"""
@@ -127,6 +128,7 @@ object PlayViewLogMergerNewETL extends BaseClass {
                         |on trim(a.subjectName)=trim(b.subject_name)
                      """.stripMargin
             println("--------------------" + sqlStr)
+//            println("medusa count2: "+sqlContext.sql(sqlStr).count())
             sqlContext.sql(sqlStr).registerTempTable("medusa_filter")
             /** 3.x 使用站点树维度表对3.x的二级入口进行过滤，防止日志里脏数据(除了体育 少儿 音乐三个一级入口) */
             sqlStr =
@@ -134,17 +136,33 @@ object PlayViewLogMergerNewETL extends BaseClass {
                 |select $medusaColNamesWithTable,
                 |a.entryType,
                 |a.main_category,
-                |if(a.second_category is null,'',if(a.main_category not in ('sports','kids'),b.second_category,a.second_category)) second_category,
-                |if(a.main_category not in ('sports','kids'),'',a.third_category) third_category,
+                |if(a.second_category is null,'',b.second_category) second_category,
+                |a.third_category third_category,
                 |a.subjectCode
                 |from medusa_filter a
                 |left join
                 |${DimensionTypes.DIM_MEDUSA_SOURCE_SITE} b
-                |on a.main_category=b.site_content_type and a.main_category not in ('sports','kids') and b.site_content_type not in ('sports','kids') and a.second_category=b.second_category
-                |where b.main_category_code!='program_site'
+                |on a.main_category=b.site_content_type and a.second_category=b.second_category
+                |where b.main_category_code!='program_site' and a.main_category not in ('sports','kids') and b.site_content_type not in ('sports','kids')
               """.stripMargin
             println(sqlStr)
-            val medusa_rdd = sqlContext.sql(sqlStr).toJSON
+            val medusa_step1_df = sqlContext.sql(sqlStr)
+            sqlStr =
+              s"""
+                |select $medusaColNamesWithTable,
+                |a.entryType,
+                |a.main_category,
+                |a.second_category second_category,
+                |a.third_category third_category,
+                |a.subjectCode
+                |from medusa_filter a
+                |where a.main_category in ('sports','kids')
+              """.stripMargin
+            println(sqlStr)
+            val medusa_step2_df = sqlContext.sql(sqlStr)
+//            val medusa_rdd = sqlContext.sql(sqlStr).toJSON
+            val medusa_rdd = medusa_step1_df.unionAll(medusa_step2_df).toJSON
+//            println("medusa count3: "+medusa_rdd.count())
             //moretv
             var sqlSelectMoretv =s"""select $moretvColNames,
                                      |  getEntranceType(path,'moretv')     as entryType,
@@ -155,6 +173,7 @@ object PlayViewLogMergerNewETL extends BaseClass {
                                      |from $moretv_table
                      """.stripMargin
             println(sqlSelectMoretv)
+//            println("moretv count1: "+sqlContext.sql(sqlSelectMoretv).count())
             sqlContext.sql(sqlSelectMoretv).registerTempTable("moretv_filter")
             /** 2.x 使用站点树维度表对2.x的二级入口进行过滤，英文转中文 (除了体育 少儿 音乐三个一级入口) */
             sqlSelectMoretv =
@@ -163,20 +182,37 @@ object PlayViewLogMergerNewETL extends BaseClass {
                 |a.entryType,
                 |a.subjectCode,
                 |a.main_category,
-                |if(a.second_category is null,'',if(a.main_category not in ('sports','kids'),b.second_category,a.second_category)) second_category,
-                |if(a.main_category not in ('sports','kids'),'',a.third_category) third_category
+                |if(a.second_category is null,'',b.second_category) second_category,
+                |a.third_category third_category
                 |from moretv_filter a
                 |left join
                 |${DimensionTypes.DIM_MEDUSA_SOURCE_SITE} b
-                |on a.main_category=b.site_content_type and a.main_category not in ('sports','kids') and b.site_content_type not in ('sports','kids') and a.second_category=b.second_category_code
-                |where b.main_category_code!='program_site'
+                |on a.main_category=b.site_content_type and a.second_category=b.second_category_code
+                |where b.main_category_code!='program_site' and a.main_category not in ('sports','kids') and b.site_content_type not in ('sports','kids')
               """.stripMargin
             println(sqlSelectMoretv)
-            val moretv_rdd = sqlContext.sql(sqlSelectMoretv).toJSON
+            val moretv_step1_df = sqlContext.sql(sqlSelectMoretv)
+            sqlSelectMoretv =
+              s"""
+                |select $moretvColNamesWithTable,
+                |a.entryType,
+                |a.subjectCode,
+                |a.main_category,
+                |a.second_category second_category,
+                |a.third_category third_category
+                |from moretv_filter a
+                |where a.main_category in ('sports','kids')
+              """.stripMargin
+            println(sqlSelectMoretv)
+            val moretv_step2_df = sqlContext.sql(sqlSelectMoretv)
+//            val moretv_rdd = sqlContext.sql(sqlSelectMoretv).toJSON
+            val moretv_rdd = moretv_step1_df.unionAll(moretv_step2_df).toJSON
+//            println("moretv count2: "+moretv_rdd.count())
             //3.x and 2.x log merge
             val mergerRDD = medusa_rdd.union(moretv_rdd)
             val merge_table_df = sqlContext.read.json(mergerRDD).toDF()
             merge_table_df.cache()
+//            println("merge count: "+merge_table_df.count())
             merge_table_df.registerTempTable("merge_table")
             val mergeColNames = merge_table_df.columns.toList.mkString(",")
             val mergeColNamesWithTable = merge_table_df.columns.toList.map(e=>{
@@ -211,6 +247,7 @@ object PlayViewLogMergerNewETL extends BaseClass {
                  |where b.filterColumn is null
                      """.stripMargin
             println("--------------------" + sqlStr)
+//            println("result count1: "+sqlContext.sql(sqlStr).count())
             sqlContext.sql(sqlStr).registerTempTable("result_table")
             /**体育和少儿 关联查询获取中文名称*/
             //sport
@@ -264,8 +301,9 @@ object PlayViewLogMergerNewETL extends BaseClass {
             val resultDF = sportsDF.unionAll(kidsDF).unionAll(otherDF)
 //            val resultColNames = resultDF.columns.toList.mkString(",")
 //            println("----"+resultColNames)
-            resultDF.registerTempTable("last_result")
-            sqlContext.sql("select distinct main_category,second_category,third_category from last_result where main_category in ('sports','kids') order by main_category").show(1000,false)
+//            println("result count2: "+resultDF.count())
+//            resultDF.registerTempTable("last_result")
+//            sqlContext.sql("select distinct main_category,second_category,third_category from last_result where main_category in ('sports','kids') order by main_category").show(1000,false)
             resultDF.write.parquet(outputPath)
           } else if (!medusaFlag && moretvFlag) {
             throw new RuntimeException("medusaFlag is false")
