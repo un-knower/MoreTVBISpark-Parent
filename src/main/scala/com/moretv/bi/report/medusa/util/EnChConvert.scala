@@ -235,6 +235,7 @@ object EnChConvert {
               case "jilu_xingzhen"=> result="刑侦档案"
               case "jilu_junshi" => result = "铁血军魂"
               case "jilu_qiche" => result = "大话汽车"
+              case "jilu_lishi" => result = "历史奇闻"
               case _ => result=info
             }
           }
