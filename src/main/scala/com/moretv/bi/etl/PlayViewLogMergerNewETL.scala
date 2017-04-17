@@ -214,16 +214,16 @@ object PlayViewLogMergerNewETL extends BaseClass {
             merge_table_df.cache()
 //            println("merge count: "+merge_table_df.count())
             merge_table_df.registerTempTable("merge_table")
-            val mergeColNames = merge_table_df.columns.toList.mkString(",")
-            val mergeColNamesWithTable = merge_table_df.columns.toList.map(e=>{
+            val mergeColumnList=merge_table_df.columns.toList
+            val mergeColNamesWithTable = mergeColumnList.map(e=>{
               "a."+e
             }).mkString(",")
-            val mergeColNamesWithTableWithout = merge_table_df.columns.toList.filter(e=>{
+            val mergeColNamesWithTableWithout = mergeColumnList.filter(e=>{
               e!="main_category" && e!="second_category" && e!="third_category"
             }).map(e=>{
               "a."+e
             }).mkString(",")
-            val mergeColNamesWithout = merge_table_df.columns.toList.filter(e=>{
+            val mergeColNamesWithout = mergeColumnList.filter(e=>{
               e!="main_category" && e!="second_category" && e!="third_category"
             }).mkString(",")
 
