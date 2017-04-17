@@ -102,7 +102,8 @@ object PlayViewLogMergerNewETL extends BaseClass {
                        |    getSubjectCode(pathSpecial,'medusa')  as subjectCode,
                        |    getListCategoryMedusa(pathMain,1)     as main_category,
                        |    getListCategoryMedusa(pathMain,2)     as second_category,
-                       |    getListCategoryMedusa(pathMain,3)     as third_category
+                       |    getListCategoryMedusa(pathMain,3)     as third_category,
+                       |    'medusa' flag
                        |from $medusa_table
                      """.stripMargin
             println("medusa 1--------------------" + sqlStr)
@@ -116,6 +117,7 @@ object PlayViewLogMergerNewETL extends BaseClass {
                         |        a.main_category,
                         |        a.second_category,
                         |        a.third_category,
+                        |        a.flag,
                         |       if((a.subjectCode is null or a.subjectCode=''),b.subject_code,a.subjectCode) as subjectCode
                         |from medusa_table_init_table a
                         |left join
@@ -137,18 +139,39 @@ object PlayViewLogMergerNewETL extends BaseClass {
                 |select $medusaColNamesWithTable,
                 |a.entryType,
                 |a.main_category,
-                |if(a.second_category is null,'',b.second_category) second_category,
+                |if(a.second_category is null or a.second_category='','',b.second_category) second_category,
                 |a.third_category third_category,
+                |a.flag,
                 |a.subjectCode
                 |from medusa_filter a
                 |left join
-                |${DimensionTypes.DIM_MEDUSA_SOURCE_SITE} b
+                |   (select distinct site_content_type,second_category,main_category_code from
+                |   ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE} where site_content_type is not null
+                |   ) b
                 |on a.main_category=b.site_content_type and a.second_category=b.second_category and b.main_category_code!='program_site'
-                |where a.main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS') and b.site_content_type not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS')
+                |where a.main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS') or a.main_category is null
               """.stripMargin
             println("medusa 3--------------------" + sqlStr)
             val medusa_step1_df = sqlContext.sql(sqlStr)
             println("medusa count3: "+medusa_step1_df.count())
+
+            /**test...start*/
+            sqlStr =
+              s"""
+                |select $medusaColNamesWithTable,
+                |a.entryType,
+                |a.main_category,
+                |a.second_category second_category,
+                |a.third_category third_category,
+                |a.flag,
+                |a.subjectCode
+                |from medusa_filter a
+                |where a.main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS') or a.main_category is null
+              """.stripMargin
+            println("medusa test--------------------" + sqlStr)
+            println("medusa test count: "+sqlContext.sql(sqlStr).count())
+            /**test...end*/
+
               /** step2:单独拉出sports和kids的数据*/
             sqlStr =
               s"""
@@ -157,6 +180,7 @@ object PlayViewLogMergerNewETL extends BaseClass {
                 |a.main_category,
                 |a.second_category second_category,
                 |a.third_category third_category,
+                |a.flag,
                 |a.subjectCode
                 |from medusa_filter a
                 |where a.main_category in ('$CHANNEL_SPORTS','$CHANNEL_KIDS')
@@ -174,7 +198,8 @@ object PlayViewLogMergerNewETL extends BaseClass {
                                      |  getSubjectCode(path,'moretv')      as subjectCode,
                                      |  getListCategoryMoretv(path,1)      as main_category,
                                      |  getListCategoryMoretv(path,2)      as second_category,
-                                     |  getListCategoryMoretv(path,3)      as third_category
+                                     |  getListCategoryMoretv(path,3)      as third_category,
+                                     |  'moretv' flag
                                      |from $moretv_table
                      """.stripMargin
             println("moretv 1--------------------" + sqlSelectMoretv)
@@ -188,13 +213,14 @@ object PlayViewLogMergerNewETL extends BaseClass {
                 |a.entryType,
                 |a.subjectCode,
                 |a.main_category,
-                |if(a.second_category is null,'',b.second_category) second_category,
-                |a.third_category third_category
+                |if(a.second_category is null or a.second_category='','',b.second_category) second_category,
+                |a.third_category third_category,
+                |a.flag
                 |from moretv_filter a
                 |left join
                 |${DimensionTypes.DIM_MEDUSA_SOURCE_SITE} b
                 |on a.main_category=b.site_content_type and a.second_category=b.second_category_code and b.main_category_code!='program_site'
-                |where a.main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS') and b.site_content_type not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS')
+                |where (a.main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS') or a.main_category is null)
               """.stripMargin
             println("moretv 2--------------------" + sqlSelectMoretv)
             val moretv_step1_df = sqlContext.sql(sqlSelectMoretv)
@@ -207,7 +233,8 @@ object PlayViewLogMergerNewETL extends BaseClass {
                 |a.subjectCode,
                 |a.main_category,
                 |a.second_category second_category,
-                |a.third_category third_category
+                |a.third_category third_category,
+                |a.flag
                 |from moretv_filter a
                 |where a.main_category in ('$CHANNEL_SPORTS','$CHANNEL_KIDS')
               """.stripMargin
@@ -284,7 +311,7 @@ object PlayViewLogMergerNewETL extends BaseClass {
                 |second_category,
                 |third_category
                 |from merge_table
-                |where main_category<>'$CHANNEL_KIDS' and main_category<>'$CHANNEL_SPORTS'
+                |where main_category not in ('$CHANNEL_KIDS','$CHANNEL_SPORTS') or main_category is null
               """.stripMargin
             println("other----------"+sqlStr)
             val otherDF = sqlContext.sql(sqlStr)
@@ -304,7 +331,8 @@ object PlayViewLogMergerNewETL extends BaseClass {
             sqlContext.sql(sqlStr).registerTempTable("table_filter")
             sqlStr =
               s"""
-                 |select $mergeColNamesWithTable
+                 |select $mergeColNamesWithTable,
+                 |a.flag
                  |from result_table              a
                  |     left join
                  |     table_filter       b
