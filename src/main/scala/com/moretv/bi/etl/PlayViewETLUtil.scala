@@ -1,5 +1,8 @@
 package com.moretv.bi.etl
 
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.report.medusa.channelClassification.ChannelClassificationStatETL._
+import com.moretv.bi.util.HdfsUtil
 import org.apache.spark.sql.{SQLContext, DataFrame}
 
 /**
@@ -11,7 +14,7 @@ import org.apache.spark.sql.{SQLContext, DataFrame}
 object PlayViewETLUtil  {
 
 //kids etl
-def kidsETL(dfMap:Map[String,DataFrame],flag:String): DataFrame = {
+def kidsETL(sqlContext:SQLContext,dfMap:Map[String,DataFrame],mapflag:String): DataFrame = {
   var result:DataFrame=null
   val fact_df=dfMap.get("fact").get
   fact_df.registerTempTable("fact")
@@ -42,5 +45,17 @@ def dfRecordCount(sqlContext:SQLContext,df:DataFrame,tableName:String,isDebug:Bo
   }
   count
 }
+
+  /**用来写入HDFS，测试数据是否正确*/
+  def writeToHDFSForCheck(date: String, logType: String, df: DataFrame, isDeleteOld: Boolean,isDebug:Boolean): Unit = {
+    if (isDebug) {
+      println(s"--------------------$logType is write done.")
+      val outputPath = DataIO.getDataFrameOps.getPath(MERGER, logType, date)
+      if (isDeleteOld) {
+        HdfsUtil.deleteHDFSFile(outputPath)
+      }
+      df.write.parquet(outputPath)
+    }
+  }
 
 }
