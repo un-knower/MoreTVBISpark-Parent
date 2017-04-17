@@ -29,6 +29,7 @@ trait LogConfig {
     * 频道类型 */
   val CHANNEL_MOVIE="movie"
   val CHANNEL_KIDS = "kids"
+  val CHANNEL_SPORTS = "sports"
   val CHANNEL_TV="tv"
   val CHANNEL_HOT="hot"
   val CHANNEL_VARIETY_PROGRAM="zongyi"
