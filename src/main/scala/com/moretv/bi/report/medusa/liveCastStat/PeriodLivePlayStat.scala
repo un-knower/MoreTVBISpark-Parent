@@ -77,8 +77,7 @@ object PeriodLivePlayStat extends PeriodJob {
     val userCount = ods.agg(countDistinct($"userId"))
       .first.getLong(0)
 
-    val durationSum = ods.filter($"event" !== "startplay")
-      .filter($"duration".between(1, 360000))
+    val durationSum = ods.filter($"duration".between(1, 36000))
       .agg(sum($"duration"))
       .first.getLong(0)
 

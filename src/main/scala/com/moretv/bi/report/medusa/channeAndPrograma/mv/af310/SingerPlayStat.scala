@@ -1,6 +1,5 @@
 package com.moretv.bi.report.medusa.channeAndPrograma.mv.af310
 
-import org.apache.spark.sql.functions._
 import cn.whaley.sdk.dataOps.MySqlOps
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DimensionTypes, LogTypes}
