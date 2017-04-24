@@ -152,7 +152,7 @@ object PlayViewLogMergerNewETL extends BaseClass {
                 |    second_category,
                 |    max(main_category_code) main_category_code from
                 |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}
-                |    where site_content_type is not null and main_category_code!='program_site'
+                |    where site_content_type is not null and main_category_code in ('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu')
                 |    group by site_content_type,second_category
                 |   ) b
                 |on a.main_category=b.site_content_type and a.second_category=b.second_category
@@ -216,7 +216,7 @@ object PlayViewLogMergerNewETL extends BaseClass {
                 |    second_category_code,
                 |    max(main_category_code) main_category_code from
                 |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}
-                |    where site_content_type is not null and main_category_code!='program_site'
+                |    where site_content_type is not null and main_category_code in ('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu')
                 |    group by site_content_type,second_category_code
                 |   ) b
                 |on a.main_category=b.site_content_type and a.second_category=b.second_category_code
@@ -287,7 +287,10 @@ object PlayViewLogMergerNewETL extends BaseClass {
                 |left join
                 |   (
                 |    select site_content_type,third_category_code,max(third_category) third_category from
-                |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE} where site_content_type is not null group by site_content_type,third_category_code
+                |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}
+                |    where site_content_type is not null
+                |    group by site_content_type,
+                |             third_category_code
                 |   ) c
                 |on a.main_category=c.site_content_type and a.second_category<>'horizontal' and a.third_category=c.third_category_code
                 |where a.main_category='$CHANNEL_SPORTS'
