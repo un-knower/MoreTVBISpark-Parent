@@ -966,11 +966,19 @@ object PathParserETL {
     result
   }
 
+  /**
+    * 2.x，原有统计分析没有做少儿；体育最新的逻辑解析没有上线
+    * SportsPathParser现在没有解析2.x path路径
+    *
+    * */
   def getListCategoryMoretvETL(path: String, index_input: Int): String = {
     var result: String = null
     if (null != path) {
-      //2.x，原有统计分析没有做少儿；体育暂时没有上线，逻辑里暂时过滤掉
-      if (path.contains("kids") && path.contains("sports*")) {
+      //少儿使用最新逻辑
+      if(path.contains("kids")){
+        result=KidsPathParser.pathParse(path,index_input)
+      }else {
+        //其他类型仍然使用原有逻辑
         if (index_input == 1) {
           result = getSplitInfo(path, 2)
           if (result != null) {
@@ -984,8 +992,7 @@ object PathParserETL {
               }
             }
           }
-        }
-        else if (index_input == 2) {
+        }else if (index_input == 2) {
           result = getSplitInfo(path, 3)
           if (result != null) {
             if (getSplitInfo(path, 2) == "search") {
@@ -994,12 +1001,8 @@ object PathParserETL {
             if (getSplitInfo(path, 2) == "kids_home" || getSplitInfo(path, 2) == "sports") {
               result = getSplitInfo(path, 3) + "-" + getSplitInfo(path, 4)
             }
-
             if (!UDFConstant.MoretvPageInfo.contains(getSplitInfo(path, 2))) {
               result = null
-              /* if (!UDFConstant.MoretvPageDetailInfo.contains(result)) {
-                 result =null
-               }*/
             }
           }
         }
