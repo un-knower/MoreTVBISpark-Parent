@@ -48,12 +48,14 @@ object SportsPathParser {
           if(pg3.contains("collect")){
             res1 = "collect"
             val (pg3Arr,len) = splitStr(pg3,"-")
-            SPORTS_LIST_CATEGORY_REGEX findFirstMatchIn pg3Arr(len-1) match {
-              case Some(p) => {
-                res2 = p.group(1)
-                res3 = p.group(2)
+            if(len>0) {
+              SPORTS_LIST_CATEGORY_REGEX findFirstMatchIn pg3Arr(len - 1) match {
+                case Some(p) => {
+                  res2 = p.group(1)
+                  res3 = p.group(2)
+                }
+                case None =>
               }
-              case None =>
             }
           }
         }
@@ -86,6 +88,7 @@ object SportsPathParser {
   /**
     * Split some string based on by
     * The $string should not be null, the $string should not be the same as $by and the string should contains $by
+    *
     * @param str
     * @param by
     * @return
