@@ -1,0 +1,22 @@
+
+
+#Intellij IDEA files
+
+*.iml
+.idea
+
+SdkConfig.scala
+
+# class file
+
+*.jar
+*.class
+
+/target
+
+target
+# output file
+
+.DS_Store
+
+/MoreTVBISpark/src/test/scala/PlayPathMatchTest.scala

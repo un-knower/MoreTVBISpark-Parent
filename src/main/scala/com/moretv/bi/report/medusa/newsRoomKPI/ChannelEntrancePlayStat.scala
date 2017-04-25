@@ -1,0 +1,217 @@
+package com.moretv.bi.report.medusa.newsRoomKPI
+
+import java.lang.{Float => JFloat, Long => JLong}
+import java.util.Calendar
+
+import cn.whaley.sdk.dataexchangeio.DataIO
+import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.report.medusa.newsRoomKPI.EachChannelPlayInfo.{MERGER, sqlContext}
+
+import scala.collection.mutable.Map
+import com.moretv.bi.util._
+import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.json.JSONObject
+
+import scala.collection.mutable
+
+/**
+  * Created by witnes on 2016/5/16.
+  * 统计维度：如果播放节目是属于subject，则按照专题code来归类，否则，按照contentType归类
+  *
+  */
+object ChannelEntrancePlayStat extends BaseClass {
+
+  private val tableName = "tmp_history_play_detail"
+
+  private val fields = "day,video_sid,title,contentType,entrance,pv,uv"
+
+  private val insertSql = s"insert into $tableName($fields) values(?,?,?,?,?,?)"
+
+  private val deleteSql = s"delete from $tableName where day = ? "
+
+  private val regex ="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|mv)([0-9]+)""".r
+
+  private val sourceRe = ("(home\\*classification|search|home\\*my_tv\\*history|" +
+    "home\\*my_tv\\*collect|home\\*recommendation|home\\*my_tv\\*[a-zA-Z0-9&\\u4e00-\\u9fa5]{1,})").r
+
+  private val sourceRe1 = ("(classification|history|hotrecommend|search)").r
+
+  private val codeMap: scala.collection.immutable.Map[String, String] = CodeToNameUtils.getSubjectCodeMap
+
+
+  def main(args: Array[String]) {
+
+    ModuleClass.executor(ChannelEntrancePlayStat, args)
+
+  }
+
+  override def execute(args: Array[String]) {
+
+    ParamsParseUtil.parse(args) match {
+      case Some(p) => {
+
+        val sqlContext = new SQLContext(sc)
+
+        val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+
+        val startDate = p.startDate
+        val cal = Calendar.getInstance
+        cal.setTime(DateFormatUtils.readFormat.parse(startDate))
+
+        (0 until p.numOfDays).foreach(w => {
+
+
+          val loadDate = DateFormatUtils.readFormat.format(cal.getTime)
+          cal.add(Calendar.DAY_OF_MONTH, -1)
+          val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
+
+          //TODO 是否需要写到固定的常量类or通过SDK读取
+          DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MERGER,LogTypes.PLAYVIEW).
+            filter("path is not null or pathMain is not null")
+            .select(
+              "event", "videoSid","userId", "pathMain", "path", "contentType", "pathIdentificationFromPath", "flag", "duration"
+            )
+            .registerTempTable("log_data")
+
+
+          val dfUser: DataFrame = sqlContext.sql(
+            """
+              |select userId,videoSid,pathMain,path,contentType,pathIdentificationFromPath,flag,cast(0 as Long)
+              |  from log_data
+              |  where event in ('startplay','playview')
+            """.stripMargin
+          )
+
+
+          //(channel,入口),userId
+          val userRdd = contentFilter(dfUser)
+            .map(e => ((e._1, e._2,e._3), e._5))
+
+
+          val uvMap = userRdd.distinct.countByKey
+
+          val pvMap = userRdd.countByKey
+
+
+          uvMap.foreach(w => {
+
+            val key = w._1
+            val channel = fromEngToChinese(w._1._2)
+            //val channel = w._1._1
+            val videoSid = w._1._1
+            val source = w._1._3
+            val uv = new JLong(w._2)
+            val pv = new JLong(pvMap.get(key) match {
+              case Some(p) => p
+              case None => 0
+            })
+            //println(channel, uv, pv)
+            util.insert(insertSql, sqlDate, videoSid, ProgramRedisUtil.getTitleBySid(videoSid),channel, source, pv, uv)
+          })
+
+        })
+
+      }
+
+      case None => {
+
+      }
+    }
+
+  }
+
+  //dfUser: userId,pathMain,path,contentType,pathIdentificationFromPath,flag,cast(0 as Long)
+  //dfDuration : userId,pathMain,path,contentType,pathIdentificationFromPath,flag,duration
+  def contentFilter(df: DataFrame): RDD[(String, String,String, Long, String)] = {
+
+    val rdd = df.map(e => {
+      var channel = e.getString(4)
+      if (e.getString(4) != null) {
+        channel = regex findFirstMatchIn e.getString(4) match {
+          case Some(p) => p.group(1)
+          case None => {
+            regex findFirstMatchIn codeMap.getOrElse(e.getString(4), e.getString(3)) match {
+              case Some(pp) => pp.group(1)
+              case None => e.getString(3)
+            }
+          }
+        }
+      }
+      //                    pathMain        path             flag              0             userId
+      (e.getString(1),channel, splitSource(e.getString(2), e.getString(3), e.getString(6)), e.getLong(7), e.getString(0))
+
+    })
+      .filter(
+        e => (e._1 == "movie" || e._1 == "kids" || e._1 == "tv" || e._1 == "sports" || e._1 == "kids"
+          || e._1 == "reservation" || e._1 == "mv" || e._1 == "jilu" || e._1 == "comic" || e._1 == "zongyi"
+          || e._1 == "hot" || e._1 == "xiqu"
+          ))
+
+      .filter(_._2 != null).filter(_._2=="历史")
+    rdd
+  }
+
+
+  def fromEngToChinese(str: String): String = {
+    str match {
+      case "movie" => "电影"
+      case "tv" => "电视"
+      case "hot" => "资讯短片"
+      case "kids" => "少儿"
+      case "zongyi" => "综艺"
+      case "comic" => "动漫"
+      case "jilu" => "纪实"
+      case "sports" => "体育"
+      case "xiqu" => "戏曲"
+      case "mv" => "音乐"
+      case _ => "未知"
+    }
+  }
+
+  //pathMain        path             flag
+  def splitSource(pathMain: String, path: String, flag: String): String = {
+    val specialPattern = "home\\*my_tv\\*[a-zA-Z0-9&\\u4e00-\\u9fa5]{1,}".r
+    flag match {
+      case "medusa" => {
+        sourceRe findFirstMatchIn pathMain match {
+          case Some(p) => {
+            p.group(1) match {
+              case "home*classification" => "分类入口"
+              case "home*my_tv*history" => "历史"
+              case "home*my_tv*collect" => "收藏"
+              case "home*recommendation" => "首页推荐"
+              case "search" => "搜索"
+              case _ => {
+                if (specialPattern.pattern.matcher(p.group(1)).matches) {
+                  "自定义入口"
+                }
+                else {
+                  "其它3"
+                }
+              }
+            }
+          }
+          case None => "其它3"
+        }
+      }
+      case "moretv" => {
+        sourceRe1 findFirstMatchIn path match {
+          case Some(p) => {
+            p.group(1) match {
+              case "classification" => "分类入口"
+              case "history" => "历史"
+              case "hotrecommend" => "首页推荐"
+              case "search" => "搜索"
+              case _ => "其它2"
+            }
+          }
+          case None => "其它2"
+        }
+      }
+    }
+
+  }
+
+}

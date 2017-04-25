@@ -1,0 +1,4 @@
+type=command
+dependencies=DayRetentionRate,DailyActiveUserByMac,ApkSeriesVersionDist,GenerateMtvLoginLogData,PromotionChannelDetail,MtvPromotionChannelDetail,AliDogTVDogActiveAndNewUserStatistics,YunOSLoginUser,CishuStatistics,LoginPeriodByApkSeriesVersion,ProductModelDist,YunOSActiveUserBasedAlidogTvdog,YunOSBasedPromotionChannel,ProductBrandDist,UserStatisticsBasedApkVersion,AreaDist,PeriodUserDevelopStat
+command=echo "loginlog is end ..."
+

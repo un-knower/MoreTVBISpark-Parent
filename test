@@ -1,0 +1,17 @@
+
+playview事实表和专题维度表关联，得到 统计不同频道的专题播放量
+
+val loadPath="/log/medusaAndMoretvMerger/20170404/playview-etl"
+val df = sqlContext.read.parquet(loadPath)
+df.registerTempTable("log_data")
+val dimPath="/data_warehouse/dw_dimensions/dim_medusa_subject"
+val df = sqlContext.read.parquet(dimPath)
+df.registerTempTable("dim")
+sqlContext.sql("select b.subject_content_type_name,count(userId) as play_num,count(distinct userId) as play_user from log_data  a join dim  b on a.subjectCode=b.subject_code group by b.subject_content_type_name where a.event in ('startplay','playview') ").show(200,false)
+
+
+playview事实表和专题维度表关联，得到 频道分类入口统计
+val loadPath="/log/medusaAndMoretvMerger/20170404/playview-etl"
+val df = sqlContext.read.parquet(loadPath)
+df.registerTempTable("log_data")
+sqlContext.sql("select  main_category, second_category,count(distinct userId) as playUser,count(userId) as playNum from log_data where event in ('startplay','playview') and main_category in ('movie') group by main_category,second_category").show(200,false)

@@ -1,0 +1,4 @@
+type=command
+dependencies=MVOminibusSrcStat,MVVideoSrcStat,LauncherPlayStatistic,MVTabPlayStat,MVVideoStat,MVOminibusStat,SportPlayAndLiveTotalUserInfo,EachMVPlayTopBoard,MVEachAreaPlayInfo,MVRecommendPlay,SearchVideoContentTypeStat,MatchPlayStatistics,SimiliarContenttypeUserStat,PeriodUserDetailPlayStat,SingerPlayStat,GuessYouLikeStat
+command=echo "merger_paly is end ..."
+

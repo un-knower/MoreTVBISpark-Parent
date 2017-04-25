@@ -1,0 +1,2 @@
+type=command
+command=sh ${working.dir}/../../bin/hdfsExist.sh ${startDate} medusa homeaccess 0
