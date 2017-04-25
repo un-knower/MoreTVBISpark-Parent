@@ -18,6 +18,7 @@ trait LogConfig {
   val MTVKIDSLOGIN = "mtvkidsloginlog"
   val ACTIVITY = "activity"
   val MEDUSA_DIMENSION="medusa_dimension"
+  val MORETVLOGINLOG = "moretvloginlog"
 
 
  /**
