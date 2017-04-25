@@ -47,7 +47,7 @@ object PlayViewLogMergerNewETL extends BaseClass {
         println(s"--------------------dimensionSubjectFlag is ${dimensionSubjectFlag}")
         println(s"--------------------dimensionProgramFlag is ${dimensionProgramFlag}")
         println(s"--------------------dimensionPageEntranceFlag is ${dimensionPageEntranceFlag}")
-        println(s"--------------------dimensionPageEntranceFlag is ${dimensionProgramSiteFlag}")
+        println(s"--------------------dimensionProgramSiteFlag is ${dimensionProgramSiteFlag}")
         if (dimensionSourceSiteFlag && dimensionSubjectFlag && dimensionProgramFlag && dimensionPageEntranceFlag && dimensionProgramSiteFlag) {
           DataIO.getDataFrameOps.getDimensionDF(sqlContext, p.paramMap,MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SOURCE_SITE).registerTempTable(DimensionTypes.DIM_MEDUSA_SOURCE_SITE)
           DataIO.getDataFrameOps.getDimensionDF(sqlContext, p.paramMap,MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_SUBJECT).registerTempTable(DimensionTypes.DIM_MEDUSA_SUBJECT)
@@ -152,10 +152,10 @@ object PlayViewLogMergerNewETL extends BaseClass {
                 |    second_category,
                 |    max(main_category_code) main_category_code from
                 |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}
-                |    where site_content_type is not null
+                |    where site_content_type is not null and main_category_code in ('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu')
                 |    group by site_content_type,second_category
                 |   ) b
-                |on a.main_category=b.site_content_type and a.second_category=b.second_category and b.main_category_code!='program_site'
+                |on a.main_category=b.site_content_type and a.second_category=b.second_category
                 |where a.main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS') or a.main_category is null
               """.stripMargin
             println("medusa 3--------------------" + sqlStr)
@@ -216,11 +216,11 @@ object PlayViewLogMergerNewETL extends BaseClass {
                 |    second_category_code,
                 |    max(main_category_code) main_category_code from
                 |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}
-                |    where site_content_type is not null
+                |    where site_content_type is not null and main_category_code in ('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu')
                 |    group by site_content_type,second_category_code
                 |   ) b
-                |on a.main_category=b.site_content_type and a.second_category=b.second_category_code and b.main_category_code!='program_site'
-                |where (a.main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS') or a.main_category is null)
+                |on a.main_category=b.site_content_type and a.second_category=b.second_category_code
+                |where a.main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS') or a.main_category is null
               """.stripMargin
             println("moretv 2--------------------" + sqlSelectMoretv)
             val moretv_step1_df = sqlContext.sql(sqlSelectMoretv)
@@ -287,7 +287,10 @@ object PlayViewLogMergerNewETL extends BaseClass {
                 |left join
                 |   (
                 |    select site_content_type,third_category_code,max(third_category) third_category from
-                |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE} where site_content_type is not null group by site_content_type,third_category_code
+                |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}
+                |    where site_content_type is not null
+                |    group by site_content_type,
+                |             third_category_code
                 |   ) c
                 |on a.main_category=c.site_content_type and a.second_category<>'horizontal' and a.third_category=c.third_category_code
                 |where a.main_category='$CHANNEL_SPORTS'
