@@ -17,7 +17,7 @@ import org.apache.avro.TestAnnotation
 object MvListCategoryPathParser {
 
   private val MAIN_CATEGORY = "mv"
-  private val MV_3X_LIST_CATEGORY_REGEX = (".*\\*(site_.*)(-mv_category|-mv_poster)\\**([\\u4e00-\\u9fa5A-Z0-9-]*)").r
+  private val MV_3X_LIST_CATEGORY_REGEX = (".*\\*(site_.*)(-mv_category|-mv_poster)\\**([\\u4e00-\\u9fa5A-Z0-9-&]*)").r
 
   /**
     * This function is used to parse the ''pathMain'' field in 3x version of medusa
@@ -80,7 +80,7 @@ object MvListCategoryPathParser {
 
   @TestAnnotation
   def main(args: Array[String]): Unit = {
-    val str = "home*my_tv*mv-mv*mvCategoryHomePage*site_mvyear-mv_category*90年代"
+    val str = "home*classification*mv-mv*mvCategoryHomePage*site_mvstyle-mv_category*R&B"
     println(str)
     println(pathMainParse(str,1) + "--" + pathMainParse(str,2) + "--" + pathMainParse(str,3))
 
