@@ -72,16 +72,16 @@ object UserStatisticsBasedApkVersion extends BaseClass {
           val dfd2 = DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG, loadDate)
             .select($"mac", versionUdf($"version").as("version")).distinct()
             .groupBy("version")
-            .agg(count("mac").alias("counts"))
+            .agg(countDistinct("mac").alias("counts"))
 
           val resDf = dfd1.filter($"date" === sqlDate)
             .groupBy("version")
-            .agg(count("mac").alias("counts"))
+            .agg(countDistinct("mac").alias("counts"))
             .as("t1")
             .join(
               dfd1.filter($"date" <= sqlDate)
                 .groupBy("version")
-                .agg(count("mac").alias("counts"))
+                .agg(countDistinct("mac").alias("counts"))
                 .as("t2"),
               $"t1.version" === $"t2.version")
             .join(

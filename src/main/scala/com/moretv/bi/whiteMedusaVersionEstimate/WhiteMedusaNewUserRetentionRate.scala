@@ -1,4 +1,4 @@
-package com.moretv.bi.retention
+package com.moretv.bi.whiteMedusaVersionEstimate
 
 import java.sql.{DriverManager, Statement}
 import java.text.SimpleDateFormat
@@ -7,12 +7,11 @@ import java.util.Calendar
 import cn.whaley.sdk.dataOps.MySqlOps
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.constant.Tables
-import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.global.{DataBases, DimensionTypes, LogTypes}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{ParamsParseUtil, UserIdUtils}
-import org.apache.spark.sql.functions._
 
-object WhiteMedusaDayRetentionRate extends BaseClass {
+object WhiteMedusaNewUserRetentionRate extends BaseClass {
 
 
   def main(args: Array[String]) {
@@ -20,8 +19,15 @@ object WhiteMedusaDayRetentionRate extends BaseClass {
   }
 
   override def execute(args: Array[String]) {
+    sqlContext.udf.register("getApkVersion", ApkVersionUtil.getApkVersion _)
+    val tmpSqlContext = sqlContext
+    import tmpSqlContext.implicits._
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
+
+        DataIO.getDataFrameOps.getDimensionDF(sc, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_APP_VERSION).
+          select("version").distinct().registerTempTable("app_version_log")
+
         val inputDate = p.startDate
         val numOfDays = p.numOfDays
         val numOfPartition = 40
@@ -64,31 +70,26 @@ object WhiteMedusaDayRetentionRate extends BaseClass {
             c.add(Calendar.DAY_OF_MONTH, -needToCalc(j))
             val date2 = format.format(c.getTime)
 
-            /**
-              * 获取每天新增的用户信息（MAC）
-              */
-
-            //            val accountDf = DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT, date2)
-            //                .withColumn("version", split(col("current_version"),"-")(4))
-            //                .filter(s"left(openTime,10) = $date2")
-            //
-            //            val sqlInfoOld = accountDf.filter("version < '3.1.4'")
-            //              .select("mac").map(_=>UserIdUtils.userId2Long(_))
-            //              .distinct()
-            //            val sqlInfoNew = accountDf.filter("version >= '3.1.4'")
-            //              .select("mac").map(_=>UserIdUtils.userId2Long(_))
-            //              .distinct()
 
             val id = getID(date2, stmt)
             val min = id(0)
             val max = id(1)
             val sqlInfo = s"SELECT mac,current_version FROM `mtv_account` WHERE ID >= ? AND ID <= ? and left(openTime,10) = '$date2'"
-            val sqlRDD = MySqlOps.getJdbcRDD(sc, sqlInfo, Tables.MTV_ACCOUNT, r => {
+            MySqlOps.getJdbcRDD(sc, sqlInfo, Tables.MTV_ACCOUNT, r => {
               (r.getString(1), r.getString(2))
             }, driver, url, user, password, (min, max), numOfPartition)
               .filter(_._2 != null)
               .filter(_._2.contains("_"))
-              .map(e => (e._1, e._2.substring(e._2.lastIndexOf("_") + 1)))
+              .map(e => (e._1, e._2.substring(e._2.lastIndexOf("_") + 1))).toDF("mac","version").
+              registerTempTable("mtv_account_log")
+            val sqlRDD = sqlContext.sql(
+              """
+                |select a.mac,b.version
+                |from mtv_account_log as a
+                |left join app_version_log as b
+                |on a.version = b.version
+                |where mac is not null and b.version is not null
+              """.stripMargin).map(e=>(e.getString(0),e.getString(1)))
             //旧版本
             val sqlRDDOld = sqlRDD
               .filter(_._2 < "3.1.4")

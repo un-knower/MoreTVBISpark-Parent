@@ -23,15 +23,12 @@ object UserUpdateStatistic extends BaseClass {
   }
 
   override def execute(args: Array[String]): Unit = {
-    val tmpSqlContext = sqlContext
-    import tmpSqlContext.implicits._
-
     sqlContext.udf.register("getApkVersion", ApkVersionUtil.getApkVersion _)
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
 
         DataIO.getDataFrameOps.getDimensionDF(sc, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_APP_VERSION).
-          registerTempTable("app_version_log")
+          select("version").distinct().registerTempTable("app_version_log")
 
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
