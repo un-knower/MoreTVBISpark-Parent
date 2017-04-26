@@ -25,8 +25,14 @@ object UserUpdateStatistic extends BaseClass {
   override def execute(args: Array[String]): Unit = {
     val tmpSqlContext = sqlContext
     import tmpSqlContext.implicits._
+
+    sqlContext.udf.register("getApkVersion", ApkVersionUtil.getApkVersion _)
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
+
+        DataIO.getDataFrameOps.getDimensionDF(sc, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_APP_VERSION).
+          registerTempTable("app_version_log")
+
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
         val startDate = p.startDate
         val calendar = Calendar.getInstance()
@@ -43,31 +49,25 @@ object UserUpdateStatistic extends BaseClass {
 
           sqlContext.sql(
             s"""
-              |select current_version,openTime,mac
-              |from ${LogTypes.MORETV_MTV_ACCOUNT}
-              |where current_version is not null and openTime is not null
-            """.stripMargin).map(e=>{
-            var version:String = null
-            if(e.getString(0).contains("_")){
-              version = e.getString(0).substring(e.getString(0).lastIndexOf("_")+1)
-            }
-            (version,e.getString(1),e.getString(2))
-          }).toDF("current_version","openTime","mac").registerTempTable("log")
+              |select getApkVersion(a.current_version),a.openTime,a.mac,b.version
+              |from ${LogTypes.MORETV_MTV_ACCOUNT} as a
+              |left join app_version_log as b
+              |on getApkVersion(a.current_version) = b.version
+            """.stripMargin).toDF("current_version","openTime","mac","version").registerTempTable("log")
 
 
           /** 用户升级情况的统计 **/
           val updateUserCnt = sqlContext.sql(
             s"""
-               |select count(distinct case when current_version = '3.1.4'
+               |select count(distinct case when version >= '3.1.4'
                |       and openTime <= '$insertDate 23:59:59' then mac end) as total_num,
-               |       count(distinct case when current_version = '3.1.4' then mac end)/count(distinct mac) as proportion
+               |       count(distinct case when version >= '3.1.4' then mac end)/count(distinct mac) as proportion
                |from log
             """.stripMargin).map(e=>(e.getLong(0),e.getDouble(1)))
 
           if(p.deleteOld) util.delete(deleteSql,insertDate)
 
           updateUserCnt.collect.foreach(e => {
-            println(s"The result is ${e._1}, ${e._2}")
             util.insert(insertSql, insertDate,e._1, e._2)
           })
         })
