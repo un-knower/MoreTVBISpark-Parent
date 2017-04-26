@@ -28,6 +28,7 @@ object UserUpdateStatistic extends BaseClass {
         val startDate = p.startDate
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
+        calendar.add(Calendar.DAY_OF_MONTH,-1)
         (0 to p.numOfDays).foreach(i => {
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
           val insertDate = DateFormatUtils.toDateCN(date, 0)
