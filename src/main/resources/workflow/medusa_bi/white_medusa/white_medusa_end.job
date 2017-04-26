@@ -1,4 +1,4 @@
 type=command
-dependencies=MedusaDAURetentionRate,WhiteMedusaDAURetentionRate,WhiteMedusaNewUserRetention
+dependencies=MedusaDAURetentionRate,WhiteMedusaDAURetentionRate,WhiteMedusaNewUserRetention,ActiveUserAndLoginUserCt
 command=echo "merger_paly is end ..."
 
