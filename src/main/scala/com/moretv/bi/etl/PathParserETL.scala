@@ -748,7 +748,7 @@ object PathParserETL {
     } else if (pathMain.contains(UDFConstantDimension.MV_RECOMMEND_HOME_PAGE) || pathMain.contains(UDFConstantDimension.HOME_SEARCH))
     /** 为了统计频道分类入口的 搜索 和 筛选 维度，注释掉 */
     //||pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)
-     {
+    {
       result = null
     } else if (pathMain.contains(UDFConstantDimension.HOME_CLASSIFICATION)
       || pathMain.contains(UDFConstantDimension.HOME_MY_TV)
@@ -819,13 +819,13 @@ object PathParserETL {
          case None => null
        }*/
 
-//      else if (pathMain.contains("mv-mv")) {
-//        //TODO 将使用佳莹提供的类代替
-//        result = MvDimensionClassificationETL.mvPathMatch(pathMain, index_input)
-//      }
+      //      else if (pathMain.contains("mv-mv")) {
+      //        //TODO 将使用佳莹提供的类代替
+      //        result = MvDimensionClassificationETL.mvPathMatch(pathMain, index_input)
+      //      }
 
       else if (pathMain.contains("mv_category") || pathMain.contains("mv_poster")) {
-        result = MvListCategoryPathParser.pathMainParse(pathMain,index_input)
+        result = MvListCategoryPathParser.pathMainParse(pathMain, index_input)
       }
 
       /* 只有这种算进入列表页

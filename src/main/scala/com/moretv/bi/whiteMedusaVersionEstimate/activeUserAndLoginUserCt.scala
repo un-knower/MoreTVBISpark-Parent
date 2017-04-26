@@ -3,10 +3,10 @@ package com.moretv.bi.whiteMedusaVersionEstimate
 import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.global.{DataBases, DimensionTypes, LogTypes}
 import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.functions.{col, udf}
 
 /**
   * Created by zhu.bingxin on 2017/4/26.
@@ -24,6 +24,14 @@ object activeUserAndLoginUserCt extends BaseClass {
     * this method do not complete.Sub class that extends BaseClass complete this method
     */
   override def execute(args: Array[String]): Unit = {
+
+
+    /**
+      * UDF
+      */
+    val udfToDateCN = udf { yyyyMMdd: String => DateFormatUtils.toDateCN(yyyyMMdd) }
+    sqlContext.udf.register("getApkVersion", getApkVersion _)
+    sqlContext.udf.register("getVersion", getVersion _)
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
@@ -45,37 +53,57 @@ object activeUserAndLoginUserCt extends BaseClass {
 
           //load data
           val logAccount = DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT, date)
-          val logLogin = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MORETVLOGINLOG, LogTypes.LOGINLOG, date2)
+          val logLogin = DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG, date2)
+          DataIO.getDataFrameOps.getDimensionDF(sc, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_APP_VERSION).
+            select("version").distinct().registerTempTable("app_version_log")
 
           //filter data
-          logAccount.select("date", "happenTime", "host", "apkVersion", "productModel", "promotionChannel", "userId", "nextPageId",
-            "contentType", "order", "condition", "appEnterWay")
-            //.withColumn("happenDate", udfToDateCN(col("happenTime").substr(1, 8)))
-            //cut out the happenTime column,and then change it to standard date
-            .registerTempTable("log_table")
+          logAccount.withColumn("day", col("openTime").substr(1, 10))
+            .select("mac", "day", "current_version")
+            .filter(s"day = '${insertDate}'")
+            .registerTempTable("new_table")
+          logLogin.select("day", "mac", "version")
+            .registerTempTable("login_table")
 
           //data processings
+          sqlContext.sql(
+            """
+              |select x.day,x.version,count(distinct x.mac) as loginUser
+              |from
+              |(select a.day,a.mac,getVersion(b.version) as version
+              |from login_table a
+              |left join app_version_log b
+              |on getApkVersion(a.version) = b.version) x
+              |group by day,version
+            """.stripMargin)
+            .registerTempTable("login_users")
+          sqlContext.sql(
+            """
+              |select x.day,x.version,count(distinct x.mac) as newUser
+              |from
+              |(select a.day,a.mac,getVersion(b.version) as version
+              |from new_table a
+              |left join app_version_log b
+              |on getApkVersion(a.current_version) = b.version) x
+              |group by day,version
+            """.stripMargin)
+            .registerTempTable("new_users")
           val resultDf = sqlContext.sql(
             """
-              |select date,happenDate,host,apkVersion,productModel,promotionChannel,userId,nextPageId,contentType
-              |,order as orderType,condition as conditionList,appEnterWay,count(1) as pv
-              |from log_table
-              |group by date,happenDate,host,apkVersion,productModel,promotionChannel,userId,nextPageId,contentType,order
-              |,condition,appEnterWay
+              |select a.day,a.version,a.loginUser,b.newUser,a.loginUser-b.newUser as activeUser
+              |from login_users a join new_users b
+              |on a.day = b.day and a.version = b.version
             """.stripMargin)
 
-          val insertSql = "insert into eagle_filter_click_statistics(date,happenDate,host,apkVersion,productModel," +
-            "promotionChannel,userId,nextPageId,contentType,orderType,conditionList,appEnterWay,pv) " +
-            "values (?,?,?,?,?,?,?,?,?,?,?,?,?)"
+          val insertSql = "insert into whiteMedusa_login_active_user_ct(day,version,loginUser,newUser,activeUser) " +
+            "values (?,?,?,?,?)"
           if (p.deleteOld) {
-            val deleteSql = "delete from eagle_filter_click_statistics where date=?"
+            val deleteSql = "delete from whiteMedusa_login_active_user_ct where day=?"
             util.delete(deleteSql, insertDate)
           }
 
           resultDf.collect.foreach(e => {
-            util.insert(insertSql, e.getString(0), e.getString(1), e.getString(2), e.getString(3), e.getString(4),
-              e.getString(5), e.getString(6), e.getString(7), e.getString(8), e.getString(9), e.getString(10),
-              e.getString(11), e.getLong(12))
+            util.insert(insertSql, e.get(0), e.get(1), e.get(2), e.get(3), e.get(4))
           })
           println(insertDate + " Insert data successed!")
         })
@@ -85,5 +113,33 @@ object activeUserAndLoginUserCt extends BaseClass {
       }
     }
 
+  }
+
+
+  /**
+    * 从apkSerial中提取出apkVersion
+    *
+    * @param apkSerials
+    * @return
+    */
+  def getApkVersion(apkSerials: String) = {
+    if (apkSerials != null) {
+      if (apkSerials == "")
+        "kong"
+      else if (apkSerials.contains("_")) {
+        apkSerials.substring(apkSerials.lastIndexOf("_") + 1)
+      } else {
+        apkSerials
+      }
+    } else
+      "null"
+  }
+
+  /**
+    * 将version新旧版区分开
+    */
+  def getVersion(apkVersion: String) = {
+    if (apkVersion != null && apkVersion >= "3.1.4") "new"
+    else "old"
   }
 }

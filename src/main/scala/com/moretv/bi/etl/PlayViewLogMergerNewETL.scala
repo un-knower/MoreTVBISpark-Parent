@@ -138,26 +138,26 @@ object PlayViewLogMergerNewETL extends BaseClass {
               /** step1:先处理除了sports和kids的数据 (因为最后关联查询入口的中文名称这一步只是针对sports和kids)*/
             sqlStr =
               s"""
-                |select $medusaColNamesWithTable,
-                |a.entryType,
-                |a.main_category,
-                |if(a.second_category is null or a.second_category='','',b.second_category) second_category,
-                |a.third_category third_category,
-                |a.flag,
-                |a.subjectCode
-                |from medusa_filter a
-                |left join
-                |   (
-                |    select site_content_type,
-                |    second_category_code,
-                |    max(second_category) second_category,
-                |    max(main_category_code) main_category_code from
-                |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}
-                |    where site_content_type is not null and main_category_code in ('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu','mv_site')
-                |    group by site_content_type,second_category_code
-                |   ) b
-                |on a.main_category=b.site_content_type and a.second_category=if(a.main_category='mv',b.second_category_code,b.second_category)
-                |where a.main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS') or a.main_category is null
+                 |select $medusaColNamesWithTable,
+                 |a.entryType,
+                 |a.main_category,
+                 |if(a.second_category is null or a.second_category='','',b.second_category) second_category,
+                 |a.third_category third_category,
+                 |a.flag,
+                 |a.subjectCode
+                 |from medusa_filter a
+                 |left join
+                 |   (
+                 |    select site_content_type,
+                 |    second_category_code,
+                 |    max(second_category) second_category,
+                 |    max(main_category_code) main_category_code from
+                 |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}
+                 |    where site_content_type is not null and main_category_code in ('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu','mv_site')
+                 |    group by site_content_type,second_category_code
+                 |   ) b
+                 |on a.main_category=b.site_content_type and a.second_category=if(a.main_category='mv',b.second_category_code,b.second_category)
+                 |where a.main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS') or a.main_category is null
               """.stripMargin
             println("medusa 3--------------------" + sqlStr)
             val medusa_step1_df = sqlContext.sql(sqlStr)
@@ -202,26 +202,26 @@ object PlayViewLogMergerNewETL extends BaseClass {
               /** step1:先处理除了sports和kids的数据 (因为最后关联查询入口的中文名称这一步只是针对sports和kids)*/
             sqlSelectMoretv =
               s"""
-                |select $moretvColNamesWithTable,
-                |a.entryType,
-                |a.subjectCode,
-                |a.main_category,
-                |if(a.second_category is null or a.second_category='','',b.second_category) second_category,
-                |a.third_category third_category,
-                |a.flag
-                |from moretv_filter a
-                |left join
-                |   (
-                |    select site_content_type,
-                |    max(second_category) second_category,
-                |    second_category_code,
-                |    max(main_category_code) main_category_code from
-                |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}
-                |    where site_content_type is not null and main_category_code in ('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu','mv_site')
-                |    group by site_content_type,second_category_code
-                |   ) b
-                |on a.main_category=b.site_content_type and a.second_category=b.second_category_code
-                |where a.main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS') or a.main_category is null
+                 |select $moretvColNamesWithTable,
+                 |a.entryType,
+                 |a.subjectCode,
+                 |a.main_category,
+                 |if(a.second_category is null or a.second_category='','',b.second_category) second_category,
+                 |a.third_category third_category,
+                 |a.flag
+                 |from moretv_filter a
+                 |left join
+                 |   (
+                 |    select site_content_type,
+                 |    max(second_category) second_category,
+                 |    second_category_code,
+                 |    max(main_category_code) main_category_code from
+                 |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}
+                 |    where site_content_type is not null and main_category_code in ('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu','mv_site')
+                 |    group by site_content_type,second_category_code
+                 |   ) b
+                 |on a.main_category=b.site_content_type and a.second_category=b.second_category_code
+                 |where a.main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS') or a.main_category is null
               """.stripMargin
             println("moretv 2--------------------" + sqlSelectMoretv)
             val moretv_step1_df = sqlContext.sql(sqlSelectMoretv)

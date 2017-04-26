@@ -47,7 +47,7 @@ object UserUpdateStatistic extends BaseClass {
             """.stripMargin)
 
           updateUserCnt.collect.foreach(e => {
-            util.insert(insertSql, insertDate,e.get(0), e.get(1))
+            util.insert(insertSql, insertDate, e.get(0), e.get(1))
           })
         })
       }
