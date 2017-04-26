@@ -1,9 +1,9 @@
 package com.moretv.bi.etl
 
-import com.moretv.bi.logETL.{SportsPathParser, KidsPathParser}
+import com.moretv.bi.logETL.{KidsPathParser, MvListCategoryPathParser, SportsPathParser}
 import com.moretv.bi.report.medusa.util.EnChConvert.transformEng2Chinese
 import com.moretv.bi.report.medusa.util.MedusaSubjectNameCodeUtil
-import com.moretv.bi.report.medusa.util.udf.{PathParser, UDFConstantDimension, UDFConstant}
+import com.moretv.bi.report.medusa.util.udf.{PathParser, UDFConstant, UDFConstantDimension}
 import com.moretv.bi.util.{CodeToNameUtils, SubjectUtils}
 
 
@@ -763,6 +763,8 @@ object PathParserETL {
       || pathMain.contains(UDFConstantDimension.SEARCH_DIMENSION)
       || pathMain.contains(UDFConstantDimension.SEARCH_DIMENSION_CHINESE)
       || pathMain.contains(UDFConstantDimension.HOME_RECOMMENDATION)
+      || pathMain.contains(UDFConstantDimension.MV_CATEGORY_HOME_PAGE)
+      || pathMain.contains(UDFConstantDimension.MV_FUNCTION)
     ) {
       if (pathMain.contains("kids")) {
         result = KidsPathParser.pathMainParse(pathMain, index_input)
@@ -817,9 +819,14 @@ object PathParserETL {
          }
          case None => null
        }*/
-      else if (pathMain.contains("mv-mv")) {
-        //TODO 将使用佳莹提供的类代替
-        result = MvDimensionClassificationETL.mvPathMatch(pathMain, index_input)
+
+//      else if (pathMain.contains("mv-mv")) {
+//        //TODO 将使用佳莹提供的类代替
+//        result = MvDimensionClassificationETL.mvPathMatch(pathMain, index_input)
+//      }
+
+      else if (pathMain.contains("mv_category") || pathMain.contains("mv_poster")) {
+        result = MvListCategoryPathParser.pathMainParse(pathMain,index_input)
       }
 
       /* 只有这种算进入列表页

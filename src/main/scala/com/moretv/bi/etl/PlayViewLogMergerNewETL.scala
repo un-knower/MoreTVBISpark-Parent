@@ -149,13 +149,14 @@ object PlayViewLogMergerNewETL extends BaseClass {
                 |left join
                 |   (
                 |    select site_content_type,
-                |    second_category,
+                |    second_category_code,
+                |    max(second_category) second_category,
                 |    max(main_category_code) main_category_code from
                 |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}
-                |    where site_content_type is not null and main_category_code in ('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu')
-                |    group by site_content_type,second_category
+                |    where site_content_type is not null and main_category_code in ('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu','mv_site')
+                |    group by site_content_type,second_category_code
                 |   ) b
-                |on a.main_category=b.site_content_type and a.second_category=b.second_category
+                |on a.main_category=b.site_content_type and a.second_category=if(a.main_category='mv',b.second_category_code,b.second_category)
                 |where a.main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS') or a.main_category is null
               """.stripMargin
             println("medusa 3--------------------" + sqlStr)
@@ -216,7 +217,7 @@ object PlayViewLogMergerNewETL extends BaseClass {
                 |    second_category_code,
                 |    max(main_category_code) main_category_code from
                 |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}
-                |    where site_content_type is not null and main_category_code in ('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu')
+                |    where site_content_type is not null and main_category_code in ('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu','mv_site')
                 |    group by site_content_type,second_category_code
                 |   ) b
                 |on a.main_category=b.site_content_type and a.second_category=b.second_category_code
