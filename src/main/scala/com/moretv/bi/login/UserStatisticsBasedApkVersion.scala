@@ -10,7 +10,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.sql.functions._
 
 /**
-  * Created by zhangyu and xiajun on 2016/7/20.
+  * Created by zhangyu on 2016/7/20.
   * 统计分版本的日新增、活跃及累计用户数，采用mac去重方式。
   * tablename: medusa.medusa_user_statistics_based_apkversion
   * (id,day,apk_version,adduser_num,accumulate_num,active_num)
