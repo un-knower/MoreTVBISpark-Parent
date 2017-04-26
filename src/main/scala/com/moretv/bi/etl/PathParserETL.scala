@@ -744,12 +744,11 @@ object PathParserETL {
     var result: String = null
     if (null == pathMain) {
       result = null
-    } else if (pathMain.contains(UDFConstantDimension.HORIZONTAL) || pathMain.contains(UDFConstantDimension.MV_RECOMMEND_HOME_PAGE) ||
-      pathMain.contains(UDFConstantDimension.MV_TOP_HOME_PAGE) || pathMain.contains(UDFConstantDimension.HOME_SEARCH)
-
+      //2017/04/26 去掉了 HORIZONTAL 和 mvTopHomePage 过滤
+    } else if (pathMain.contains(UDFConstantDimension.MV_RECOMMEND_HOME_PAGE) || pathMain.contains(UDFConstantDimension.HOME_SEARCH))
     /** 为了统计频道分类入口的 搜索 和 筛选 维度，注释掉 */
     //||pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)
-    ) {
+     {
       result = null
     } else if (pathMain.contains(UDFConstantDimension.HOME_CLASSIFICATION)
       || pathMain.contains(UDFConstantDimension.HOME_MY_TV)
