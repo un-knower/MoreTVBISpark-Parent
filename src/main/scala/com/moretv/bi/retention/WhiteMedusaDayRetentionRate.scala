@@ -89,13 +89,13 @@ object WhiteMedusaDayRetentionRate extends BaseClass {
               .filter(_._2 != null)
               .filter(_._2.contains("_"))
               .map(e => (e._1, e._2.substring(e._2.lastIndexOf("_") + 1)))
-            //旧版本
-            val sqlRDDOld = sqlRDD
-              .filter(_._2 < "3.1.4")
+            //全版本
+            val sqlRDDAll = sqlRDD
+              //.filter(_._2 < "3.1.4")
               .map(rdd => UserIdUtils.userId2Long(rdd._1)).distinct()
-            val retentionOld = logUserID.intersection(sqlRDDOld).count()
-            val newUserOld = sqlRDDOld.count().toInt
-            val retentionRateOld = retentionOld.toDouble / newUserOld.toDouble
+            val retentionAll = logUserID.intersection(sqlRDDAll).count()
+            val newUserAll = sqlRDDAll.count().toInt
+            val retentionRateAll = retentionAll.toDouble / newUserAll.toDouble
             //新版本
             val sqlRDDNew = sqlRDD
               .filter(_._2 >= "3.1.4")
@@ -107,10 +107,10 @@ object WhiteMedusaDayRetentionRate extends BaseClass {
               deleteSQL(date2, stmt1)
             }
             if (j == 0) {
-              insertSQL(date2, "old", newUserOld, retentionRateOld, stmt1)
+              insertSQL(date2, "all", newUserAll, retentionRateAll, stmt1)
               insertSQL(date2, "new", newUserNew, retentionRateNew, stmt1)
             } else {
-              updateSQL(numOfDay(j), "old", retentionRateOld, date2, stmt1)
+              updateSQL(numOfDay(j), "all", retentionRateAll, date2, stmt1)
               updateSQL(numOfDay(j), "new", retentionRateNew, date2, stmt1)
             }
           }
