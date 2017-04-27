@@ -75,21 +75,10 @@ object WhiteMedusaNewUserRetentionRate extends BaseClass {
             val min = id(0)
             val max = id(1)
             val sqlInfo = s"SELECT mac,current_version FROM `mtv_account` WHERE ID >= ? AND ID <= ? and left(openTime,10) = '$date2'"
-            MySqlOps.getJdbcRDD(sc, sqlInfo, Tables.MTV_ACCOUNT, r => {
+            val sqlRDD = MySqlOps.getJdbcRDD(sc, sqlInfo, Tables.MTV_ACCOUNT, r => {
               (r.getString(1), r.getString(2))
             }, driver, url, user, password, (min, max), numOfPartition)
-              .filter(_._2 != null)
-              .filter(_._2.contains("_"))
-              .map(e => (e._1, e._2.substring(e._2.lastIndexOf("_") + 1))).toDF("mac","version").
-              registerTempTable("mtv_account_log")
-            val sqlRDD = sqlContext.sql(
-              """
-                |select a.mac,b.version
-                |from mtv_account_log as a
-                |left join app_version_log as b
-                |on a.version = b.version
-                |where mac is not null and b.version is not null
-              """.stripMargin).map(e=>(e.getString(0),e.getString(1)))
+
             //全版本
             val sqlRDDAll = sqlRDD
               //.filter(_._2 < "3.1.4")
@@ -99,6 +88,9 @@ object WhiteMedusaNewUserRetentionRate extends BaseClass {
             val retentionRateAll = retentionAll.toDouble / newUserAll.toDouble
             //新版本
             val sqlRDDNew = sqlRDD
+              .filter(_._2 != null)
+              .filter(_._2.contains("_"))
+              .map(e => (e._1, e._2.substring(e._2.lastIndexOf("_") + 1)))
               .filter(_._2 >= "3.1.4")
               .map(rdd => UserIdUtils.userId2Long(rdd._1)).distinct()
             val retentionNew = logUserID.intersection(sqlRDDNew).count()
