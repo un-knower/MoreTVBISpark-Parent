@@ -66,7 +66,7 @@ object PlayCodeContentSourceStatics extends BaseClass {
               case Some(e) => e
               case None => 0L
             }
-            util.insert(insertSql,insertDate,i._1._3,new JLong(i._1._4),i._1._5,new JLong(i._2),new JLong(eachSourceNum))
+            util.insert(insertSql,insertDate,i._1._2,new JLong(i._1._3),i._1._4,new JLong(i._2),new JLong(eachSourceNum))
           })
 
           cal.add(Calendar.DAY_OF_MONTH,-1)
@@ -122,11 +122,6 @@ object PlayCodeContentSourceStatics extends BaseClass {
     }
     res.toList
   }
-
-//  def isContained(field:String):Boolean = {
-//    val splitArr = filterStr.split(",")
-//    splitArr.contains(field)
-//  }
 
   def groupCode(i:Int): Int ={
     i match {
