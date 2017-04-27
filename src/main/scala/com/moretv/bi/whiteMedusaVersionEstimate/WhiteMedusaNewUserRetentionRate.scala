@@ -90,10 +90,6 @@ object WhiteMedusaNewUserRetentionRate extends BaseClass {
                 |on a.version = b.version
                 |where mac is not null and b.version is not null
               """.stripMargin).map(e=>(e.getString(0),e.getString(1)))
-            //旧版本
-            val sqlRDDOld = sqlRDD
-              .filter(_._2 < "3.1.4")
-              .map(e => (e._1, e._2.substring(e._2.lastIndexOf("_") + 1)))
             //全版本
             val sqlRDDAll = sqlRDD
               //.filter(_._2 < "3.1.4")
