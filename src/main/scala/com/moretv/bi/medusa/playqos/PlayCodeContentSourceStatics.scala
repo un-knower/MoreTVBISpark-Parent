@@ -50,23 +50,23 @@ object PlayCodeContentSourceStatics extends BaseClass {
           val rdd = sqlContext.read.parquet(readPath).select("userId","date", "jsonLog")
             .map(e => (e.getString(0), e.getString(1),e.getString(2))).filter(_._2==insertDate)
 
-          val tmpRdd = rdd.flatMap(e=>getPlayCode(e._1,e._2,e._3)).map(e=>((e._2,e._3,e._4,e._5,e._6),e._1)).cache()
+          val tmpRdd = rdd.flatMap(e=>getPlayCode(e._1,e._2,e._3)).map(e=>((e._3,e._4,e._5,e._6),e._1)).cache()
           val numRdd = tmpRdd.countByKey()
-          val sourceNum = tmpRdd.map(e=>((e._1._1,e._1._2,e._1._3,e._1._5),e._2)).countByKey()
+          val sourceNum = tmpRdd.map(e=>((e._1._1,e._1._2,e._1._4),e._2)).countByKey()
           tmpRdd.unpersist()
 
           if(p.deleteOld){
             val deleteSql = s"delete from $tableName where day = ?"
             util.delete(deleteSql,insertDate)
           }
-          val insertSql = s"insert into $tableName(day,videoSid,title,source,playcode,contentType,num,sourceNum) values(?,?,?,?,?,?,?,?)"
+          val insertSql = s"insert into $tableName(day,source,playcode,contentType,num,sourceNum) values(?,?,?,?,?,?)"
           numRdd.foreach(i=>{
-            val key = (i._1._1,i._1._2,i._1._3,i._1._5)
+            val key = (i._1._1,i._1._2,i._1._4)
             val eachSourceNum = sourceNum.get(key) match {
               case Some(e) => e
               case None => 0L
             }
-            util.insert(insertSql,insertDate,i._1._1,ProgramRedisUtil.getTitleBySid(i._1._1),i._1._3,new JLong(i._1._4),i._1._5,new JLong(i._2),new JLong(eachSourceNum))
+            util.insert(insertSql,insertDate,i._1._3,new JLong(i._1._4),i._1._5,new JLong(i._2),new JLong(eachSourceNum))
           })
 
           cal.add(Calendar.DAY_OF_MONTH,-1)
