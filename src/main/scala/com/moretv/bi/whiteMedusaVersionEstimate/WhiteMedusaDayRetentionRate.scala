@@ -1,4 +1,4 @@
-package com.moretv.bi.retention
+package com.moretv.bi.whiteMedusaVersionEstimate
 
 import java.sql.{DriverManager, Statement}
 import java.text.SimpleDateFormat
@@ -10,7 +10,6 @@ import com.moretv.bi.constant.Tables
 import com.moretv.bi.global.{DataBases, LogTypes}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{ParamsParseUtil, UserIdUtils}
-import org.apache.spark.sql.functions._
 
 object WhiteMedusaDayRetentionRate extends BaseClass {
 
@@ -86,9 +85,7 @@ object WhiteMedusaDayRetentionRate extends BaseClass {
             val sqlRDD = MySqlOps.getJdbcRDD(sc, sqlInfo, Tables.MTV_ACCOUNT, r => {
               (r.getString(1), r.getString(2))
             }, driver, url, user, password, (min, max), numOfPartition)
-              .filter(_._2 != null)
-              .filter(_._2.contains("_"))
-              .map(e => (e._1, e._2.substring(e._2.lastIndexOf("_") + 1)))
+
             //全版本
             val sqlRDDAll = sqlRDD
               //.filter(_._2 < "3.1.4")
@@ -98,6 +95,9 @@ object WhiteMedusaDayRetentionRate extends BaseClass {
             val retentionRateAll = retentionAll.toDouble / newUserAll.toDouble
             //新版本
             val sqlRDDNew = sqlRDD
+              .filter(_._2 != null)
+              .filter(_._2.contains("_"))
+              .map(e => (e._1, e._2.substring(e._2.lastIndexOf("_") + 1)))
               .filter(_._2 >= "3.1.4")
               .map(rdd => UserIdUtils.userId2Long(rdd._1)).distinct()
             val retentionNew = logUserID.intersection(sqlRDDNew).count()
