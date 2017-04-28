@@ -108,6 +108,8 @@ object EnChConvert {
               case "tv_yuansheng" => result = "电视原声"
               case "tv_guowai_lianzai" => result = "海外同步"
               case "tv_zhongbang" => result = "重磅追剧"
+              case "tv_jiatinglunli" => result = "家庭伦理"
+              case "tv_dushiqinggan" => result = "都市情感"
               case _ => result=info
             }
           }

@@ -67,7 +67,7 @@ object EachChannelInterViewDurationInfoETL extends BaseClass  {
               sqlStr = s"insert into $tableName($fields_mv) values(?,?,?,?)"
               sqlSpark =
                 s"""
-                   | select round(sum(duration)) as view_duration,
+                   | select cast(round(sum(duration)) as long) as view_duration,
                    | count(distinct userId) as user
                    | from interview_etl
                    | where contentType ='$channel_name' and event='exit'
@@ -83,7 +83,7 @@ object EachChannelInterViewDurationInfoETL extends BaseClass  {
               }
               sqlSpark =
                 s"""
-                   | select round(sum(duration)) as view_duration,
+                   | select cast(round(sum(duration)) as long) as view_duration,
                    | sum(duration)/count(distinct userId) as avg_duration
                    | from interview_etl
                    | where contentType ='$channel_name' and event='exit' $whereSql
@@ -94,7 +94,7 @@ object EachChannelInterViewDurationInfoETL extends BaseClass  {
               sqlStr = s"insert into $tableName($fields_other) values(?,?,?)"
               sqlSpark =
                 s"""
-                   | select round(sum(duration)) as view_duration
+                   | select cast(round(sum(duration)) as long) as view_duration
                    | from interview_etl
                    | where contentType ='$channel_name' and event='exit'
                    | and duration>=0 and duration<=10800
@@ -104,14 +104,14 @@ object EachChannelInterViewDurationInfoETL extends BaseClass  {
 
            sqlContext.sql(sqlSpark).collect.foreach(row=>{
               if (channel_name=="jilu" || channel_name=="comic" || channel_name=="xiqu" || channel_name=="zongyi" || channel_name=="hot"){
-                val view_duration = new JLong(row.getLong(0))
+                val view_duration = row.getLong(0)
                 util.insert(sqlStr,sqlDate,channel_name,view_duration)
               } else if (channel_name == "mv"){
-                val view_duration = new JLong(row.getLong(0))
-                val user = new JLong(row.getLong(1))
+                val view_duration = row.getLong(0)
+                val user = row.getLong(1)
                 util.insert(sqlStr,sqlDate,channel_name,view_duration,user)
               } else {
-                val view_duration = new JLong(row.getLong(0))
+                val view_duration = row.getLong(0)
                 val avg_duration = row.getDouble(1)
                 util.insert(sqlStr,sqlDate,channel_name,view_duration,avg_duration)
               }
