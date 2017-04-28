@@ -67,7 +67,7 @@ object EachChannelInterViewDurationInfoETL extends BaseClass  {
               sqlStr = s"insert into $tableName($fields_mv) values(?,?,?,?)"
               sqlSpark =
                 s"""
-                   | select sum(duration) as view_duration,
+                   | select round(sum(duration)) as view_duration,
                    | count(distinct userId) as user
                    | from interview_etl
                    | where contentType ='$channel_name' and event='exit'
@@ -83,7 +83,7 @@ object EachChannelInterViewDurationInfoETL extends BaseClass  {
               }
               sqlSpark =
                 s"""
-                   | select sum(duration) as view_duration,
+                   | select round(sum(duration)) as view_duration,
                    | sum(duration)/count(distinct userId) as avg_duration
                    | from interview_etl
                    | where contentType ='$channel_name' and event='exit' $whereSql
@@ -94,7 +94,7 @@ object EachChannelInterViewDurationInfoETL extends BaseClass  {
               sqlStr = s"insert into $tableName($fields_other) values(?,?,?)"
               sqlSpark =
                 s"""
-                   | select sum(duration) as view_duration
+                   | select round(sum(duration)) as view_duration
                    | from interview_etl
                    | where contentType ='$channel_name' and event='exit'
                    | and duration>=0 and duration<=10800
