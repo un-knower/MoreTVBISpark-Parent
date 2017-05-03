@@ -1,4 +1,4 @@
 type=command
 dependencies=dbsnapshot_isExist,loginlogisExist
-mainclass=com.moretv.bi.whiteMedusaVersionEstimate.WhiteMedusaDAURetentionRate
+mainclass=com.moretv.bi.whiteMedusaVersionEstimate.WhiteMedusaD::qAURetentionRate
 command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag}
