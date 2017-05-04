@@ -5,9 +5,10 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.global.{DataBases, DimensionTypes, LogTypes}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil, UserIdUtils}
+import com.moretv.bi.whiteMedusaVersionEstimate.WhiteMedusaDAURetentionRate.{MEDUSA_DIMENSION, sc, sqlContext}
 
 
 /**
@@ -25,6 +26,9 @@ object WhiteMedusaRebackStatistic extends BaseClass {
     sqlContext.udf.register("getApkVersion", ApkVersionUtil.getApkVersion _)
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
+
+        DataIO.getDataFrameOps.getDimensionDF(sc, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_APP_VERSION).
+          select("version").distinct().registerTempTable("app_version_log")
 
         val inputDate = p.startDate
         val numOfDays = p.numOfDays
@@ -71,10 +75,12 @@ object WhiteMedusaRebackStatistic extends BaseClass {
 
             val sqlRDDAll = sqlContext.sql(
               """
-                |select distinct mac
-                |from login_user_log
-                |where getApkVersion(version) = '3.1.4' and mac is not null
-              """.stripMargin).map(e=>e.getString(0)).map(rdd => UserIdUtils.userId2Long(rdd)).distinct()
+                |select a.mac,b.version
+                |from login_user_log as a
+                |left join app_version_log as b
+                |on getApkVersion(a.version) = b.version
+                |where a.mac is not null and b.version>='3.1.4'
+              """.stripMargin).map(e=>UserIdUtils.userId2Long(e.getString(0))).distinct()
             val rebackRdd = logUserID.intersection(sqlRDDAll).count()
             val loginRdd = sqlRDDAll.count().toInt
 
