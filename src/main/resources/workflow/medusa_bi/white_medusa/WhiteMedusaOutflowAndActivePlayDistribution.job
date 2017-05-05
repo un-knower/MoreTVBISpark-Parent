@@ -1,4 +1,0 @@
-type=command
-dependencies=dbsnapshot_isExist,loginlogisExist
-mainclass=com.moretv.bi.whiteMedusaVersionEstimate.WhiteMedusaOutflowAndActivePlayDistribution
-command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}
