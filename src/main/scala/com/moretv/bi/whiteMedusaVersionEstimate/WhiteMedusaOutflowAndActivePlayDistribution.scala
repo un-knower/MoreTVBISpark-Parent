@@ -32,17 +32,17 @@ object WhiteMedusaOutflowAndActivePlayDistribution extends BaseClass {
           calendar.add(Calendar.DAY_OF_MONTH,1)
           dateArr.+=(DateFormatUtils.readFormat.format(calendar.getTime))
         })
-        DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA,LogTypes.PLAYVIEW,dateArr.toArray).
-          filter("event = 'startplay'").registerTempTable("play_log")
+        DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA,LogTypes.PLAY,dateArr.toArray).
+          filter("event = 'startplay'").select("userId","contentType").registerTempTable("play_log")
 
         val userIdDir = s"/log/medusa/temple/userId/201704{26,27,28,29}/"
         sqlContext.read.load(userIdDir).distinct().registerTempTable("user_log")
 
         val playTypeDistribution = sqlContext.sql(
           """
-            |select a.userType,b.contentType,count(userId),count(distinct userId)
+            |select a.userType,b.contentType,count(a.userId),count(distinct a.userId)
             |from user_log as a
-            |join play_log
+            |join play_log as b
             |on a.userId = b.userId
             |group by a.userType,b.contentType
           """.stripMargin).map(e=>(e.getString(0),e.getString(1),e.getLong(2),e.getLong(3))).collect()

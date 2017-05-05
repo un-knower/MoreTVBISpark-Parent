@@ -1,4 +1,4 @@
 type=command
-dependencies=medusa_play_end
+dependencies=medusa_paly_isExist
 mainclass=com.moretv.bi.whiteMedusaVersionEstimate.WhiteMedusa314ChannelEntrancePlayStat
 command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}

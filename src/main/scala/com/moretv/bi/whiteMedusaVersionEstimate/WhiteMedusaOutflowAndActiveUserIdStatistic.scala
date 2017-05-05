@@ -38,7 +38,8 @@ object WhiteMedusaOutflowAndActiveUserIdStatistic extends BaseClass {
 
           val outDir = s"/log/medusa/temple/userId/${pathDate}"
 
-          DataIO.getDataFrameOps.getDF(sc,p.paramMap,LOGINLOG,LogTypes.LOGINLOG,pathDate).select("mac").repartition(100).
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,LOGINLOG,LogTypes.LOGINLOG,pathDate).select("mac","version").
+            repartition(100).
             registerTempTable("login_log")
 
           DataIO.getDataFrameOps.getDF(sc,p.paramMap,DBSNAPSHOT,LogTypes.MORETV_MTV_ACCOUNT,accountDate).
@@ -65,7 +66,7 @@ object WhiteMedusaOutflowAndActiveUserIdStatistic extends BaseClass {
               |left join checkout_login_log as b
               |on a.mac = b.mac
               |where getApkVersion(a.version) = '3.1.4'
-            """.stripMargin).toDF("prefer_mac","login_mac").repartition(150).registerTempTable("mac_log")
+            """.stripMargin).toDF("prefer_mac","login_mac").repartition(100).registerTempTable("mac_log")
 
 
           sqlContext.sql(
@@ -75,7 +76,7 @@ object WhiteMedusaOutflowAndActiveUserIdStatistic extends BaseClass {
               |join account_log as b
               |on a.prefer_mac = b.mac
               |where login_mac is null
-            """.stripMargin).toDF("userId").registerTempTable("outflow_log")
+            """.stripMargin).toDF("userId").repartition(100).registerTempTable("outflow_log")
 
 
           /**
@@ -87,7 +88,7 @@ object WhiteMedusaOutflowAndActiveUserIdStatistic extends BaseClass {
               |from checkout_login_log
               |group by mac
               |having num>=3
-            """.stripMargin).toDF("mac","num").repartition(150).registerTempTable("active_log")
+            """.stripMargin).toDF("mac","num").repartition(100).registerTempTable("active_log")
 
           sqlContext.sql(
             """
@@ -95,7 +96,7 @@ object WhiteMedusaOutflowAndActiveUserIdStatistic extends BaseClass {
               |from login_log as a
               |join active_log as b
               |on a.mac = b.mac
-            """.stripMargin).registerTempTable("mac_log")
+            """.stripMargin).repartition(100).registerTempTable("mac_log")
 
           sqlContext.sql(
             """
@@ -103,7 +104,7 @@ object WhiteMedusaOutflowAndActiveUserIdStatistic extends BaseClass {
               |from account_log as a
               |join mac_log as b
               |on a.mac = b.mac
-            """.stripMargin).toDF("userId").registerTempTable("active_userId_log")
+            """.stripMargin).toDF("userId").repartition(100).registerTempTable("active_userId_log")
 
           /**
             * 合并userId
@@ -115,7 +116,7 @@ object WhiteMedusaOutflowAndActiveUserIdStatistic extends BaseClass {
               |union
               |select 'active' as userType, userId
               |from active_userId_log
-            """.stripMargin).toDF("userType","userId").repartition(200).write.parquet(outDir)
+            """.stripMargin).toDF("userType","userId").repartition(50).write.parquet(outDir)
 
 
 
