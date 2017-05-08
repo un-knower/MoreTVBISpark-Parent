@@ -13,7 +13,10 @@ import org.apache.spark.sql.functions.{col, udf}
 
 /**
   * Created by zhu.bingxin on 2017/5/3.
-  * 统计白猫版本有版权点播播放人数、次数、播放时长
+  * 统计
+  * 1、白猫版本有版权点播播放人数、次数、播放时长
+  * 2、白猫版本有版权点播分栏目播放人数、次数、播放时长
+  * 3、白猫版本有版权点播集体节目播放人数、次数、播放时长
   * 统计区间：每天
   * 统计维度：day
   * 统计度量：playNum，playUser，playSumDuration
@@ -57,11 +60,9 @@ object WhiteMedusaCopyrightPlayCt extends BaseClass {
         val sidDF = MySqlOps.getJdbcRDD(sc, DataBases.MORETV_CMS_MYSQL, sqlMinMaxId, sqlData, numOfPartition, r => {
           r.getString(1)
         })
-          //.map(rdd=>(rdd)
           .toDF("sid")
           .distinct()
           .cache()
-        sidDF.show(10, false)
         sidDF.registerTempTable("sid")
 
         DataIO.getDataFrameOps.getDimensionDF(sc, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_APP_VERSION)
@@ -90,7 +91,7 @@ object WhiteMedusaCopyrightPlayCt extends BaseClass {
           //filter data
           sqlContext.sql(
             """
-              |select a.apkVersion,a.userId,a.duration,a.event
+              |select a.apkVersion,a.contentType,a.videoSid,a.userId,a.duration,a.event
               |from play a join sid b
               |on a.videoSid = b.sid
             """.stripMargin)
@@ -98,12 +99,12 @@ object WhiteMedusaCopyrightPlayCt extends BaseClass {
 
           sqlContext.sql(
             """
-              |select a.userId,b.version as version,a.duration,a.event
+              |select a.userId,b.version,a.contentType,a.videoSid,a.duration,a.event
               |from tempTable1 a
               |left join app_version_log b
               |on getApkVersion(a.apkVersion) = b.version
             """.stripMargin)
-            .registerTempTable("tempTable2") //只保留正常版权的sid内容
+            .registerTempTable("tempTable2") //只保留正常版本的sid内容
 
           //data processings
           sqlContext.sql(
@@ -137,14 +138,14 @@ object WhiteMedusaCopyrightPlayCt extends BaseClass {
             util.delete(deleteSql, insertDate)
           }
 
-          sqlContext.sql("select * from play limit 10").show(false)
-          sqlContext.sql("select * from tempTable1 limit 10").show(false)
-          sqlContext.sql("select * from tempTable2 limit 10").show(false)
-          sqlContext.sql("select * from result1 limit 10").show(false)
-          sqlContext.sql("select * from result2 limit 10").show(false)
-          sqlContext.sql("select * from play limit 10").show(false)
-          sqlContext.sql("select * from play limit 10").show(false)
-          resultDf.show(false)
+          //          sqlContext.sql("select * from play limit 10").show(false)
+          //          sqlContext.sql("select * from tempTable1 limit 10").show(false)
+          //          sqlContext.sql("select * from tempTable2 limit 10").show(false)
+          //          sqlContext.sql("select * from result1 limit 10").show(false)
+          //          sqlContext.sql("select * from result2 limit 10").show(false)
+          //          sqlContext.sql("select * from play limit 10").show(false)
+          //          sqlContext.sql("select * from play limit 10").show(false)
+          //          resultDf.show(false)
 
           resultDf.collect.foreach(e => {
             util.insert(insertSql, insertDate, e.get(0), e.get(1), e.get(2))
