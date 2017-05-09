@@ -12,7 +12,7 @@ import com.moretv.bi.util.{DateFormatUtils, HdfsUtil, ParamsParseUtil}
   * 该类用于统计升级过3.1.4版本的用户信息
   */
 object WhiteMedusaNewAndTotalUpdateDaily extends BaseClass{
-  private val insertSql = "insert into white_medusa_new_total_user_by_login(day,new_num,total_num) values(?,?,?)"
+  private val insertSql = "insert into white_medusa_new_total_user_by_login(day,new_num,total_num,all_total_num) values(?,?,?,?)"
   private val deleteSql = "delete from white_medusa_new_total_user_by_login where day = ?"
 
   def main(args: Array[String]): Unit = {
@@ -30,12 +30,16 @@ object WhiteMedusaNewAndTotalUpdateDaily extends BaseClass{
           val loadDate = DateFormatUtils.readFormat.format(calendar.getTime)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
           val insertDate = DateFormatUtils.cnFormat.format(calendar.getTime)
+          val dbsnapshotLoadDate = DateFormatUtils.readFormat.format(calendar.getTime)
 
           /**
             * 加载登录信息
             */
           DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.WHITE_MEDUSA_UPDATE_USER,loadDate).
             registerTempTable("white_medusa_update_log")
+
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,DBSNAPSHOT,LogTypes.MORETV_MTV_ACCOUNT,dbsnapshotLoadDate).
+            registerTempTable("account_log")
 
           val totalUser = sqlContext.sql(
             s"""
@@ -51,9 +55,14 @@ object WhiteMedusaNewAndTotalUpdateDaily extends BaseClass{
               |where date = '${insertDate}'
             """.stripMargin).count()
 
+          val totalAllUser = sqlContext.sql(
+            """
+              |select distinct mac
+              |from account_log
+            """.stripMargin).count()
           if(p.deleteOld) util.delete(deleteSql,insertDate)
 
-          util.insert(insertSql,insertDate,newUpdateUser,totalUser)
+          util.insert(insertSql,insertDate,newUpdateUser,totalUser,totalAllUser)
 
         })
 
