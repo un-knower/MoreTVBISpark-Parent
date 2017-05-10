@@ -16,7 +16,7 @@ import org.apache.spark.sql.functions.{col, udf}
   * 统计
   * 1、白猫版本有版权点播播放人数、次数、播放时长
   * 2、白猫版本有版权点播分栏目播放人数、次数、播放时长
-  * 3、白猫版本有版权点播集体节目播放人数、次数、播放时长
+  * 3、白猫版本有版权点播节目的播放人数、次数、播放时长
   * 统计区间：每天
   * 统计维度：day
   * 统计度量：playNum，playUser，playSumDuration
@@ -26,7 +26,9 @@ import org.apache.spark.sql.functions.{col, udf}
   */
 object WhiteMedusaCopyrightPlayCt extends BaseClass {
 
-  private val table = "whiteMedusa_copyright_play_ct"
+  private val table_total = "whiteMedusa_copyright_play_ct"
+  private val table_contentType = "whiteMedusa_copyright_contentType_play_ct"
+  private val table_videoSid = "whiteMedusa_copyright_videoSid_play_ct"
 
   def main(args: Array[String]): Unit = {
     ModuleClass.executor(this, args)
@@ -97,7 +99,7 @@ object WhiteMedusaCopyrightPlayCt extends BaseClass {
             """.stripMargin)
             .registerTempTable("tempTable1") //只保留有版权的sid内容
 
-          sqlContext.sql(
+       sqlContext.sql(
             """
               |select a.userId,b.version,a.contentType,a.videoSid,a.duration,a.event
               |from tempTable1 a
@@ -107,34 +109,66 @@ object WhiteMedusaCopyrightPlayCt extends BaseClass {
             .registerTempTable("tempTable2") //只保留正常版本的sid内容
 
           //data processings
-          sqlContext.sql(
+          val totalDf = sqlContext.sql(
             """
-              |select count(userId) as playNum,count(distinct userId) as playUser
+              |select x.playNum,x.playUser,y.playSumDuration
               |from
-              |tempTable2
+              |(select count(userId) as playNum,count(distinct userId) as playUser
+              |from tempTable2
+              |where version >= '3.1.4' and event = 'startplay')x join
+              |(select sum(duration) as playSumDuration
+              |from tempTable2
+              |where version >= '3.1.4' and event != 'startplay' and duration between 0 and 10800)y
+            """.stripMargin)  //统计总的播放次数、播放人数、播放时长
+
+          val contentTypeDf = sqlContext.sql(
+            """
+              |select x.contentType,x.playNum,x.playUser,y.playSumDuration
+              |from
+              |(select contentType,count(userId) as playNum,count(distinct userId) as playUser
+              |from tempTable2
               |where version >= '3.1.4' and event = 'startplay'
-            """.stripMargin)
-            .registerTempTable("result1") //得到播放次数和人数
-
-          sqlContext.sql(
-            """
-              |select sum(duration) as playSumDuration
-              |from
-              |tempTable2
+              |group by contentType)x join
+              |(select contentType,sum(duration) as playSumDuration
+              |from tempTable2
               |where version >= '3.1.4' and event != 'startplay' and duration between 0 and 10800
-            """.stripMargin)
-            .registerTempTable("result2") //得到播放总时长
+              |group by contentType)y
+              |on x.contentType = y.contentType
+            """.stripMargin)//按照栏目统计播放次数、播放人数、播放时长
 
-          val resultDf = sqlContext.sql(
+          val videoSidDf = sqlContext.sql(
             """
-              |select a.playNum,a.playUser,b.playSumDuration
-              |from result1  a join result2 b
-            """.stripMargin)
+              |select x.contentType,x.videoSid,x.playNum,x.playUser,y.playSumDuration
+              |from
+              |(select contentType,videoSid,count(userId) as playNum,count(distinct userId) as playUser
+              |from tempTable2
+              |where version >= '3.1.4' and event = 'startplay'
+              |group by contentType,videoSid)x join
+              |(select contentType,videoSid,sum(duration) as playSumDuration
+              |from tempTable2
+              |where version >= '3.1.4' and event != 'startplay' and duration between 0 and 10800
+              |group by contentType,videoSid)y
+              |on x.contentType = y.contentType and x.videoSid = y.videoSid
+            """.stripMargin)//按照sid统计播放次数、播放人数、播放时长
 
-          val insertSql = s"insert into $table(day,playNum,playUser,playSumDuration) " +
+
+
+          val insertSqlTotal = s"insert into $table_total(day,playNum,playUser,playSumDuration) " +
             "values (?,?,?,?)"
+          val insertSqlContentType = s"insert into $table_contentType(day,contentType,playNum,playUser,playSumDuration) " +
+            "values (?,?,?,?,?)"
+          val insertSqlVideoSid = s"insert into $table_videoSid(day,contentType,videoSid,playNum,playUser,playSumDuration) " +
+            "values (?,?,?,?,?,?)"
           if (p.deleteOld) {
-            val deleteSql = s"delete from $table where day=?"
+            val deleteSql = s"delete from $table_total where day=?"
+            util.delete(deleteSql, insertDate)
+          }
+          if (p.deleteOld) {
+            val deleteSql = s"delete from $table_contentType where day=?"
+            util.delete(deleteSql, insertDate)
+          }
+          if (p.deleteOld) {
+            val deleteSql = s"delete from $table_videoSid where day=?"
             util.delete(deleteSql, insertDate)
           }
 
@@ -147,10 +181,20 @@ object WhiteMedusaCopyrightPlayCt extends BaseClass {
           //          sqlContext.sql("select * from play limit 10").show(false)
           //          resultDf.show(false)
 
-          resultDf.collect.foreach(e => {
-            util.insert(insertSql, insertDate, e.get(0), e.get(1), e.get(2))
+          totalDf.collect.foreach(e => {
+            util.insert(insertSqlTotal, insertDate, e.get(0), e.get(1), e.get(2))
           })
-          println(insertDate + " Insert data successed!")
+          println(insertDate + " Insert total data successed!")
+          contentTypeDf.collect.foreach(e => {
+            util.insert(insertSqlContentType, insertDate, e.get(0), e.get(1), e.get(2),e.get(3))
+          })
+          println(insertDate + " Insert contentTypeDf data successed!")
+          videoSidDf.collect.foreach(e => {
+            util.insert(insertSqlVideoSid, insertDate, e.get(0), e.get(1), e.get(2),e.get(3),e.get(4))
+          })
+          println(insertDate + " Insert videoSid data successed!")
+
+
         })
       }
       case None => {
