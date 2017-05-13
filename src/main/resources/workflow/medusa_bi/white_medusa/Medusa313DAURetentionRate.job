@@ -1,0 +1,4 @@
+type=command
+dependencies=dbsnapshot_isExist,loginlogisExist
+mainclass=ccom.moretv.bi.whiteMedusaVersionEstimate.Medusa313DAURetentionRate
+command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag}
