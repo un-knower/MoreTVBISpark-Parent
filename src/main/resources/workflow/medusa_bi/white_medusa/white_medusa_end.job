@@ -1,4 +1,3 @@
 type=command
-dependencies=MedusaDAURetentionRate,WhiteMedusaDAURetentionRate,WhiteMedusaNewUserRetention,ActiveUserAndLoginUserCt,WhiteMedusaRebackStatistic,WhiteMedusaOldUserRetention,WhiteMedusaCopyrightPlayCt
-command=echo "merger_paly is end ..."
-
+dependencies=MedusaDAURetentionRate,WhiteMedusaDAURetentionRate,WhiteMedusaNewUserRetention,ActiveUserAndLoginUserCt,WhiteMedusaCopyrightPlayCt,WhiteMedusaProvinceLoginUserCt,WeeklyWhiteMedusaNewUserRetentionRate
+command=echo "white medusa is end ..."
