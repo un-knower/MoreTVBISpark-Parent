@@ -60,7 +60,11 @@ object MedusaDailyActivityInfo extends SparkSetting{
             (2),e.getLong(3))).map(e=>((e._1,e._2,e._3),e._4))
           val rdd1 = userRdd1 join numRdd1
           rdd1.collect().foreach(e=>{
-            util.insert(sqlInsert,insertDate,e._1._1,e._1._2,e._1._3,new JLong(e._2._1), new JLong(e._2._2))
+            try{
+              util.insert(sqlInsert,insertDate,e._1._1,e._1._2,e._1._3,new JLong(e._2._1), new JLong(e._2._2))
+            }catch {
+              case e:Exception =>
+            }
           })
 
           // 计算每个apkVersion、不同buildDate所有productModel的日活登录次数
@@ -72,7 +76,12 @@ object MedusaDailyActivityInfo extends SparkSetting{
             (1),e.getString(2),e.getLong(3))).map(e=>((e._1,e._2,e._3),e._4))
           val rdd2 = userRdd2 join numRdd2
           rdd2.collect().foreach(e=>{
-            util.insert(sqlInsert,insertDate,e._1._1,e._1._2,e._1._3,new JLong(e._2._1), new JLong(e._2._2))
+            try{
+              util.insert(sqlInsert,insertDate,e._1._1,e._1._2,e._1._3,new JLong(e._2._1), new JLong(e._2._2))
+
+            }catch {
+              case e:Exception =>
+            }
           })
 
           // 计算每个productModel所有apkVersion的日活登录次数
@@ -84,7 +93,12 @@ object MedusaDailyActivityInfo extends SparkSetting{
             (1),e.getString(2),e.getLong(3))).map(e=>((e._1,e._2,e._3),e._4))
           val rdd3 = userRdd3 join numRdd3
           rdd3.collect().foreach(e=>{
-            util.insert(sqlInsert,insertDate,e._1._1,e._1._2,e._1._3,new JLong(e._2._1), new JLong(e._2._2))
+            try{
+              util.insert(sqlInsert,insertDate,e._1._1,e._1._2,e._1._3,new JLong(e._2._1), new JLong(e._2._2))
+
+            }catch {
+              case e:Exception =>
+            }
           })
 
 
@@ -97,7 +111,12 @@ object MedusaDailyActivityInfo extends SparkSetting{
             (1),e.getString(2),e.getLong(3))).map(e=>((e._1,e._2,e._3),e._4))
           val allRdd = allUserRdd join allNumRdd
           allRdd.collect().foreach(e=>{
-            util.insert(sqlInsert,insertDate,e._1._1,e._1._2,e._1._3,new JLong(e._2._1), new JLong(e._2._2))
+            try{
+              util.insert(sqlInsert,insertDate,e._1._1,e._1._2,e._1._3,new JLong(e._2._1), new JLong(e._2._2))
+
+            }catch {
+              case e:Exception =>
+            }
           })
 
           // 计算除了某个版本之外的日活人数与登录次数
@@ -115,8 +134,13 @@ object MedusaDailyActivityInfo extends SparkSetting{
               (2),e.getLong(3))).map(e=>((e._1,e._2,e._3),e._4))
             val rdd1 = userRdd1 join numRdd1
             rdd1.collect().foreach(e=>{
-              util.insert(sqlInsert,insertDate,"Non-".concat(apkVersion),"All",e._1._3,new JLong(e._2._1), new JLong(e._2
-                ._2))
+              try{
+
+                util.insert(sqlInsert,insertDate,"Non-".concat(apkVersion),"All",e._1._3,new JLong(e._2._1), new JLong(e._2
+                  ._2))
+              }catch {
+                case e:Exception =>
+              }
             })
 
             // 计算非apkVersion所有productModel的日活登录次数
@@ -127,8 +151,13 @@ object MedusaDailyActivityInfo extends SparkSetting{
               .getString(0),e.getString(1),e.getString(2),e.getLong(3))).map(e=>((e._1,e._2,e._3),e._4))
             val rdd2 = userRdd2 join numRdd2
             rdd2.collect().foreach(e=>{
-              util.insert(sqlInsert,insertDate,"Non-".concat(apkVersion),"All",e._1._3,new JLong(e._2._1), new JLong
-              (e._2._2))
+              try{
+                util.insert(sqlInsert,insertDate,"Non-".concat(apkVersion),"All",e._1._3,new JLong(e._2._1), new JLong
+                (e._2._2))
+              }catch {
+                case e:Exception =>
+              }
+
             })
           }
 
