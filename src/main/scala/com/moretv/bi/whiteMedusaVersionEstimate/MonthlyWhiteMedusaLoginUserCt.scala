@@ -11,7 +11,7 @@ import org.apache.spark.sql.functions.udf
 
 /**
   * Created by zhu.bingxin on 2017/5/2.
-  * 按周统计登录用户数
+  * 按月统计登录用户数
   * 只统计新版本（3.1.4及以上的为新版本）
   * 维度：月末日期-day，月份-month
   * 度量：登录用户数-loginUser
