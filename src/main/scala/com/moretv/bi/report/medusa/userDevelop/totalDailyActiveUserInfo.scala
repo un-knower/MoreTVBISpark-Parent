@@ -40,9 +40,9 @@ object totalDailyActiveUserInfo extends BaseClass{
           val medusaDailyActiveInput =DataIO.getDataFrameOps.getPath(MEDUSA,"*",date)
           val moretvDailyActiveInput =DataIO.getDataFrameOps.getPath(MORETV,"*",date)
 
-          val medusaDailyActivelog = sqlContext.read.parquet(medusaDailyActiveInput).select("userId","apkVersion")
+          sqlContext.read.parquet(medusaDailyActiveInput).select("userId","apkVersion")
             .registerTempTable("medusa_daily_active_log")
-          val moretvDailyActivelog = sqlContext.read.parquet(moretvDailyActiveInput).select("userId","apkVersion")
+          sqlContext.read.parquet(moretvDailyActiveInput).select("userId","apkVersion")
             .registerTempTable("moretv_daily_active_log")
 
           val totalActiveUser=sqlContext.sql("select count(distinct a.userId) from (select distinct userId from " +

@@ -1,4 +1,4 @@
-package com.moretv.bi.retention
+package com.moretv.bi.whiteMedusaVersionEstimate
 
 import java.sql.{DriverManager, Statement}
 import java.text.SimpleDateFormat
@@ -7,12 +7,11 @@ import java.util.Calendar
 import cn.whaley.sdk.dataOps.MySqlOps
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.constant.Tables
-import com.moretv.bi.global.{DataBases, LogTypes}
+import com.moretv.bi.global.{DataBases, DimensionTypes, LogTypes}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{ParamsParseUtil, UserIdUtils}
-import org.apache.spark.sql.functions._
 
-object WhiteMedusaDayRetentionRate extends BaseClass {
+object WhiteMedusaNewUserRetentionRate extends BaseClass {
 
 
   def main(args: Array[String]) {
@@ -20,8 +19,15 @@ object WhiteMedusaDayRetentionRate extends BaseClass {
   }
 
   override def execute(args: Array[String]) {
+    sqlContext.udf.register("getApkVersion", ApkVersionUtil.getApkVersion _)
+    val tmpSqlContext = sqlContext
+    import tmpSqlContext.implicits._
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
+
+        DataIO.getDataFrameOps.getDimensionDF(sc, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_APP_VERSION).
+          select("version").distinct().registerTempTable("app_version_log")
+
         val inputDate = p.startDate
         val numOfDays = p.numOfDays
         val numOfPartition = 40
@@ -64,20 +70,6 @@ object WhiteMedusaDayRetentionRate extends BaseClass {
             c.add(Calendar.DAY_OF_MONTH, -needToCalc(j))
             val date2 = format.format(c.getTime)
 
-            /**
-              * 获取每天新增的用户信息（MAC）
-              */
-
-            //            val accountDf = DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT, date2)
-            //                .withColumn("version", split(col("current_version"),"-")(4))
-            //                .filter(s"left(openTime,10) = $date2")
-            //
-            //            val sqlInfoOld = accountDf.filter("version < '3.1.4'")
-            //              .select("mac").map(_=>UserIdUtils.userId2Long(_))
-            //              .distinct()
-            //            val sqlInfoNew = accountDf.filter("version >= '3.1.4'")
-            //              .select("mac").map(_=>UserIdUtils.userId2Long(_))
-            //              .distinct()
 
             val id = getID(date2, stmt)
             val min = id(0)
@@ -86,18 +78,19 @@ object WhiteMedusaDayRetentionRate extends BaseClass {
             val sqlRDD = MySqlOps.getJdbcRDD(sc, sqlInfo, Tables.MTV_ACCOUNT, r => {
               (r.getString(1), r.getString(2))
             }, driver, url, user, password, (min, max), numOfPartition)
+
+            //全版本
+            val sqlRDDAll = sqlRDD
+              //.filter(_._2 < "3.1.4")
+              .map(rdd => UserIdUtils.userId2Long(rdd._1)).distinct()
+            val retentionAll = logUserID.intersection(sqlRDDAll).count()
+            val newUserAll = sqlRDDAll.count().toInt
+            val retentionRateAll = retentionAll.toDouble / newUserAll.toDouble
+            //新版本
+            val sqlRDDNew = sqlRDD
               .filter(_._2 != null)
               .filter(_._2.contains("_"))
               .map(e => (e._1, e._2.substring(e._2.lastIndexOf("_") + 1)))
-            //旧版本
-            val sqlRDDOld = sqlRDD
-              .filter(_._2 < "3.1.4")
-              .map(rdd => UserIdUtils.userId2Long(rdd._1)).distinct()
-            val retentionOld = logUserID.intersection(sqlRDDOld).count()
-            val newUserOld = sqlRDDOld.count().toInt
-            val retentionRateOld = retentionOld.toDouble / newUserOld.toDouble
-            //新版本
-            val sqlRDDNew = sqlRDD
               .filter(_._2 >= "3.1.4")
               .map(rdd => UserIdUtils.userId2Long(rdd._1)).distinct()
             val retentionNew = logUserID.intersection(sqlRDDNew).count()
@@ -107,10 +100,10 @@ object WhiteMedusaDayRetentionRate extends BaseClass {
               deleteSQL(date2, stmt1)
             }
             if (j == 0) {
-              insertSQL(date2, "old", newUserOld, retentionRateOld, stmt1)
+              insertSQL(date2, "all", newUserAll, retentionRateAll, stmt1)
               insertSQL(date2, "new", newUserNew, retentionRateNew, stmt1)
             } else {
-              updateSQL(numOfDay(j), "old", retentionRateOld, date2, stmt1)
+              updateSQL(numOfDay(j), "all", retentionRateAll, date2, stmt1)
               updateSQL(numOfDay(j), "new", retentionRateNew, date2, stmt1)
             }
           }

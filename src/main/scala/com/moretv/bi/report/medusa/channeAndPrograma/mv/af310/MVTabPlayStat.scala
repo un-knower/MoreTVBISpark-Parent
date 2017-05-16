@@ -72,12 +72,25 @@ object MVTabPlayStat extends BaseClass {
             .select("pathMain", "event", "userId", "duration","contentType")
             .filter("contentType ='mv'")
             .filter("pathMain is not null")
-            .filter("duration is not null and duration < 10800 and duration >= 0 ")
+//            .filter("duration is not null and duration < 10800 and duration >= 0 ")
             .cache
 
+          println(s"********The df length is: ${df.count()}")
+
+
+          val rddStart =
+            df.flatMap(
+              e =>
+                PlayPathMatch.mvPathMatchStart(
+                  e.getString(0), e.getString(1), e.getString(2)
+                )
+            )
+              .filter(_._1 != null)
+              .filter(_._2 != null)
+              .cache
 
           val rdd =
-            df.flatMap(
+            df.filter("duration is not null and duration between 0 and 10800").flatMap(
               e =>
                 PlayPathMatch.mvPathMatch(
                   e.getString(0), e.getString(1), e.getString(2), e.getLong(3)
@@ -87,13 +100,14 @@ object MVTabPlayStat extends BaseClass {
               .filter(_._2 != null)
               .cache
 
+          println(s"********The rdd length is: ${rdd.count()}")
 
-          //pvuvRdd(home_tab, entrance, userId) with (event = startplay)
 
           val pvuvRdd =
-            rdd.filter(_._3 == "startplay")
+            rddStart.filter(_._3 == "startplay")
               .map(e => ((e._1, e._2), e._4))
 
+          println(s"********The pvuvRdd length is: ${pvuvRdd.count()}")
 
           //durationRdd(home_tab, entrance, duration) with (event = userexit|selfend)
 
@@ -103,11 +117,12 @@ object MVTabPlayStat extends BaseClass {
             .map(e => ((e._1, e._2), e._4))
 
           val durationRdd =
-            rdd.filter(e => {
+            rdd.filter(e=>{e._5 >=0 && e._5<=10800}).filter(e => {
               e._3 == "userexit" || e._3 == "selfend"
             })
               .map(e => ((e._1, e._2), e._5))
 
+          println(s"*****The uvRddForDuration length is: ${uvRddForDuration.count()}")
 
           //aggregate
 
@@ -126,7 +141,12 @@ object MVTabPlayStat extends BaseClass {
             util.delete(deleteSql, sqlDate)
           }
 
+          println(s"*******${uvMap.size}")
           uvMap.foreach(w => {
+
+
+            println("********Insert into database**********")
+            println(util.url)
 
             val key = w._1
 

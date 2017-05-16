@@ -108,6 +108,8 @@ object EnChConvert {
               case "tv_yuansheng" => result = "电视原声"
               case "tv_guowai_lianzai" => result = "海外同步"
               case "tv_zhongbang" => result = "重磅追剧"
+              case "tv_jiatinglunli" => result = "家庭伦理"
+              case "tv_dushiqinggan" => result = "都市情感"
               case _ => result=info
             }
           }
@@ -141,6 +143,7 @@ object EnChConvert {
               case "yulebagua_zongyi" => result = "娱乐八卦"
               case "xiangsheng_zongyi" => result = "相声小品"
               case "zongyi_wangpai" => result = "王牌综艺"
+              case "zongyi_benpaoba" => result = "奔跑吧"
               case _ => result=info
             }
           }
@@ -234,6 +237,7 @@ object EnChConvert {
               case "jilu_xingzhen"=> result="刑侦档案"
               case "jilu_junshi" => result = "铁血军魂"
               case "jilu_qiche" => result = "大话汽车"
+              case "jilu_lishi" => result = "历史奇闻"
               case _ => result=info
             }
           }

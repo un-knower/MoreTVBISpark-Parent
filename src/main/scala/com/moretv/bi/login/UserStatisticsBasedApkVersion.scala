@@ -10,7 +10,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import org.apache.spark.sql.functions._
 
 /**
-  * Created by zhangyu and xiajun on 2016/7/20.
+  * Created by zhangyu on 2016/7/20.
   * 统计分版本的日新增、活跃及累计用户数，采用mac去重方式。
   * tablename: medusa.medusa_user_statistics_based_apkversion
   * (id,day,apk_version,adduser_num,accumulate_num,active_num)
@@ -72,16 +72,16 @@ object UserStatisticsBasedApkVersion extends BaseClass {
           val dfd2 = DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG, loadDate)
             .select($"mac", versionUdf($"version").as("version")).distinct()
             .groupBy("version")
-            .agg(count("mac").alias("counts"))
+            .agg(countDistinct("mac").alias("counts"))
 
           val resDf = dfd1.filter($"date" === sqlDate)
             .groupBy("version")
-            .agg(count("mac").alias("counts"))
+            .agg(countDistinct("mac").alias("counts"))
             .as("t1")
             .join(
               dfd1.filter($"date" <= sqlDate)
                 .groupBy("version")
-                .agg(count("mac").alias("counts"))
+                .agg(countDistinct("mac").alias("counts"))
                 .as("t2"),
               $"t1.version" === $"t2.version")
             .join(

@@ -34,7 +34,7 @@ object PromotionChannelDetail extends BaseClass {
           val inputDate = DateFormatUtils.readFormat.format(calendar.getTime)
           val day = DateFormatUtils.toDateCN(inputDate, -1)
 
-          val logRdd = DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG)
+          val logRdd = DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG,inputDate)
             .select("promotionChannel", "mac")
             .map(row => {
               val promotionChannel = row.getString(0)

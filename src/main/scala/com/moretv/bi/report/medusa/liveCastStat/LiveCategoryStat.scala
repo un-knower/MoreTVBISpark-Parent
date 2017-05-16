@@ -43,7 +43,7 @@ object LiveCategoryStat extends BaseClass {
 
         val util = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
 
-        val categoryDF = LiveOneLevelCategory.code2Name("webcast", sc)
+        val categoryDF = LiveOneLevelCategory.code2Name("webcast", sc).distinct()
 
         (0 until p.numOfDays).foreach(w => {
 
@@ -55,13 +55,10 @@ object LiveCategoryStat extends BaseClass {
 
           val df = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogType.LIVE, loadDate)
             .filter($"liveType" === "live" && $"date" === sqlDate && $"pathMain".isNotNull)
+
           val playDf = df
             .join(categoryDF, df("liveMenuCode") === categoryDF("liveMenuCode"))
             .withColumnRenamed("liveMenuName", "category")
-
-          //          val viewDf = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogType.TABVIEW, loadDate)
-          //            .filter($"stationcode".isin(LiveSationTree.Live_First_Category: _*)
-          //              && $"date" === sqlDate)
 
           //TODO 此处未过滤类型
           val viewDf = DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogType.TABVIEW, loadDate)

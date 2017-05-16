@@ -63,6 +63,8 @@ object UDFConstantDimension {
   val HOME_MY_TV = "home*my_tv"
   //小鹰直播
   val HOME_LIVE_EAGLE = "home*live*eagle"
+  val MV_CATEGORY_HOME_PAGE = "mv*mvCategoryHomePage"
+  val MV_FUNCTION = "mv*function"
 
   /**用于频道分类入口统计，解析出资讯的一级入口、二级入口
     * 从今日推荐入口【位于分类的上面】里面的位置的最右下角落进入咨询短片频道的

@@ -58,7 +58,7 @@ object LiveChannelPlayStat extends BaseClass {
             .cache()
 
 
-
+          val liveSidPlayList = new ArrayList[Map[String, Object]]()
           // 统计全网直播和电台直播每个节目的总播放情况
           playDf.filter($"event" === "startplay")
             .groupBy(groupFields4D.map(w => col(w)): _*)
@@ -69,37 +69,69 @@ object LiveChannelPlayStat extends BaseClass {
                 .agg(sum($"duration").as(DURATION)),
               groupFields4D
             )
-            .join(categoryDF, LIVECATEGORYCODE :: Nil, "leftouter")
-            .foreachPartition(partition => {
-              val liveSidPlayList = new ArrayList[Map[String, Object]]()
-              partition.foreach(w => {
+            .join(categoryDF, LIVECATEGORYCODE :: Nil, "leftouter").collect()
+            .foreach(w =>
 
 
                 liveSidPlayList.add(w.getValuesMap(cube4DFieldsUVD))
-              })
-              ElasticSearchUtil.bulkCreateIndex1(liveSidPlayList, ES_INDEX, ES_TYPE_D)
-            })
+            )
+            ElasticSearchUtil.bulkCreateIndex1(liveSidPlayList, ES_INDEX, ES_TYPE_D)
 
 
-          //统计电台直播的自定义查询
+        //
+//          // 统计全网直播和电台直播每个节目的总播放情况
+//          playDf.filter($"event" === "startplay")
+//            .groupBy(groupFields4D.map(w => col(w)): _*)
+//            .agg(count($"userId").as(VV), countDistinct($"userId").as(UV))
+//            .join(
+//              playDf.filter($"event" === "switchchannel" && $"duration".between(10, 36000))
+//                .groupBy(groupFields4D.map(w => col(w)): _*)
+//                .agg(sum($"duration").as(DURATION)),
+//              groupFields4D
+//            )
+//            .join(categoryDF, LIVECATEGORYCODE :: Nil, "leftouter")
+//            .foreachPartition(partition => {
+//              val liveSidPlayList = new ArrayList[Map[String, Object]]()
+//              partition.foreach(w => {
+//
+//
+//                liveSidPlayList.add(w.getValuesMap(cube4DFieldsUVD))
+//              })
+//              ElasticSearchUtil.bulkCreateIndex1(liveSidPlayList, ES_INDEX, ES_TYPE_D)
+//            })
+
+
+          val channelMPlayList = new ArrayList[Map[String, Object]]()
           playDf
             .filter($"event" === "startplay")
             .withColumn(HOUR, hour($"datetime")).withColumn(MINUTE, minute($"datetime"))
             .groupBy(groupFields4M.map(w => col(w)): _*)
             .agg(count($"userId").as(VV))
 
-            .join(categoryDF, LIVECATEGORYCODE :: Nil, "leftouter")
-            .repartition(3).foreachPartition(partition => {
-            val channelMPlayList = new ArrayList[Map[String, Object]]()
-            partition.foreach(w => {
+            .join(categoryDF, LIVECATEGORYCODE :: Nil, "leftouter").collect()
+            .foreach(w => {
               channelMPlayList.add(w.getValuesMap(cube4MFieldsV))
             })
             ElasticSearchUtil.bulkCreateIndex1(channelMPlayList, ES_INDEX, ES_TYPE_M)
-          })
+
+//          //统计电台直播的自定义查询
+//          playDf
+//            .filter($"event" === "startplay")
+//            .withColumn(HOUR, hour($"datetime")).withColumn(MINUTE, minute($"datetime"))
+//            .groupBy(groupFields4M.map(w => col(w)): _*)
+//            .agg(count($"userId").as(VV))
+//
+//            .join(categoryDF, LIVECATEGORYCODE :: Nil, "leftouter")
+//            .repartition(3).foreachPartition(partition => {
+//            val channelMPlayList = new ArrayList[Map[String, Object]]()
+//            partition.foreach(w => {
+//              channelMPlayList.add(w.getValuesMap(cube4MFieldsV))
+//            })
+//            ElasticSearchUtil.bulkCreateIndex1(channelMPlayList, ES_INDEX, ES_TYPE_M)
+//          })
 
 
-
-          // 统计电台直播和全网直播每隔10分钟的在线人数
+          val channel10MPlayList = new ArrayList[Map[String, Object]]()
           playDf.filter($"event" === "switchchannel" && $"duration".between(10, 36000))
             .withColumn("period",
               periodFillingWithStartEndUdf(
@@ -115,15 +147,38 @@ object LiveChannelPlayStat extends BaseClass {
             .groupBy(groupFields4M.map(w => col(w)): _*)
             .agg(countDistinct($"userId").as(UV))
 
-            .join(categoryDF, LIVECATEGORYCODE :: Nil, "leftouter")
+            .join(categoryDF, LIVECATEGORYCODE :: Nil, "leftouter").collect()
 
-            .repartition(3).foreachPartition(partition => {
-            val channel10MPlayList = new ArrayList[Map[String, Object]]()
-            partition.foreach(w => {
+            .foreach(w => {
               channel10MPlayList.add(w.getValuesMap(cube4MFieldsU))
             })
             ElasticSearchUtil.bulkCreateIndex1(channel10MPlayList, ES_INDEX, ES_TYPE_10M)
-          })
+
+          // 统计电台直播和全网直播每隔10分钟的在线人数
+//          playDf.filter($"event" === "switchchannel" && $"duration".between(10, 36000))
+//            .withColumn("period",
+//              periodFillingWithStartEndUdf(
+//                hour((unix_timestamp($"datetime") - $"duration").cast("timestamp")),
+//                hour((unix_timestamp($"datetime").cast("timestamp"))),
+//                minute((unix_timestamp($"datetime") - $"duration").cast("timestamp")),
+//                minute(unix_timestamp($"datetime").cast("timestamp"))
+//              )
+//            )
+//            .withColumn("period", explode($"period"))
+//            .withColumn(MINUTE, $"period._2").withColumn(HOUR, $"period._1")
+//
+//            .groupBy(groupFields4M.map(w => col(w)): _*)
+//            .agg(countDistinct($"userId").as(UV))
+//
+//            .join(categoryDF, LIVECATEGORYCODE :: Nil, "leftouter")
+//
+//            .repartition(3).foreachPartition(partition => {
+//            val channel10MPlayList = new ArrayList[Map[String, Object]]()
+//            partition.foreach(w => {
+//              channel10MPlayList.add(w.getValuesMap(cube4MFieldsU))
+//            })
+//            ElasticSearchUtil.bulkCreateIndex1(channel10MPlayList, ES_INDEX, ES_TYPE_10M)
+//          })
 
 
           categoryDF.unpersist()
