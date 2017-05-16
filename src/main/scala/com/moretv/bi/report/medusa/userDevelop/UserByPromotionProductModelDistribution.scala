@@ -41,7 +41,7 @@ object UserByPromotionProductModelDistribution extends BaseClass {
           DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT,inputDate).
             registerTempTable(LogTypes.MORETV_MTV_ACCOUNT)
 
-          DataIO.getDataFrameOps.getDF(sc, p.paramMap, MORETVLOGINLOG, LogTypes.LOGINLOG,loadDate).
+          DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG,loadDate).
             registerTempTable(LogTypes.LOGINLOG)
 
 
@@ -49,45 +49,46 @@ object UserByPromotionProductModelDistribution extends BaseClass {
 
           sqlContext.sql(
             s"""
-              |select a.promotion,a.product_model,count(distinct a.mac)
+              |select a.promotion_channel,a.product_model,count(distinct a.mac)
               |from ${LogTypes.MORETV_MTV_ACCOUNT} as a
               |where a.openTime between '$insertDate 00:00:00' and '$insertDate 23:59:59'
-              |group by a.promotion,a.product_model
-            """.stripMargin).toDF("promotion","product_model","new_user").registerTempTable("new_user_log")
+              |group by a.promotion_channel,a.product_model
+            """.stripMargin).toDF("promotion_channel","product_model","new_user").registerTempTable("new_user_log")
 
 
           /**统计累计用户的终端品牌分布*/
           sqlContext.sql(
             s"""
-               |select a.promotion,a.product_model,count(distinct a.mac)
+               |select a.promotion_channel,a.product_model,count(distinct a.mac)
                |from ${LogTypes.MORETV_MTV_ACCOUNT} as a
                |where a.openTime <= '$insertDate 23:59:59'
-               |group by a.promotion,a.product_model
-            """.stripMargin).toDF("promotion","product_model","total_user").registerTempTable("total_user_log")
+               |group by a.promotion_channel,a.product_model
+            """.stripMargin).toDF("promotion_channel","product_model","total_user").registerTempTable("total_user_log")
 
           /**统计活跃用户分布*/
           sqlContext.sql(
             s"""
               |
-              |select b.promotion,b.product_model,count(distinct a.mac)
+              |select b.promotion_channel,b.product_model,count(distinct a.mac)
               |from ${LogTypes.LOGINLOG} as a
               |join ${LogTypes.MORETV_MTV_ACCOUNT} as b
               |on a.mac = b.mac
               |where b.openTime <= '$insertDate 00:00:00'
-            """.stripMargin).toDF("promotion","product_model","dau").registerTempTable("dau_log")
+              |group by b.promotion_channel,b.product_model
+            """.stripMargin).toDF("promotion_channel","product_model","dau").registerTempTable("dau_log")
 
-          /**计算总的promotion and product_model*/
+          /**计算总的promotion_channel and product_model*/
           sqlContext.sql(
             """
-              |select promotion,product_model
+              |select promotion_channel,product_model
               |from new_user_log
               |union
-              |select promotion,product_model
+              |select promotion_channel,product_model
               |from total_user_log
               |union
-              |select promotion,product_model
+              |select promotion_channel,product_model
               |from dau_log
-            """.stripMargin).distinct().registerTempTable("promotion_product_log")
+            """.stripMargin).distinct().registerTempTable("promotion_channel_product_log")
 
 
           if(p.deleteOld){
@@ -96,14 +97,15 @@ object UserByPromotionProductModelDistribution extends BaseClass {
 
           sqlContext.sql(
             """
-              |select a.promotion,a.product_model,b.new_user,c.total_user,d.dau
-              |from promotion_product_log as a
+              |select a.promotion_channel,a.product_model,case when b.new_user is null then 0 else b.new_user end ,
+              |case when c.total_user is null then 0 else c.total_user end ,case when d.dau is null then 0 else d.dau end
+              |from promotion_channel_product_log as a
               |left join new_user_log as b
-              |on a.promotion = b.promotion and a.product_model = b.product_model
+              |on a.promotion_channel = b.promotion_channel and a.product_model = b.product_model
               |left join total_user_log as c
-              |on a.promotion = c.promotion and a.product_model = c.product_model
+              |on a.promotion_channel = c.promotion_channel and a.product_model = c.product_model
               |left join dau_log as d
-              |on a.promotion = d.promotion and a.product_model = d.product_model
+              |on a.promotion_channel = d.promotion_channel and a.product_model = d.product_model
             """.stripMargin).map(e=>(e.getString(0),e.getString(1),e.getLong(2),e.getLong(3),e.getLong(4))).collect().
             foreach(i=>{
             util.insert(insertSql,insertDate,i._1,i._2,i._3,i._4,i._5)

@@ -2,14 +2,10 @@ package com.moretv.bi.threshold
 
 import java.util.Calendar
 
-import cn.whaley.sdk.dataOps.MySqlOps
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import com.moretv.bi.login.DailyActiveUserByMac.{LOGINLOG, sc, sqlContext}
-import com.moretv.bi.threshold.videoMainChannelAvgPlayStatistic._
-import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import com.moretv.bi.whiteMedusaVersionEstimate.classifyContentTypePlayRatio.sqlContext
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 
 /**
   * Created by whaley on 2017/5/11.
