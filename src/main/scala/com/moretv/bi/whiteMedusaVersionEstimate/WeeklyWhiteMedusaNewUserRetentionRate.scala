@@ -94,7 +94,7 @@ object WeeklyWhiteMedusaNewUserRetentionRate extends BaseClass {
           val updateDir = s"/log/medusa/parquet/{${days2.mkString(",")}}/white_medusa_update_user"
           val updatedUser = sqlContext.read.parquet(updateDir)
           .select("mac")
-          .map(rdd => UserIdUtils.userId2Long(rdd(1).toString))
+            .map(rdd => UserIdUtils.userId2Long(rdd.toString))
           .distinct()
           val newUser = updatedUser.count().toInt
           val retention = logUserID.intersection(updatedUser).count()
