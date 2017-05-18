@@ -51,11 +51,11 @@ object WhiteMedusaProvinceLoginUserCt extends BaseClass {
 
           //add 1 day after read currrent day
           cal.add(Calendar.DAY_OF_MONTH, 1)
-          // date2 = DateFormatUtils.readFormat.format(cal.getTime)
+          val date2 = DateFormatUtils.readFormat.format(cal.getTime)
 
           //load data
           //val logAccount = DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT, date)
-          val logLogin = DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG, date)
+          val logLogin = DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG, date2)
           DataIO.getDataFrameOps.getDimensionDF(sc, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_APP_VERSION).
             select("version").distinct().registerTempTable("app_version_log")
           DataIO.getDataFrameOps.getDimensionDF(sc, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_TERMINAL_USER)
@@ -93,7 +93,7 @@ object WhiteMedusaProvinceLoginUserCt extends BaseClass {
           sqlContext.sql(
             """
               |select a.*,b.province
-              |from white_login_table a join mac_area b
+              |from white_login_table a left join mac_area b
               |on a.mac = b.mac
             """.stripMargin)
           .registerTempTable("area_white_login_table") //关联取出有地区信息的白猫版本的记录
