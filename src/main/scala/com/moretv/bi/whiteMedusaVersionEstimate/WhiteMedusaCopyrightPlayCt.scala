@@ -8,7 +8,7 @@ import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.constant.Tables
 import com.moretv.bi.global.{DataBases, DimensionTypes, LogTypes}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
+import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil, ProgramRedisUtil}
 import org.apache.spark.sql.functions.{col, udf}
 
 /**
@@ -150,15 +150,23 @@ object WhiteMedusaCopyrightPlayCt extends BaseClass {
               |group by contentType,videoSid)y
               |on x.contentType = y.contentType and x.videoSid = y.videoSid
             """.stripMargin)//按照sid统计播放次数、播放人数、播放时长
+          //videoSidDf.registerTempTable("videosid")
 
-
+          //          //在上面代码的基础上，增加videoName字段，需要join原始数据
+          //          val videoSidAndNameDf = sqlContext.sql(
+          //            """
+          //              |select a.contentType,a.videoSid,b.videoName,a.playNum,a.playUser,a.playSumDuration
+          //              |from videosid a join play b
+          //              |on a.videoSid = b.videoSid
+          //            """.stripMargin
+          //          )
 
           val insertSqlTotal = s"insert into $table_total(day,playNum,playUser,playSumDuration) " +
             "values (?,?,?,?)"
           val insertSqlContentType = s"insert into $table_contentType(day,contentType,playNum,playUser,playSumDuration) " +
             "values (?,?,?,?,?)"
-          val insertSqlVideoSid = s"insert into $table_videoSid(day,contentType,videoSid,playNum,playUser,playSumDuration) " +
-            "values (?,?,?,?,?,?)"
+          val insertSqlVideoSid = s"insert into $table_videoSid(day,contentType,videoSid,videoName,playNum,playUser,playSumDuration) " +
+            "values (?,?,?,?,?,?,?)"
           if (p.deleteOld) {
             val deleteSql = s"delete from $table_total where day=?"
             util.delete(deleteSql, insertDate)
@@ -181,16 +189,16 @@ object WhiteMedusaCopyrightPlayCt extends BaseClass {
           //          sqlContext.sql("select * from play limit 10").show(false)
           //          resultDf.show(false)
 
-          totalDf.collect.foreach(e => {
-            util.insert(insertSqlTotal, insertDate, e.get(0), e.get(1), e.get(2))
-          })
-          println(insertDate + " Insert total data successed!")
-          contentTypeDf.collect.foreach(e => {
-            util.insert(insertSqlContentType, insertDate, e.get(0), e.get(1), e.get(2),e.get(3))
-          })
-          println(insertDate + " Insert contentTypeDf data successed!")
+          //          totalDf.collect.foreach(e => {
+          //            util.insert(insertSqlTotal, insertDate, e.get(0), e.get(1), e.get(2))
+          //          })
+          //          println(insertDate + " Insert total data successed!")
+          //          contentTypeDf.collect.foreach(e => {
+          //            util.insert(insertSqlContentType, insertDate, e.get(0), e.get(1), e.get(2),e.get(3))
+          //          })
+          //          println(insertDate + " Insert contentTypeDf data successed!")
           videoSidDf.collect.foreach(e => {
-            util.insert(insertSqlVideoSid, insertDate, e.get(0), e.get(1), e.get(2),e.get(3),e.get(4))
+            util.insert(insertSqlVideoSid, insertDate, e.get(0), e.get(1), ProgramRedisUtil.getTitleBySid(e.getString(1)), e.get(2), e.get(3), e.get(4))
           })
           println(insertDate + " Insert videoSid data successed!")
 
