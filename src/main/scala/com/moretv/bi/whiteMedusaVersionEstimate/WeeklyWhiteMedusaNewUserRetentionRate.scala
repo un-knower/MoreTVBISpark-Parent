@@ -123,7 +123,7 @@ object WeeklyWhiteMedusaNewUserRetentionRate extends BaseClass {
   }
 
   def insertSQL(week_start_end: String, count: Int, retention: Double, stmt: Statement) = {
-    val sql = s"INSERT INTO medusa.`weekly_white_medusa_user_retetion_day` (day,week_start_end, new_user_num, one) VALUES('$week_start_end',$count, $retention)"
+    val sql = s"INSERT INTO medusa.`weekly_white_medusa_user_retetion_day` (week_start_end, new_user_num, one) VALUES('$week_start_end',$count, $retention)"
     stmt.executeUpdate(sql)
   }
 
