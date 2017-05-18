@@ -47,7 +47,7 @@ object WeeklyWhiteMedusaNewUserRetentionRate extends BaseClass {
         //val inputDate = p.startDate
         val numOfPartition = 40
 
-        val needToCalc = Array(1, 1, 1, 1)
+        val needToCalc = Array(1,1)
         val numOfDay = Array("one", "two", "three", "four")
         val format = new SimpleDateFormat("yyyy-MM-dd")
         val readFormat = new SimpleDateFormat("yyyyMMdd")
@@ -113,13 +113,6 @@ object WeeklyWhiteMedusaNewUserRetentionRate extends BaseClass {
 
       case None => throw new RuntimeException("At least need param --startDate.")
     }
-  }
-
-  def getID(day1: String, day2: String, stmt: Statement): Array[Long] = {
-    val sql = s"SELECT MIN(id),MAX(id) FROM tvservice.`mtv_account` WHERE LEFT(openTime, 10) between '$day1' and '$day2'"
-    val id = stmt.executeQuery(sql)
-    id.next()
-    Array(id.getLong(1), id.getLong(2))
   }
 
   def insertSQL(week_start_end: String, count: Int, retention: Double, stmt: Statement) = {
