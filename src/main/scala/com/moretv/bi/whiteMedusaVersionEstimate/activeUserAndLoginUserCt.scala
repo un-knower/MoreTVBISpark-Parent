@@ -52,8 +52,8 @@ object activeUserAndLoginUserCt extends BaseClass {
           val date2 = DateFormatUtils.readFormat.format(cal.getTime)
 
           //load data
-          val logAccount = DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT, date2)
-          val logLogin = DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG, date)
+          val logAccount = DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT, date)
+          val logLogin = DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG, date2)
           DataIO.getDataFrameOps.getDimensionDF(sc, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_APP_VERSION).
             select("version").distinct().registerTempTable("app_version_log")
 
@@ -68,31 +68,31 @@ object activeUserAndLoginUserCt extends BaseClass {
           //data processings
           sqlContext.sql(
             """
-              |select x.day,x.version,count(distinct x.mac) as loginUser
+              |select x.version,count(distinct x.mac) as loginUser
               |from
-              |(select a.day,a.mac,getVersion(b.version) as version
+              |(select a.mac,getVersion(b.version) as version
               |from login_table a
               |left join app_version_log b
               |on getApkVersion(a.version) = b.version) x
-              |group by day,version
+              |group by x.version
             """.stripMargin)
             .registerTempTable("login_users")
           sqlContext.sql(
             """
-              |select x.day,x.version,count(distinct x.mac) as newUser
+              |select x.version,count(distinct x.mac) as newUser
               |from
-              |(select a.day,a.mac,getVersion(b.version) as version
+              |(select a.mac,getVersion(b.version) as version
               |from new_table a
               |left join app_version_log b
               |on getApkVersion(a.current_version) = b.version) x
-              |group by day,version
+              |group by version
             """.stripMargin)
             .registerTempTable("new_users")
           val resultDf = sqlContext.sql(
             """
-              |select a.day,a.version,a.loginUser,b.newUser,a.loginUser-b.newUser as activeUser
+              |select a.version,a.loginUser,b.newUser,a.loginUser-b.newUser as activeUser
               |from login_users a join new_users b
-              |on a.day = b.day and a.version = b.version
+              |on a.version = b.version
             """.stripMargin)
 
           val insertSql = "insert into whiteMedusa_login_active_user_ct(day,version,loginUser,newUser,activeUser) " +
@@ -103,7 +103,7 @@ object activeUserAndLoginUserCt extends BaseClass {
           }
 
           resultDf.collect.foreach(e => {
-            util.insert(insertSql, e.get(0), e.get(1), e.get(2), e.get(3), e.get(4))
+            util.insert(insertSql, insertDate, e.get(0), e.get(1), e.get(2), e.get(3))
           })
           println(insertDate + " Insert data successed!")
         })
