@@ -11,7 +11,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 /**
   * Created by QIZHEN on 2017/5/3.
   */
-object classifyContentTypePlayRatio extends BaseClass {
+object WhiteMedusaClassifyContentTypePlayRatio extends BaseClass {
   private val tableName = "whiteMedusa_classify_contentType_playRatio"
   private val insertSql = s"insert into ${tableName}(day,version,contentType,playUser_cnt,homepageClickUser_cnt,playRatio) values (?,?,?,?,?,?)"
   private val deleteSql = s"delete from ${tableName} where day = ?"
