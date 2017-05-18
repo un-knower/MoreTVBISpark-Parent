@@ -19,12 +19,12 @@ object carousel_play_information extends BaseClass {
 
   /**定义存储按播放人数统计轮播频道收视TOP200节目的表**/
   private val tableName1 = "live_carousel_user_top200"
-  private val insertSql1 = s"insert into ${tableName1}(day,liveName,user_num) values (?,?,?)"
+  private val insertSql1 = s"insert into ${tableName1}(day,liveName,channelSid,user_num) values (?,?,?,?)"
   private val deleteSql1 = s"delete from ${tableName1} where day = ?"
 
   /**定义存储按播放次数统计轮播频道收视TOP200节目的表**/
   private val tableName2 = "live_carousel_play_top200"
-  private val insertSql2 = s"insert into ${tableName2}(day,liveName,play_num) values (?,?,?)"
+  private val insertSql2 = s"insert into ${tableName2}(day,liveName,channelSid,play_num) values (?,?,?,?)"
   private val deleteSql2 = s"delete from ${tableName2} where day = ?"
 
   def main(args: Array[String]): Unit = {
@@ -68,7 +68,7 @@ object carousel_play_information extends BaseClass {
                |        sum(duration)/60 as total_duration
                |from ${LogTypes.LIVE}
                |where event='switchchannel' and liveType='live' and sourceType='carousel'
-               |      and duration >0 and duration <36000
+               |      and duration >=0 and duration <=36000
                |group by sourceType)b
                |on a.sourceType = b.sourceType
             """.stripMargin).map(e => (e.get(0), e.get(1), e.get(2), e.get(3), e.get(4)))
@@ -82,37 +82,37 @@ object carousel_play_information extends BaseClass {
           /**按播放人数统计轮播频道收视TOP200节目**/
           val updateUserCnt = sqlContext.sql(
             s"""
-               |select liveName,
+               |select liveName,channelSid,
                |       count(distinct userId) as user_num
                |from ${LogTypes.LIVE}
                |where event='startplay' and liveType='live' and sourceType='carousel'
-               |group by liveName
+               |group by liveName,channelSid
                |order by user_num desc
                |limit 200
-               """.stripMargin).map(e => (e.get(0), e.get(1)))
+               """.stripMargin).map(e => (e.get(0), e.get(1), e.get(2)))
 
           if (p.deleteOld) util.delete(deleteSql1, insertDate)
 
           updateUserCnt.collect.foreach(e => {
-            util.insert(insertSql1, insertDate, e._1, e._2)
+            util.insert(insertSql1, insertDate, e._1, e._2, e._3)
           })
 
           /**按播放次数统计轮播频道收视TOP200节目**/
           val updatePlayCnt = sqlContext.sql(
             s"""
-               |select liveName,
+               |select liveName,channelSid,
                |       count(userId) as play_num
                |from ${LogTypes.LIVE}
                |where event='startplay' and liveType='live' and sourceType='carousel'
-               |group by liveName
+               |group by liveName,channelSid
                |order by play_num desc
                |limit 200
-               """.stripMargin).map(e => (e.get(0), e.get(1)))
+               """.stripMargin).map(e => (e.get(0), e.get(1), e.get(2)))
 
           if (p.deleteOld) util.delete(deleteSql2, insertDate)
 
           updatePlayCnt.collect.foreach(e => {
-            util.insert(insertSql2, insertDate, e._1, e._2)
+            util.insert(insertSql2, insertDate, e._1, e._2, e._3)
           })
 
         })
