@@ -189,14 +189,14 @@ object WhiteMedusaCopyrightPlayCt extends BaseClass {
           //          sqlContext.sql("select * from play limit 10").show(false)
           //          resultDf.show(false)
 
-          //          totalDf.collect.foreach(e => {
-          //            util.insert(insertSqlTotal, insertDate, e.get(0), e.get(1), e.get(2))
-          //          })
-          //          println(insertDate + " Insert total data successed!")
-          //          contentTypeDf.collect.foreach(e => {
-          //            util.insert(insertSqlContentType, insertDate, e.get(0), e.get(1), e.get(2),e.get(3))
-          //          })
-          //          println(insertDate + " Insert contentTypeDf data successed!")
+          totalDf.collect.foreach(e => {
+            util.insert(insertSqlTotal, insertDate, e.get(0), e.get(1), e.get(2))
+          })
+          println(insertDate + " Insert total data successed!")
+          contentTypeDf.collect.foreach(e => {
+            util.insert(insertSqlContentType, insertDate, e.get(0), e.get(1), e.get(2), e.get(3))
+          })
+          println(insertDate + " Insert contentTypeDf data successed!")
           videoSidDf.collect.foreach(e => {
             util.insert(insertSqlVideoSid, insertDate, e.get(0), e.get(1), ProgramRedisUtil.getTitleBySid(e.getString(1)), e.get(2), e.get(3), e.get(4))
           })
