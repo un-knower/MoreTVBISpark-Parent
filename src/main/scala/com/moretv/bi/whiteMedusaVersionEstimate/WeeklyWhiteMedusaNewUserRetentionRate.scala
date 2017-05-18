@@ -83,15 +83,6 @@ object WeeklyWhiteMedusaNewUserRetentionRate extends BaseClass {
           val weekStartEnd2 = mondayCN2 + "~" + sundayCN2
           val updateDay = DateFormatUtils.enDateAdd(date2, 1) //读取升级数据需要的日期
 
-
-          //          val id = getID(mondayCN2,sundayCN2, stmt)
-          //          val min = id(0)
-          //          val max = id(1)
-          //          val sqlInfo = s"SELECT mac,current_version FROM `mtv_account` WHERE ID >= ? AND ID <= ? and left(openTime,10) between '$mondayCN2' and '$sundayCN2'"
-          //          val sqlRDD = MySqlOps.getJdbcRDD(sc, sqlInfo, Tables.MTV_ACCOUNT, r => {
-          //            (r.getString(1), r.getString(2))
-          //          }, driver, url, user, password, (min, max), numOfPartition)
-
           val updateDir = s"/log/medusa/parquet/$updateDay/white_medusa_update_user"
           val updatedUser = sqlContext.read.parquet(updateDir)
             .filter(s"date between '$mondayCN2' and '$sundayCN2'")
@@ -111,31 +102,10 @@ object WeeklyWhiteMedusaNewUserRetentionRate extends BaseClass {
           println("retention is " + retention)
           println("retentionRate is " + retentionRate)
 
-
-          //          //全版本
-          //          val sqlRDDAll = sqlRDD
-          //            //.filter(_._2 < "3.1.4")
-          //            .map(rdd => UserIdUtils.userId2Long(rdd._1)).distinct()
-          //          val retentionAll = logUserID.intersection(sqlRDDAll).count()
-          //          val newUserAll = sqlRDDAll.count().toInt
-          //          val retentionRateAll = retentionAll.toDouble / newUserAll.toDouble
-          //          //新版本
-          //          val sqlRDDNew = sqlRDD
-          //            .filter(_._2 != null)
-          //            .filter(_._2.contains("_"))
-          //            .map(e => (e._1, e._2.substring(e._2.lastIndexOf("_") + 1)))
-          //            .filter(_._2 >= "3.1.4")
-          //            .map(rdd => UserIdUtils.userId2Long(rdd._1)).distinct()
-          //          val retentionNew = logUserID.intersection(sqlRDDNew).count()
-          //          val newUserNew = sqlRDDNew.count().toInt
-          //          val retentionRateNew = retentionNew.toDouble / newUserNew.toDouble
-          //          if (p.deleteOld) {
-          //            deleteSQL(weekStartEnd2, stmt1) //按照周来删除数据
-          //          }
           if (j == 0) {
-            insertSQL(date2, weekStartEnd2, newUser, retentionRate, stmt1)
+            insertSQL(weekStartEnd2, newUser, retentionRate, stmt1)
           } else {
-            updateSQL(numOfDay(j), weekStartEnd2, retentionRate, date2, stmt1)
+            updateSQL(numOfDay(j), weekStartEnd2, retentionRate, stmt1)
           }
         }
         logUserID.unpersist()
@@ -152,13 +122,13 @@ object WeeklyWhiteMedusaNewUserRetentionRate extends BaseClass {
     Array(id.getLong(1), id.getLong(2))
   }
 
-  def insertSQL(date: String, week_start_end: String, count: Int, retention: Double, stmt: Statement) = {
-    val sql = s"INSERT INTO medusa.`weekly_white_medusa_user_retetion_day` (day,week_start_end, new_user_num, one) VALUES('$date','$week_start_end',$count, $retention)"
+  def insertSQL(week_start_end: String, count: Int, retention: Double, stmt: Statement) = {
+    val sql = s"INSERT INTO medusa.`weekly_white_medusa_user_retetion_day` (day,week_start_end, new_user_num, one) VALUES('$week_start_end',$count, $retention)"
     stmt.executeUpdate(sql)
   }
 
-  def updateSQL(num: String, week_start_end: String, retention: Double, date: String, stmt: Statement) = {
-    val sql = s"UPDATE medusa.`weekly_white_medusa_user_retetion_day` SET $num = $retention WHERE day = '$date' and week_start_end = '$week_start_end' "
+  def updateSQL(num: String, week_start_end: String, retention: Double, stmt: Statement) = {
+    val sql = s"UPDATE medusa.`weekly_white_medusa_user_retetion_day` SET $num = $retention WHERE week_start_end = '$week_start_end' "
     stmt.executeUpdate(sql)
   }
 
