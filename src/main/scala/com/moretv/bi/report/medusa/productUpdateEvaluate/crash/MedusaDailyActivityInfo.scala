@@ -34,7 +34,10 @@ object MedusaDailyActivityInfo extends SparkSetting{
           val logTypeArr = new scala.collection.mutable.ArrayBuffer[String]()
           val HdfsFile = HdfsUtil.getFileFromHDFS(s"/log/medusa/parquet/${date}")
           HdfsFile.foreach(file=>{
-            logTypeArr.+=(file.getPath.getName)
+            val fileName = file.getPath.getName
+            if(!LogTypes.BLACK_LOG_TYPE.contains(fileName)){
+              logTypeArr.+=(fileName)
+            }
           })
           val allLog = "{".concat(logTypeArr.toArray.mkString(",")).concat("}")
 

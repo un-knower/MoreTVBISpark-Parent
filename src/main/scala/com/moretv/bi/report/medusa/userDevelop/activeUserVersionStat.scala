@@ -59,13 +59,21 @@ object activeUserVersionStat extends BaseClass {
           val HdfsFileIn3x = HdfsUtil.getFileFromHDFS(s"/log/medusa/parquet/${loadDate}")
           val HdfsFileIn2x = HdfsUtil.getFileFromHDFS(s"/mbi/parquet")
           HdfsFileIn3x.foreach(file=>{
-            logTypeArr3x.+=(file.getPath.getName)
+            val fileName = file.getPath.getName
+            if(!LogTypes.BLACK_LOG_TYPE.contains(fileName)){
+              logTypeArr3x.+=(fileName)
+            }
           })
           HdfsFileIn2x.foreach(file => {
-            logTypeArr2x.+=(file.getPath.getName)
+            val fileName = file.getPath.getName
+            if(!LogTypes.BLACK_LOG_TYPE.contains(fileName)){
+              logTypeArr2x.+=(fileName)
+            }
           })
           val allLog3x = "{".concat(logTypeArr3x.toArray.mkString(",")).concat("}")
           val allLog2x = "{".concat(logTypeArr2x.toArray.mkString(",")).concat("}")
+
+          println(s"****${allLog3x}*******${allLog2x}")
 
           //path1
           val loadPath1 =  DataIO.getDataFrameOps.getPath(MEDUSA,allLog3x,loadDate)
