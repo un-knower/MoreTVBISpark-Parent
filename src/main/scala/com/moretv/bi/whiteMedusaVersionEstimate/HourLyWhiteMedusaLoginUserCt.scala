@@ -51,11 +51,11 @@ object HourLyWhiteMedusaLoginUserCt extends BaseClass {
 
           //add 1 day after read currrent day
           cal.add(Calendar.DAY_OF_MONTH, 1)
-          // date2 = DateFormatUtils.readFormat.format(cal.getTime)
+          val date2 = DateFormatUtils.readFormat.format(cal.getTime)
 
           //load data
           //val logAccount = DataIO.getDataFrameOps.getDF(sc, p.paramMap, DBSNAPSHOT, LogTypes.MORETV_MTV_ACCOUNT, date)
-          val logLogin = DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG, date)
+          val logLogin = DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG, date2)
           DataIO.getDataFrameOps.getDimensionDF(sc, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_APP_VERSION).
             select("version").distinct().registerTempTable("app_version_log")
 
@@ -64,15 +64,16 @@ object HourLyWhiteMedusaLoginUserCt extends BaseClass {
             .registerTempTable("login_table")
 
           //data processings
+
           sqlContext.sql(
             """
               |select x.hour,count(distinct x.mac) as loginUser
               |from
-              |(select substring(a.datetime,12,2) as hour,a.mac,b.version
+              |(select substring(a.datetime,12,2) as hour,a.mac,getVersion(b.version) as version
               |from login_table a
               |left join app_version_log b
               |on getApkVersion(a.version) = b.version) x
-              |where version >= '3.1.4'
+              |where x.version = 'new'
               |group by hour
             """.stripMargin)
             .registerTempTable("login_users")
