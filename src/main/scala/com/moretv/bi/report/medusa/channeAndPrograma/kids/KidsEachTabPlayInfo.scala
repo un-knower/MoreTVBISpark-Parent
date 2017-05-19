@@ -26,7 +26,7 @@ object KidsEachTabPlayInfo extends BaseClass {
   private val regex_tab = ("(kids_collect|kandonghua|tingerge|xuezhishi)\\*(观看历史|收藏追看|专题收藏|动画明星|热播推荐|" +
     "最新出炉|动画专题|欧美精选|国产精选|0-3岁启蒙|0-3岁|4-6岁|7-10岁|英文动画|最佳短片|少儿电影|儿童综艺|亲子交流|益智启蒙|童话故事|" +
     "教育课堂|随便听听|儿歌明星|儿歌热播|儿歌专辑|英文儿歌|舞蹈律动|热播推荐|4-7岁幼教|汉语学堂|英语花园|数学王国|安全走廊|" +
-    "百科世界|艺术宫殿|搞笑|机战|亲子|探险|学习天地|趣味玩具|绘本故事|猫猫优选|爱看动漫)").r
+    "百科世界|艺术宫殿|搞笑|机战|亲子|探险|学习天地|趣味玩具|绘本故事|猫猫优选|爱看动漫|尼克动画)").r
 
   private val regex_search = ("(kids_collect-search|kandonghua-search|xuezhishi-search|" +
     "tingerge-search)\\*([0-9A-Za-z]+)").r
