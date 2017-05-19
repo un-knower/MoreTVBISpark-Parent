@@ -1,4 +1,4 @@
 type=command
-dependencies=dbsnapshot_isExist,loginlogisExist
-mainclass=com.moretv.bi.live.carousel_play_information
+dependencies=other_isExist
+mainclass=com.moretv.bi.live.CarouselSwitching
 command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}

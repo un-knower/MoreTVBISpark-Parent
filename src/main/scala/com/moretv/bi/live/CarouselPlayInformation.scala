@@ -11,7 +11,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 /**
   * Created by QIZHEN on 2017/5/5.
   */
-object carousel_play_information extends BaseClass {
+object CarouselPlayInformation extends BaseClass {
   /**定义存储轮播播放次数、人数和播放时长数据的表**/
   private val tableName = "live_carousel_play_information"
   private val insertSql = s"insert into ${tableName}(day,sourceType,user_num,play_num,avg_play,avg_duration) values (?,?,?,?,?,?)"
