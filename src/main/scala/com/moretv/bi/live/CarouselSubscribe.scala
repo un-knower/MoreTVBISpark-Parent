@@ -14,7 +14,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
   */
 object CarouselSubscribe extends BaseClass {
   /** 定义存储轮播频道预约数据的表 **/
-  private val tableName = "CarouselSubscribe"
+  private val tableName = "carousel_subscribe"
   private val insertSql = s"insert into ${tableName}(day,user_num,subscribe_num) values (?,?,?)"
   private val deleteSql = s"delete from ${tableName} where day = ?"
 

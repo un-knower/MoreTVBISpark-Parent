@@ -14,7 +14,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
   */
 object CarouselSwitching extends BaseClass {
   /** 定义存储轮播频道切换数据的表 **/
-  private val tableName = "CarouselSwitching"
+  private val tableName = "carousel_switching"
   private val insertSql = s"insert into ${tableName}(day,user_num,click_num) values (?,?,?)"
   private val deleteSql = s"delete from ${tableName} where day = ?"
 
