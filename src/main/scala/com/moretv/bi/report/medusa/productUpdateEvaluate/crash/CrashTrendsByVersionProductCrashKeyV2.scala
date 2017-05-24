@@ -104,7 +104,11 @@ object CrashTrendsByVersionProductCrashKeyV2 extends SparkSetting{
         val rdd1 = sqlContext.sql(sql1).map(e=>(e.getString(0),e.getString
           (1),e.getString(2),e.getLong(3),e.getLong(4))).map(e=>(e._1,e._2,e._3,e._4,e._5)).collect()
         rdd1.foreach(r=>{
-          util.insert(sqlInsert,day,r._2,r._3,r._1,"OOM",new JLong(r._4),new JLong(r._5))
+          try{
+            util.insert(sqlInsert,day,r._2,r._3,r._1,"OOM",new JLong(r._4),new JLong(r._5))
+          }catch {
+            case e:Exception =>
+          }
         })
         // 统计各个apkVersion、BuildDate的OOM crash
         val sql2 = "select App_version_name,Date_code,'All' as Product_code,sum(num),count(distinct " +
@@ -113,7 +117,11 @@ object CrashTrendsByVersionProductCrashKeyV2 extends SparkSetting{
         val rdd2 = sqlContext.sql(sql2).map(e=>(e.getString(0),e.getString
           (1),e.getString(2),e.getLong(3),e.getLong(4))).map(e=>(e._1,e._2,e._3,e._4,e._5)).collect()
         rdd2.foreach(r=>{
-          util.insert(sqlInsert,day,r._2,r._3,r._1,"OOM",new JLong(r._4),new JLong(r._5))
+          try {
+            util.insert(sqlInsert,day,r._2,r._3,r._1,"OOM",new JLong(r._4),new JLong(r._5))
+          }catch {
+            case e:Exception =>
+          }
         })
         // 统计各个终端型号、apkVersion、BuildDate的NPE crash
         val sql3 = "select App_version_name,Date_code,Product_code,sum(num),count(distinct Mac) " +
@@ -122,7 +130,11 @@ object CrashTrendsByVersionProductCrashKeyV2 extends SparkSetting{
         val rdd3 = sqlContext.sql(sql3).map(e=>(e.getString(0),e.getString
           (1),e.getString(2),e.getLong(3),e.getLong(4))).map(e=>(e._1,e._2,e._3,e._4,e._5)).collect()
         rdd3.foreach(r=>{
-          util.insert(sqlInsert,day,r._2,r._3,r._1,"NPE",new JLong(r._4),new JLong(r._5))
+          try {
+            util.insert(sqlInsert,day,r._2,r._3,r._1,"NPE",new JLong(r._4),new JLong(r._5))
+          }catch {
+            case e:Exception =>
+          }
         })
         // 统计各个apkVersion、BuildDate的NPE crash
         val sql4 = "select App_version_name,Date_code,'All' as Product_code,sum(num),count(distinct " +
@@ -131,7 +143,11 @@ object CrashTrendsByVersionProductCrashKeyV2 extends SparkSetting{
         val rdd4 = sqlContext.sql(sql4).map(e=>(e.getString(0),e.getString
           (1),e.getString(2),e.getLong(3),e.getLong(4))).map(e=>(e._1,e._2,e._3,e._4,e._5)).collect()
         rdd4.foreach(r=>{
-          util.insert(sqlInsert,day,r._2,r._3,r._1,"NPE",new JLong(r._4),new JLong(r._5))
+          try {
+            util.insert(sqlInsert,day,r._2,r._3,r._1,"NPE",new JLong(r._4),new JLong(r._5))
+          }catch {
+            case e:Exception =>
+          }
         })
         // 统计各个终端型号、apkVersion、BuildDate的所有crash
         val sql5 = "select App_version_name,Date_code,Product_code,sum(num),count(distinct Mac) " +
@@ -140,7 +156,11 @@ object CrashTrendsByVersionProductCrashKeyV2 extends SparkSetting{
         val rdd5 = sqlContext.sql(sql5).map(e=>(e.getString(0),e.getString
           (1),e.getString(2),e.getLong(3),e.getLong(4))).map(e=>(e._1,e._2,e._3,e._4,e._5)).collect()
         rdd5.foreach(r=>{
-          util.insert(sqlInsert,day,r._2,r._3,r._1,"All",new JLong(r._4),new JLong(r._5))
+          try {
+            util.insert(sqlInsert,day,r._2,r._3,r._1,"All",new JLong(r._4),new JLong(r._5))
+          }catch {
+            case e:Exception=>
+          }
         })
         // 统计各个apkVersion、BuildDate的所有 crash
         val sql6 = "select App_version_name,Date_code,'All' as Product_code,sum(num),count(distinct " +
@@ -148,7 +168,11 @@ object CrashTrendsByVersionProductCrashKeyV2 extends SparkSetting{
         val rdd6 = sqlContext.sql(sql6).map(e=>(e.getString(0),e.getString
           (1),e.getString(2),e.getLong(3),e.getLong(4))).map(e=>(e._1,e._2,e._3,e._4,e._5)).collect()
         rdd6.foreach(r=>{
-          util.insert(sqlInsert,day,r._2,r._3,r._1,"All",new JLong(r._4),new JLong(r._5))
+          try {
+            util.insert(sqlInsert,day,r._2,r._3,r._1,"All",new JLong(r._4),new JLong(r._5))
+          }catch {
+            case e:Exception =>
+          }
         })
         // 统计所有版本所有终端的所有crash
         val sql7 = "select 'All','All','All' as Product_code,sum(num),count(distinct " +
@@ -157,7 +181,11 @@ object CrashTrendsByVersionProductCrashKeyV2 extends SparkSetting{
         val rdd7 = sqlContext.sql(sql7).map(e=>(e.getString(0),e.getString
           (1),e.getString(2),e.getLong(3),e.getLong(4))).map(e=>(e._1,e._2,e._3,e._4,e._5)).collect()
         rdd7.foreach(r=>{
-          util.insert(sqlInsert,day,r._2,r._3,r._1,"All",new JLong(r._4),new JLong(r._5))
+          try {
+            util.insert(sqlInsert,day,r._2,r._3,r._1,"All",new JLong(r._4),new JLong(r._5))
+          }catch {
+            case e:Exception =>
+          }
         })
 
         // 统计除了某个版本之外的所有情况
@@ -170,7 +198,11 @@ object CrashTrendsByVersionProductCrashKeyV2 extends SparkSetting{
           val rdd1 = sqlContext.sql(sql1).map(e=>(e.getString(0),e.getString
             (1),e.getString(2),e.getLong(3),e.getLong(4))).map(e=>(e._1,e._2,e._3,e._4,e._5)).collect()
           rdd1.foreach(r=>{
-            util.insert(sqlInsert,day,"All",r._3,"Non-".concat(apkVersion),"OOM",new JLong(r._4),new JLong(r._5))
+            try {
+              util.insert(sqlInsert,day,"All",r._3,"Non-".concat(apkVersion),"OOM",new JLong(r._4),new JLong(r._5))
+            }catch {
+              case e:Exception =>
+            }
           })
           // 统计各个所有终端的OOM crash
           val sql2 = s"select '','','All' as Product_code,sum(num),count(distinct Mac) from crashInfo2 where " +
@@ -179,7 +211,13 @@ object CrashTrendsByVersionProductCrashKeyV2 extends SparkSetting{
           val rdd2 = sqlContext.sql(sql2).map(e=>(e.getString(0),e.getString
             (1),e.getString(2),e.getLong(3),e.getLong(4))).map(e=>(e._1,e._2,e._3,e._4,e._5)).collect()
           rdd2.foreach(r=>{
-            util.insert(sqlInsert,day,"All",r._3,"Non-".concat(apkVersion),"OOM",new JLong(r._4),new JLong(r._5))
+            try {
+              util.insert(sqlInsert,day,"All",r._3,"Non-".concat(apkVersion),"OOM",new JLong(r._4),new JLong(r._5))
+
+            }
+            catch {
+              case e:Exception =>
+            }
           })
           // 统计各个终端型号、apkVersion、BuildDate的NPE crash
           val sql3 = s"select '','',Product_code,sum(num),count(distinct Mac) " +
@@ -188,7 +226,12 @@ object CrashTrendsByVersionProductCrashKeyV2 extends SparkSetting{
           val rdd3 = sqlContext.sql(sql3).map(e=>(e.getString(0),e.getString
             (1),e.getString(2),e.getLong(3),e.getLong(4))).map(e=>(e._1,e._2,e._3,e._4,e._5)).collect()
           rdd3.foreach(r=>{
-            util.insert(sqlInsert,day,"All",r._3,"Non-".concat(apkVersion),"NPE",new JLong(r._4),new JLong(r._5))
+            try {
+              util.insert(sqlInsert,day,"All",r._3,"Non-".concat(apkVersion),"NPE",new JLong(r._4),new JLong(r._5))
+
+            }catch {
+              case e:Exception =>
+            }
           })
           // 统计各个apkVersion、BuildDate的NPE crash
           val sql4 = s"select '','','All' as Product_code,sum(num),count(distinct Mac) from crashInfo5 where " +
@@ -197,7 +240,12 @@ object CrashTrendsByVersionProductCrashKeyV2 extends SparkSetting{
           val rdd4 = sqlContext.sql(sql4).map(e=>(e.getString(0),e.getString
             (1),e.getString(2),e.getLong(3),e.getLong(4))).map(e=>(e._1,e._2,e._3,e._4,e._5)).collect()
           rdd4.foreach(r=>{
-            util.insert(sqlInsert,day,"All",r._3,"Non-".concat(apkVersion),"NPE",new JLong(r._4),new JLong(r._5))
+            try {
+              util.insert(sqlInsert,day,"All",r._3,"Non-".concat(apkVersion),"NPE",new JLong(r._4),new JLong(r._5))
+
+            }catch {
+              case e:Exception =>
+            }
           })
           // 统计各个终端型号、apkVersion、BuildDate的所有crash
           val sql5 = s"select '','',Product_code,sum(num),count(distinct Mac) " +
@@ -206,7 +254,12 @@ object CrashTrendsByVersionProductCrashKeyV2 extends SparkSetting{
           val rdd5 = sqlContext.sql(sql5).map(e=>(e.getString(0),e.getString
             (1),e.getString(2),e.getLong(3),e.getLong(4))).map(e=>(e._1,e._2,e._3,e._4,e._5)).collect()
           rdd5.foreach(r=>{
-            util.insert(sqlInsert,day,"All",r._3,"Non-".concat(apkVersion),"All",new JLong(r._4),new JLong(r._5))
+            try {
+              util.insert(sqlInsert,day,"All",r._3,"Non-".concat(apkVersion),"All",new JLong(r._4),new JLong(r._5))
+
+            }catch {
+              case e:Exception =>
+            }
           })
           // 统计的所有 crash
           val sql6 = "select '','','All' as Product_code,sum(num),count(distinct " +
@@ -215,7 +268,12 @@ object CrashTrendsByVersionProductCrashKeyV2 extends SparkSetting{
           val rdd6 = sqlContext.sql(sql6).map(e=>(e.getString(0),e.getString
             (1),e.getString(2),e.getLong(3),e.getLong(4))).map(e=>(e._1,e._2,e._3,e._4,e._5)).collect()
           rdd6.foreach(r=>{
-            util.insert(sqlInsert,day,"All",r._3,"Non-".concat(apkVersion),"All",new JLong(r._4),new JLong(r._5))
+            try {
+              util.insert(sqlInsert,day,"All",r._3,"Non-".concat(apkVersion),"All",new JLong(r._4),new JLong(r._5))
+
+            }catch {
+              case e:Exception =>
+            }
           })
         }
 
