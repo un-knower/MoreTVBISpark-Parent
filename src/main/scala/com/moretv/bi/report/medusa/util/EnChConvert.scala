@@ -111,7 +111,7 @@ object EnChConvert {
               case "tv_jiatinglunli" => result = "家庭伦理"
               case "tv_dushiqinggan" => result = "都市情感"
               case "tv_ztj" => result = "择天记"
-              case "tv_hls2" => result = "欢乐颂2欢乐多"
+              case "tv_hls2" => result = "欢乐颂2"
               case _ => result=info
             }
           }
