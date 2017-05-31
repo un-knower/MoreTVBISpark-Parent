@@ -100,7 +100,7 @@ object SubjectInterviewLogMergerETL extends BaseClass {
                  |b.subject_name subjectTitle
                  |from mergered_df_table a
                  |left join
-                 |${DimensionTypes.DIM_MEDUSA_SUBJECT} b
+                 |(select * from ${DimensionTypes.DIM_MEDUSA_SUBJECT} where dim_invalid_time is null) b
                  |on trim(a.subjectCode)=trim(b.subject_code)
                      """.stripMargin
             val resultDf = sqlContext.sql(sqlStr)
@@ -121,7 +121,7 @@ object SubjectInterviewLogMergerETL extends BaseClass {
                 |'moretv' flag
                 |from moretv_table a
                 |left join
-                |${DimensionTypes.DIM_MEDUSA_SUBJECT} b
+                |(select * from ${DimensionTypes.DIM_MEDUSA_SUBJECT} where dim_invalid_time is null) b
                 |on trim(a.subject_code)=trim(b.subject_code)
               """.stripMargin
             sqlContext.sql(sqlStr).write.parquet(outputPath)
@@ -140,7 +140,7 @@ object SubjectInterviewLogMergerETL extends BaseClass {
                 |'medusa' as flag
                 |from medusa_table a
                 |left join
-                |${DimensionTypes.DIM_MEDUSA_SUBJECT} b
+                |(select * from ${DimensionTypes.DIM_MEDUSA_SUBJECT} where dim_invalid_time is null) b
                 |on trim(a.subject_code)=trim(b.subject_code)
               """.stripMargin
             sqlContext.sql(sqlStr).write.parquet(outputPath)

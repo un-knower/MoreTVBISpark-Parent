@@ -137,7 +137,7 @@ object ChannelClassificationStatETL extends BaseClass {
                  |       a.flag
                  |from medusa_table_step2                       a
                  |join
-                 |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}  b
+                 |    (select * from ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE} where dim_invalid_time is null)  b
                  |    on a.main_category=b.site_content_type and a.second_category=b.second_category
                  |where b.main_category_code!='program_site'
                      """.stripMargin
@@ -173,7 +173,7 @@ object ChannelClassificationStatETL extends BaseClass {
                  |       a.flag
                  |from all_moretv_table_step2                   a
                  |join
-                 |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}  b
+                 |    (select * from ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE} where dim_invalid_time is null)  b
                  |    on a.main_category=b.site_content_type and a.second_category=b.second_category_code
                  |where b.main_category_code!='program_site'
                      """.stripMargin

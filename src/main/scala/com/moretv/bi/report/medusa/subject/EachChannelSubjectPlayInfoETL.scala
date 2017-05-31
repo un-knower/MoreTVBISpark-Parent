@@ -162,7 +162,7 @@ object EachChannelSubjectPlayInfoETL extends BaseClass {
                  |    (select subject_name,
                  |            first(subject_code) as subject_code
                  |     from
-                 |     ${DimensionTypes.DIM_MEDUSA_SUBJECT}
+                 |     ${DimensionTypes.DIM_MEDUSA_SUBJECT} where dim_invalid_time is null
                  |     group by subject_name
                  |    ) b
                  |on trim(a.subjectName)=trim(b.subject_name)
@@ -220,7 +220,7 @@ object EachChannelSubjectPlayInfoETL extends BaseClass {
                |       count(userId) as play_num,
                |       count(distinct userId) as play_user
                |from $spark_df_analyze_table                  a join
-               |     ${DimensionTypes.DIM_MEDUSA_SUBJECT}     b
+               |     (select * from ${DimensionTypes.DIM_MEDUSA_SUBJECT} where dim_invalid_time is null) b
                |     on a.subjectCode=b.subject_code
                |group by b.subject_content_type_name
            """.stripMargin

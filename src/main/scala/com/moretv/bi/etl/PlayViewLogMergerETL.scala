@@ -124,7 +124,7 @@ object PlayViewLogMergerETL extends BaseClass {
                         |    (select subject_name,
                         |            first(subject_code) as subject_code
                         |     from
-                        |     ${DimensionTypes.DIM_MEDUSA_SUBJECT}
+                        |     ${DimensionTypes.DIM_MEDUSA_SUBJECT} where dim_invalid_time is null
                         |     group by subject_name
                         |    ) b
                         |on trim(a.subjectName)=trim(b.subject_name)

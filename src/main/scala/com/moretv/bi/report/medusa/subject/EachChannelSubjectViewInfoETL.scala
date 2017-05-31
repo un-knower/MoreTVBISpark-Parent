@@ -77,7 +77,7 @@ object EachChannelSubjectViewInfoETL extends BaseClass  {
                  |from
                  |	(select userId,subjectCode from suject_interview_table where event in ('enter','view')   ) a
                  |join
-                 |	${DimensionTypes.DIM_MEDUSA_SUBJECT}  b
+                 |	(select * from ${DimensionTypes.DIM_MEDUSA_SUBJECT} where dim_invalid_time is null)  b
                  |	on a.subjectCode = b.subject_code and b.subject_content_type = "${channel_name}"
              """.stripMargin
             println(sql)

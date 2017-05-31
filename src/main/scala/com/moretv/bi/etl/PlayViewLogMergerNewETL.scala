@@ -124,7 +124,7 @@ object PlayViewLogMergerNewETL extends BaseClass {
                         |    (select subject_name,
                         |            first(subject_code) as subject_code
                         |     from
-                        |     ${DimensionTypes.DIM_MEDUSA_SUBJECT}
+                        |     ${DimensionTypes.DIM_MEDUSA_SUBJECT} where dim_invalid_time is null
                         |     group by subject_name
                         |    ) b
                         |on trim(a.subjectName)=trim(b.subject_name)
@@ -153,7 +153,9 @@ object PlayViewLogMergerNewETL extends BaseClass {
                  |    max(second_category) second_category,
                  |    max(main_category_code) main_category_code from
                  |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}
-                 |    where site_content_type is not null and main_category_code in ('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu','mv_site')
+                 |    where site_content_type is not null
+                 |    and dim_invalid_time is null
+                 |    and main_category_code in ('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu','mv_site')
                  |    group by site_content_type,second_category_code
                  |   ) b
                  |on a.main_category=b.site_content_type and a.second_category=if(a.main_category='mv',b.second_category_code,b.second_category)
@@ -217,7 +219,9 @@ object PlayViewLogMergerNewETL extends BaseClass {
                  |    second_category_code,
                  |    max(main_category_code) main_category_code from
                  |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}
-                 |    where site_content_type is not null and main_category_code in ('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu','mv_site')
+                 |    where site_content_type is not null
+                 |    and dim_invalid_time is null
+                 |    and main_category_code in ('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu','mv_site')
                  |    group by site_content_type,second_category_code
                  |   ) b
                  |on a.main_category=b.site_content_type and a.second_category=b.second_category_code
@@ -282,14 +286,14 @@ object PlayViewLogMergerNewETL extends BaseClass {
                 |left join
                 |   (
                 |    select page_code,area_code,max(area_name) area_name from
-                |    ${DimensionTypes.DIM_MEDUSA_PAGE_ENTRANCE} where page_code='$CHANNEL_SPORTS' group by page_code,area_code
+                |    ${DimensionTypes.DIM_MEDUSA_PAGE_ENTRANCE} where page_code='$CHANNEL_SPORTS' and dim_invalid_time is null group by page_code,area_code
                 |   ) b
                 |on a.main_category=b.page_code and a.second_category=b.area_code
                 |left join
                 |   (
                 |    select site_content_type,third_category_code,max(third_category) third_category from
                 |    ${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}
-                |    where site_content_type is not null
+                |    where site_content_type is not null and dim_invalid_time is null
                 |    group by site_content_type,
                 |             third_category_code
                 |   ) c
@@ -310,13 +314,13 @@ object PlayViewLogMergerNewETL extends BaseClass {
                 |left join
                 |   (
                 |    select distinct path_code,program_code from
-                |    ${DimensionTypes.DIM_MEDUSA_PATH_PROGRAM_SITE_CODE_MAP}
+                |    ${DimensionTypes.DIM_MEDUSA_PATH_PROGRAM_SITE_CODE_MAP} where dim_invalid_time is null
                 |   ) b
                 |on a.second_category=b.path_code and a.second_category is not null
                 |left join
                 |   (
                 |    select area_code,max(area_name) area_name from
-                |    ${DimensionTypes.DIM_MEDUSA_PAGE_ENTRANCE} group by area_code
+                |    ${DimensionTypes.DIM_MEDUSA_PAGE_ENTRANCE} where dim_invalid_time is null group by area_code
                 |   ) c
                 |on b.program_code=c.area_code and c.area_name is not null
                 |where a.main_category='$CHANNEL_KIDS'
