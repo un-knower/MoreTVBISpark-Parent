@@ -8,12 +8,12 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 
 /**
-  * Created by QIZHEN on 2017/5/11.
-  * 统计3.1.3版本主要频道（电影、电视剧、少儿、资讯、动漫、综艺）分类入口播放比
+  * Created by QIZHEN on 2017/5/26.
+  * 统计所有版本主要频道（电影、电视剧、少儿、资讯、动漫、综艺）分类入口播放比
   */
-object classifyEntranceMainChannelPlayRatio extends BaseClass{
+object classifyEntranceMainChannelPlayRatioByVersion extends BaseClass{
 
-  private val tableName = "classifyEntrance_mainChannel_playRatio"
+  private val tableName = "classifyEntrance_mainChannel_playRatio_byVersion"
   private val insertSql = s"insert into ${tableName}(day,version,contentType,playUser_cnt,homepageClickUser_cnt,playRatio) values (?,?,?,?,?,?)"
   private val deleteSql = s"delete from ${tableName} where day = ?"
 
@@ -74,14 +74,13 @@ object classifyEntranceMainChannelPlayRatio extends BaseClass{
                |          count(distinct userId) as playUser_cnt
                |   from play_log
                |   where contentType in('movie','tv','kids','hot','comic','zongyi')
-               |         and apkVersion ='3.1.3'
                |   group by apkVersion,contentType)a
                |left outer join
                | (  select apkVersion,
                |           accessLocation,
                |           count(distinct userId) as homepageClickUser_cnt
                |    from ${LogTypes.HOMEACCESS}
-               |    where accessArea='classification' and apkVersion ='3.1.3'
+               |    where accessArea='classification'
                |    group by apkVersion,accessLocation)b
                |on a.contentType=b.accessLocation and a.apkVersion = b.apkVersion
             """.stripMargin).map(e=>(e.get(0),e.get(1),e.get(2),e.get(3),e.get(4)))
