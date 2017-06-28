@@ -58,6 +58,14 @@ object WhiteMedusa315DAURetentionRate extends BaseClass {
               |where a.mac is not null and b.version='3.1.5'
             """.stripMargin).map(e=>UserIdUtils.userId2Long(e.getString(0))).distinct().cache()
 
+          val logUserID313Before = sqlContext.sql(
+            """
+              |select a.mac,b.version
+              |from today_login_log as a
+              |left join app_version_log as b
+              |on getApkVersion(a.version) = b.version
+              |where a.mac is not null and b.version<='3.1.3'
+            """.stripMargin).map(e=>UserIdUtils.userId2Long(e.getString(0))).distinct().cache()
           Class.forName("com.mysql.jdbc.Driver")
 
           // 创建插入数据库连接
@@ -82,20 +90,37 @@ object WhiteMedusa315DAURetentionRate extends BaseClass {
                 |on getApkVersion(a.version) = b.version
                 |where a.mac is not null and b.version='3.1.5'
               """.stripMargin).map(e=>UserIdUtils.userId2Long(e.getString(0))).distinct()
+            val sqlRdd313Before = sqlContext.sql(
+              """
+                |select a.mac,b.version
+                |from login_log as a
+                |left join app_version_log as b
+                |on getApkVersion(a.version) = b.version
+                |where a.mac is not null and b.version<='3.1.3'
+              """.stripMargin).map(e=>UserIdUtils.userId2Long(e.getString(0))).distinct()
             val retention = logUserID.intersection(sqlRdd).count()
             val dauNum = sqlRdd.count().toInt
             var retentionRate:Double = 0.0
             if(dauNum != 0){
               retentionRate = retention.toDouble / dauNum.toDouble
             }
+
+            val retention313Before = logUserID313Before.intersection(sqlRdd313Before).count()
+            val dauNum313Before = sqlRdd313Before.count().toInt
+            var retentionRate313Before:Double = 0.0
+            if(dauNum313Before != 0){
+              retentionRate313Before = retention313Before.toDouble / dauNum313Before.toDouble
+            }
 //
 //            if (p.deleteOld) {
 //              deleteSQL("white",insertDate, stmt1)
 //            }
             if (j == 0) {
+              insertSQL(insertDate, "before313", dauNum313Before, retentionRate313Before, stmt1)
               insertSQL(insertDate, "white315", dauNum, retentionRate, stmt1)
             } else {
               updateSQL(numOfDay(j), "white315", retentionRate, insertDate, stmt1)
+              updateSQL(numOfDay(j), "before313", retentionRate313Before, insertDate, stmt1)
             }
           }
           logUserID.unpersist()

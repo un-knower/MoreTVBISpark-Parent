@@ -95,10 +95,10 @@ object WhiteMedusa315DayRetentionRate extends BaseClass {
               deleteSQL(date2, stmt1)
             }
             if (j == 0) {
-              insertSQL(date2, "all", newUserAll, retentionRateAll, stmt1)
+//              insertSQL(date2, "all", newUserAll, retentionRateAll, stmt1)
               insertSQL(date2, "white315", newUserNew, retentionRateNew, stmt1)
             } else {
-              updateSQL(numOfDay(j), "all", retentionRateAll, date2, stmt1)
+//              updateSQL(numOfDay(j), "all", retentionRateAll, date2, stmt1)
               updateSQL(numOfDay(j), "white315", retentionRateNew, date2, stmt1)
             }
           }
