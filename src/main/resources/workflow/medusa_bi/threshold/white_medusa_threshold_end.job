@@ -1,2 +1,3 @@
 type=command
 dependencies=classifyEntranceMainChannelPlayRatioByVersion,Medusa313DAURetentionRate,Medusa315DAURetentionRate,userActivityRatioByVersion,videoMainChannelAvgPlayStatisticByVersion,videoPlayUserRatioByVersion
+command=echo "white medusa threshold is end ..."
