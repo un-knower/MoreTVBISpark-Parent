@@ -148,6 +148,7 @@ object EnChConvert {
               case "zongyi_wangpai" => result = "王牌综艺"
               case "zongyi_benpaoba" => result = "奔跑吧"
               case "zongyi_youxi" => result = "游戏竞技"
+              case "jitiao_zongyi" => result = "极限挑战"
               case _ => result=info
             }
           }
