@@ -24,6 +24,8 @@ object MedusaLogInfoUtil {
 
   /*accessArea��ʶ*/
   val RECOMMENDATION_AC = "recommendation"
+  val HOT_SUBJECT_AC = "hotSubject" //短视频
+  val TASTE_AC = "taste" //兴趣推荐
 
   val SEARCHSET_AC = "navi"
   val SEARCH_AL = "search"  //搜索

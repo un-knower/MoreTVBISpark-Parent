@@ -20,7 +20,8 @@ object LauncherDifferentAreaClickStatistic extends BaseClass{
     val logType = MedusaLogInfoUtil.LAUNCHCLICK
 
     val restrict = Array(MedusaLogInfoUtil.SEARCHSET_AC,MedusaLogInfoUtil.MYTV_AC,MedusaLogInfoUtil.RECOMMENDATION,
-      MedusaLogInfoUtil.FOUNDATION_AC,MedusaLogInfoUtil.CLASSIFICATION,MedusaLogInfoUtil.LIVE_AC)
+      MedusaLogInfoUtil.FOUNDATION_AC, MedusaLogInfoUtil.CLASSIFICATION, MedusaLogInfoUtil.LIVE_AC,
+      MedusaLogInfoUtil.HOT_SUBJECT_AC, MedusaLogInfoUtil.TASTE_AC)
     val countBy = "userId"
     val event = "click"
     val statisticType = ""
