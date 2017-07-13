@@ -10,7 +10,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 /**
   * Created by QIZHEN on 2017/5/8.
   */
-object webcast_play_information extends BaseClass{
+object WebcastPlayInformation extends BaseClass{
   /**定义存储按播放人数统计全网直播收视TOP200节目的表**/
   private val tableName = "live_webcast_user_top200"
   private val insertSql = s"insert into ${tableName}(day,liveName,channelSid,user_num) values (?,?,?,?)"
