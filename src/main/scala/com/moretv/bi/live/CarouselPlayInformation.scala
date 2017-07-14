@@ -64,7 +64,7 @@ object CarouselPlayInformation extends BaseClass {
                |where event='startplay' and liveType='live' and sourceType='carousel'
                |group by sourceType)a
                |join
-               |(select sourceType,count(distinct userId) as user_duration，
+               |(select sourceType,count(distinct userId) as user_duration,
                |        sum(duration)/60 as total_duration
                |from ${LogTypes.LIVE}
                |where event='switchchannel' and liveType='live' and sourceType='carousel'
