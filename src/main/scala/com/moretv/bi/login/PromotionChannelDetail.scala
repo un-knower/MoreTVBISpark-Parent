@@ -25,6 +25,7 @@ object PromotionChannelDetail extends BaseClass {
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
+        sqlContext.udf.register("promotionIsBlack", PromotionChannelListUtil.isBlack _)
         val calendar = Calendar.getInstance()
         val startDay = p.startDate
         calendar.setTime(DateFormatUtils.readFormat.parse(startDay))
@@ -63,7 +64,7 @@ object PromotionChannelDetail extends BaseClass {
               | GROUP BY promotion_channel
             """.stripMargin
 
-          val pcMap = dbTvService.selectArrayList(pcSql).map(arr => {
+          val pcMap = dbTvService.selectArrayList(pcSql).filter(arr=>{!PromotionChannelListUtil.isBlack(arr(0).toString)}).map(arr => {
             val promotionChannel = arr(0).toString
             val newNum = arr(1).toString.toInt
             if (promotionChannel == "") ("kong", newNum) else (promotionChannel, newNum)
