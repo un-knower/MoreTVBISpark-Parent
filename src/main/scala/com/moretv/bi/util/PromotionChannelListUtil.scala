@@ -58,7 +58,6 @@ object PromotionChannelListUtil {
     "aijia",
     "moretvTestVer",
     "general1",
-    "inphic1",
     "88888",
     "xia",
     "shaga",
