@@ -73,7 +73,7 @@ object UDFConstant {
     "1_tv_xiqu_tag_errenzhuan","1_tv_xiqu_tag_hebeibangzi","1_tv_xiqu_tag_jinju","1_tv_xiqu_tag_xiju",
     "1_tv_xiqu_tag_qingqiang","1_tv_xiqu_tag_chaoju","1_tv_xiqu_tag_pingju","1_tv_xiqu_tag_huaguxi","1_xiqu_tags_aoju",
     "1_xiqu_tag_gezaixi","1_xiqu_tags_lvju","1_tv_xiqu_tag_huju","1_tv_xiqu_tag_huaiju","1_tv_xiqu_tag_chuanju",
-    "1_tv_xiqu_tag_wuju","1_tv_xiqu_tag_kunqu","1_tv_xiqu_tag_suzhoutanchang","movie_zhuanti","tv_zhuanti","tv_zhongbang",
+    "1_tv_xiqu_tag_wuju","1_tv_xiqu_tag_kunqu","1_tv_xiqu_tag_suzhoutanchang","movie_zhuanti","tv_zhuanti","tv_zhongbang","tv_wdqbs",
     "zongyi_zhuanti","comic_zhuanti","kid_zhuanti","hot_zhuanti","jilu_zhuanti","movie_star","movie_xilie","movie_night",
     "tv_meizhouyixing","zongyi_weishi","comic_dashi","tv_jingdianchongwen","comic_guoman","jilu_maoshu","jilu_douban",
     "comic_mingzuo","tv_shujia","haoshengying_zongyi","wangzhanzizhi_zongyi","tv_yuansheng","tv_guowai_lianzai")
@@ -118,7 +118,7 @@ object UDFConstant {
     "歌舞晚会","时尚生活","说唱艺术","财经民生","社会法制","新闻播报","其他分类","2016新歌声","最强笑点","娱乐八卦","暑期最强档",
     "纪实热播","王牌栏目","纪实专题", "VICE专区","BBC","国家地理","NHK","美食大赏","军事风云","自然万象","社会百态","人物大观",
     "历史钩沉","公开课","前沿科技","其他分类","豆瓣高分","猫叔推荐","刑侦档案","相声小品","铁血军魂","大话汽车","王牌综艺",
-    "我的收藏","今日焦点","新闻热点", "资讯专题","创意运动","影视短片","游戏动画","生活时尚","娱乐八卦","音乐舞蹈","五花八门",
+    "我的收藏","今日焦点","新闻热点", "资讯专题","创意运动","影视短片","游戏动画","生活时尚","娱乐八卦","音乐舞蹈","五花八门","我的前半生",
     "电台","热门歌手","正在流行", "MV首发","精选集","演唱会","排行榜","短视频栏目","短视频专题",
     "广场舞","戏曲综艺","京剧", "豫剧","越剧","黄梅戏","二人转","河北梆子","晋剧","锡剧","秦腔","潮剧",
     "评剧","花鼓戏","粤剧","歌仔戏","吕剧","沪剧","淮剧","川剧","婺剧","昆曲","苏州弹唱",
