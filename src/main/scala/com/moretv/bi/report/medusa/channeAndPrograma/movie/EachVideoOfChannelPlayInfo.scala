@@ -56,6 +56,8 @@ object EachVideoOfChannelPlayInfo extends BaseClass{
               |(SELECT * from result_data where contentType = 'mv' ORDER BY play_num DESC LIMIT 200) union all
               |(SELECT * from result_data where contentType = 'tv' ORDER BY play_num DESC LIMIT 200) union all
               |(SELECT * from result_data where contentType = 'xiqu' ORDER BY play_num DESC LIMIT 200) union all
+              |(SELECT * from result_data where contentType = 'interest' ORDER BY play_num DESC LIMIT 200) union all
+              |(SELECT * from result_data where contentType = 'sports' ORDER BY play_num DESC LIMIT 200) union all
               |(SELECT * from result_data where contentType = 'zongyi' ORDER BY play_num DESC LIMIT 200)
             """.stripMargin)
             .map(e => (e.getString(0), e.getString(1), e.getLong(2), e.getLong(3)))
