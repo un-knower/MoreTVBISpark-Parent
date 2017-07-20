@@ -112,6 +112,7 @@ object EachSubjectPlayInfo extends BaseClass {
             })
           })
 
+          formattedRdd.unpersist()
           typeInfoRdd.unpersist()
         })
 
