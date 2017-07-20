@@ -118,6 +118,8 @@ object QuerySubjectPlayInfo extends BaseClass{
         }
         (subjectCode,entrance)
       }else (subjectCode,pageDetailInfo)
+      case "hotSubject" => (subjectCode, "短视频")
+      case "taste" => (subjectCode, "兴趣推荐")
       case _ => (subjectCode,"其他路径")
     }
   }
