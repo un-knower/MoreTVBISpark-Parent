@@ -95,7 +95,7 @@ object UDFConstant {
   val MedusaPathProperty = Array("subject","tag","star")
 
   // 定义medusa的launcherArea集合、launcherAccessLocation集合
-  val MedusaLauncherArea = Array("classification","my_tv","live","recommendation","foundation","navi")
+  val MedusaLauncherArea = Array("classification", "my_tv", "live", "recommendation", "foundation", "navi", "hotSubject", "taste")
   val MedusaLauncherAccessLocation = Array("history","collect","account","movie","tv","zongyi","jilu","comic","xiqu",
     "kids","hot","mv","sport","top_new","top_hot","top_star","top_collect","interest_location",
     "0","1","2","3","4","5","6","7","8","9","10","11","12","13","14")
