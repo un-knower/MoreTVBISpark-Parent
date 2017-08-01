@@ -1,9 +1,9 @@
 package com.moretv.bi.etl
 
-import com.moretv.bi.logETL.{SportsPathParser, KidsPathParser}
+import com.moretv.bi.logETL.{KidsPathParser, MvListCategoryPathParser, SportsPathParser}
 import com.moretv.bi.report.medusa.util.EnChConvert.transformEng2Chinese
 import com.moretv.bi.report.medusa.util.MedusaSubjectNameCodeUtil
-import com.moretv.bi.report.medusa.util.udf.{PathParser, UDFConstantDimension, UDFConstant}
+import com.moretv.bi.report.medusa.util.udf.{PathParser, UDFConstant, UDFConstantDimension}
 import com.moretv.bi.util.{CodeToNameUtils, SubjectUtils}
 
 
@@ -744,12 +744,11 @@ object PathParserETL {
     var result: String = null
     if (null == pathMain) {
       result = null
-    } else if (pathMain.contains(UDFConstantDimension.HORIZONTAL) || pathMain.contains(UDFConstantDimension.MV_RECOMMEND_HOME_PAGE) ||
-      pathMain.contains(UDFConstantDimension.MV_TOP_HOME_PAGE) || pathMain.contains(UDFConstantDimension.HOME_SEARCH)
-
+      //2017/04/26 去掉了 HORIZONTAL 和 mvTopHomePage 过滤
+    } else if (pathMain.contains(UDFConstantDimension.MV_RECOMMEND_HOME_PAGE) || pathMain.contains(UDFConstantDimension.HOME_SEARCH))
     /** 为了统计频道分类入口的 搜索 和 筛选 维度，注释掉 */
     //||pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)
-    ) {
+    {
       result = null
     } else if (pathMain.contains(UDFConstantDimension.HOME_CLASSIFICATION)
       || pathMain.contains(UDFConstantDimension.HOME_MY_TV)
@@ -763,6 +762,8 @@ object PathParserETL {
       || pathMain.contains(UDFConstantDimension.SEARCH_DIMENSION)
       || pathMain.contains(UDFConstantDimension.SEARCH_DIMENSION_CHINESE)
       || pathMain.contains(UDFConstantDimension.HOME_RECOMMENDATION)
+      || pathMain.contains(UDFConstantDimension.MV_CATEGORY_HOME_PAGE)
+      || pathMain.contains(UDFConstantDimension.MV_FUNCTION)
     ) {
       if (pathMain.contains("kids")) {
         result = KidsPathParser.pathMainParse(pathMain, index_input)
@@ -817,9 +818,14 @@ object PathParserETL {
          }
          case None => null
        }*/
-      else if (pathMain.contains("mv-mv")) {
-        //TODO 将使用佳莹提供的类代替
-        result = MvDimensionClassificationETL.mvPathMatch(pathMain, index_input)
+
+      //      else if (pathMain.contains("mv-mv")) {
+      //        //TODO 将使用佳莹提供的类代替
+      //        result = MvDimensionClassificationETL.mvPathMatch(pathMain, index_input)
+      //      }
+
+      else if (pathMain.contains("mv_category") || pathMain.contains("mv_poster")) {
+        result = MvListCategoryPathParser.pathMainParse(pathMain, index_input)
       }
 
       /* 只有这种算进入列表页
@@ -966,11 +972,19 @@ object PathParserETL {
     result
   }
 
+  /**
+    * 2.x，原有统计分析没有做少儿；体育最新的逻辑解析没有上线
+    * SportsPathParser现在没有解析2.x path路径
+    *
+    * */
   def getListCategoryMoretvETL(path: String, index_input: Int): String = {
     var result: String = null
     if (null != path) {
-      //2.x，原有统计分析没有做少儿；体育暂时没有上线，逻辑里暂时过滤掉
-      if (path.contains("kids") && path.contains("sports*")) {
+      //少儿使用最新逻辑
+      if(path.contains("kids")){
+        result=KidsPathParser.pathParse(path,index_input)
+      }else {
+        //其他类型仍然使用原有逻辑
         if (index_input == 1) {
           result = getSplitInfo(path, 2)
           if (result != null) {
@@ -984,8 +998,7 @@ object PathParserETL {
               }
             }
           }
-        }
-        else if (index_input == 2) {
+        }else if (index_input == 2) {
           result = getSplitInfo(path, 3)
           if (result != null) {
             if (getSplitInfo(path, 2) == "search") {
@@ -994,12 +1007,8 @@ object PathParserETL {
             if (getSplitInfo(path, 2) == "kids_home" || getSplitInfo(path, 2) == "sports") {
               result = getSplitInfo(path, 3) + "-" + getSplitInfo(path, 4)
             }
-
             if (!UDFConstant.MoretvPageInfo.contains(getSplitInfo(path, 2))) {
               result = null
-              /* if (!UDFConstant.MoretvPageDetailInfo.contains(result)) {
-                 result =null
-               }*/
             }
           }
         }
@@ -1031,12 +1040,18 @@ object PathParserETL {
     //val pathMain = "home*classification*mv-mv*电台*电台"
     //val pathMain = "home*live*eagle-movie*院线大片"
     //println(MEDUSA_LIST_PAGE_LEVEL_2_REGEX)
-    val pathMain = " "
-    if (pathMain != " ") {
-      println("aaa")
-    } else {
-      println("bbb")
+    var result:String=null
+    val subjectCode = new String("bb")//MedusaSubjectNameCodeUtil.getSubjectCode(path)
+
+
+    if (subjectCode != "bb") {
+      result = subjectCode
+      println("a")
+    }else{
+      println("ccc")
     }
+    println(result)
+
     /* println(PathParser.getListCategoryMedusaETL(pathMain, 1))
      println(PathParser.getListCategoryMedusaETL(pathMain, 2))*/
   }

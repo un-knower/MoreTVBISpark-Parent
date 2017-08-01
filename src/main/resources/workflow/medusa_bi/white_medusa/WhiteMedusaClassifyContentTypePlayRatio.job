@@ -1,0 +1,4 @@
+type=command
+dependencies=medusa_paly_isExist1,medusa_homeaccess_isExist
+mainclass=com.moretv.bi.whiteMedusaVersionEstimate.WhiteMedusaClassifyContentTypePlayRatio
+command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag}

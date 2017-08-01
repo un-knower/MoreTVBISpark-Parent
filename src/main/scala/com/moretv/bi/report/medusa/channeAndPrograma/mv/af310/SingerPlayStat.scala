@@ -1,6 +1,5 @@
 package com.moretv.bi.report.medusa.channeAndPrograma.mv.af310
 
-import org.apache.spark.sql.functions._
 import cn.whaley.sdk.dataOps.MySqlOps
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DimensionTypes, LogTypes}
@@ -24,8 +23,8 @@ object SingerPlayStat extends MvStatModel {
   pathPattern = MEDUSA
 
   fields = Array(
-    "date", "singer_sid", "singer_name",
-    "entrance_title", "entrance_vv", "entrance_uv", "entrance_duration",
+    "day", "singer_sid", "singer_name",
+    "entrance_name", "entrance_vv", "entrance_uv", "entrance_duration",
     "total_vv", "total_uv", "total_duration"
   )
 
@@ -36,14 +35,14 @@ object SingerPlayStat extends MvStatModel {
 
     ods.filter($"event" === "startplay")
       .groupBy($"singerSid")
-      .agg(count($"singerSid").as("total_vv"), countDistinct($"singerSid").as("total_uv"))
+      .agg(count($"userId").as("total_vv"), countDistinct($"userId").as("total_uv"))
 
       .join(
 
         ods.filter($"event" !== "startplay").filter($"duration".between(1, 10800))
           .groupBy($"singerSid")
           .agg(sum($"duration").as("duration_sum")),
-        "singerSid" :: Nil, "left_outer"
+        "singerSid" :: Nil, "inner"
 
       )
 
@@ -58,7 +57,7 @@ object SingerPlayStat extends MvStatModel {
             ods.filter($"event" !== "startplay").filter($"duration".between(1, 10800))
               .groupBy($"singerSid", $"page_entrance_id")
               .agg(sum($"duration").as("duration_entrance_sum")),
-            "singerSid" :: "page_entrance_id" :: Nil, "left_outer"
+            "singerSid" :: "page_entrance_id" :: Nil, "inner"
 
           ),
         "singerSid" :: Nil, "left_outer"
@@ -67,6 +66,7 @@ object SingerPlayStat extends MvStatModel {
       .withColumnRenamed("singerName", "singer_name")
       .withColumn("entrance_duration", ($"duration_entrance_sum" / $"entrance_uv").cast("double"))
       .withColumn("total_duration", ($"duration_sum" / $"total_uv").cast("double"))
+
 
   }
 
@@ -86,8 +86,8 @@ object SingerPlayStat extends MvStatModel {
       .join(singerDim, "singer_id" :: Nil, "left_outer")
       .select(
         $"singer_id", $"singer_name",
-        $"page_name", $"area_name", $"location_name",
-        $"entrance_vv", $"entrance_uv", $"duration_entrance_sum",
+        concat($"page_name", lit("-"), $"area_name", lit("-"), $"location_name"),
+        $"entrance_vv", $"entrance_uv", $"entrance_duration",
         $"total_vv", $"total_uv", $"total_duration"
       )
   }
@@ -99,12 +99,18 @@ object SingerPlayStat extends MvStatModel {
       util.delete(deleteSql, readDate)
     }
 
+    // (0 until fields.length - 1).map(r.get(_)): _*
+
+
     agg.collect().foreach(r => {
-      util.insert(insertSql, r.getString(0), r.getString(1),
-        r.getString(2) + "-" + r.getString(3) + "-" + r.getString(4),
-        r.getLong(5), r.getLong(6), r.getLong(7), r.getLong(8), r.getLong(9), r.getDouble(10)
+      util.insert(insertSql, readDate,
+        r.get(0), r.get(1),
+        r.get(2), r.get(3), r.get(4),
+        r.get(5), r.get(6), r.get(7), r.get(8)
       )
+
     })
+
 
   }
 

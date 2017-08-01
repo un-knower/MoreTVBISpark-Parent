@@ -25,7 +25,7 @@ args=""
 i=4
 while [ $i -lt $# ]
 do
-key=${Params[$i]}
+key=${Params[$i]}P
 key=${key/"--"/""}
 i=$(($i + 1))
 value=${Params[$i]}

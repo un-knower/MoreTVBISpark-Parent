@@ -70,14 +70,26 @@ object MVVideoSrcStat extends BaseClass {
               .filter("pathMain is not null")
               .filter("videoSid is not null")
               .filter("videoName is not null")
-              .filter("duration is not null and duration between '0' and '10800'")
               .cache
 
 
           //rdd(entrance, videoSid, videoName, event, userId, duration)
 
-          val rdd =
+
+
+          val rddStart =
             df.flatMap(
+              e =>
+                PlayPathMatch.mvPathMatchStart(
+                  e.getString(0), e.getString(1), e.getString(2),e.getString(3),e.getString(4)
+                )
+            )
+              .filter(_._1 != null)
+              .filter(_._2 != null)
+              .cache
+
+          val rdd =
+            df.filter("duration is not null and duration between 0 and 10800").flatMap(
               e =>
                 PlayPathMatch.mvPathMatch(
                   e.getString(0), e.getString(1), e.getString(2), e.getString(3), e.getString(4), e.getLong(5)
@@ -88,7 +100,7 @@ object MVVideoSrcStat extends BaseClass {
 
           //pvuvRdd((entrance, videoSid, videoName), userId)
 
-          val pvuvRdd = rdd.filter(_._4 == "startplay")
+          val pvuvRdd = rddStart.filter(_._4 == "startplay")
             .map(e => ((e._1, e._2, e._3), e._5))
 
           //durationRdd((entrance,videoSid, videoName), duration)

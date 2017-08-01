@@ -76,7 +76,7 @@ object LogTypes {
   val OPERATION_MM = "operation-mm"
   val PLAY_VIEW_2_FILTER = "playview2filter"
   val PLAY_VIEW_2_FILTER_ETL = "playview2filterETL"
-  val PLAY_VIEW_ETL = "playviewETL"
+  val PLAY_VIEW_ETL = "playview-etl"
   val PLAY_VIEW_2 = "playview2"
   val DETAIL_SUBJECT = "detail-subject"
   val SUBJECT_INTERVIEW = "subject-interview"
@@ -104,7 +104,9 @@ object LogTypes {
 
   val INTERVIEW_ETL = "interview-etl"
 
+  val WHITE_MEDUSA_UPDATE_USER = "white_medusa_update_user"
 
 
 
+  val BLACK_LOG_TYPE = Array("accountLogin")
 }

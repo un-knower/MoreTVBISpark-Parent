@@ -67,7 +67,13 @@ object ProductModelDist extends BaseClass {
           val userNum = x._2
           val loginNum = loginMap(key)
           val (productModel, productBrand) = key
-          db.insert(sqlInsert, day, productModel, productBrand, new JLong(userNum), new JLong(loginNum))
+          try{
+            db.insert(sqlInsert, day, productModel, productBrand, new JLong(userNum), new JLong(loginNum))
+          }catch {
+            case e:Exception => {
+              e.printStackTrace()
+            }
+          }
         })
         db.destory()
         logRdd.unpersist()
