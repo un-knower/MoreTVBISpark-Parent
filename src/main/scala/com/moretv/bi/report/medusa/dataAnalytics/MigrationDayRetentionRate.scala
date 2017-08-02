@@ -72,12 +72,15 @@ object MigrationDayRetentionRate extends BaseClass {
             val min = id(0)
             val max = id(1)
             val sqlInfo = s"SELECT user_id FROM `mtv_account_migration_vice` WHERE ID >= ? AND ID <= ? and left(openTime,10) = '$date2'"
-            val newUserRdd = MySqlOps.getJdbcRDD(sc, sqlInfo, Tables.MTV_ACCOUNT_MIGRATION_VICE, r => {
+            val newUserRdd = MySqlOps.getJdbcRDD(sc, sqlInfo, Tables.MTV_ACCOUNT_MIGRATOPN_VICE, r => {
               (r.getString(1))}, driver, url, user, password, (min, max), numOfPartition).distinct()
 
             val retention = logUserRdd.intersection(newUserRdd).count()
             val newUser = newUserRdd.count().toInt
-            val retentionRateAll = retention.toDouble / newUser.toDouble
+            var retentionRateAll = 0.00
+            if(newUser!=0){
+              retentionRateAll = retention.toDouble / newUser.toDouble
+            }
 
             if (p.deleteOld) {
               deleteSQL(date2, stmt)
@@ -103,7 +106,7 @@ object MigrationDayRetentionRate extends BaseClass {
   }
 
   def insertSQL(date: String, typeInfo: String, count: Int, retention: Double, stmt: Statement) = {
-    val sql = s"INSERT INTO medusa.`mtv_account_migration_retention` (day,type_info, new_num, one) VALUES('$date','$typeInfo', $count, $retention)"
+    val sql = s"INSERT INTO medusa.`mtv_account_migration_retention` (day,type_info, new_num, d1) VALUES('$date','$typeInfo', $count, $retention)"
     stmt.executeUpdate(sql)
   }
 
