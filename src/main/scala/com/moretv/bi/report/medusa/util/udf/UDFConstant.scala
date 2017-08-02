@@ -50,7 +50,7 @@ object UDFConstant {
     "jilu","xiqu","sports","kids_home","subject")
   val MoretvPageInfo = Array("history","movie","tv","zongyi","hot","comic","mv","xiqu","sports","jilu","subject","live",
     "search","kids_home")
-  val MoretvPageDetailInfo = Array("search","hot_jiaodian","1_hot_tag_xinwenredian","hot_zhuanti",
+  val MoretvPageDetailInfo = Array("search","hot_jiaodian","1_hot_tag_xinwenredian","hot_zhuanti","jilu_teji",
     "1_hot_tag_chuangyidongzuo","1_hot_tag_yinshiduanpian","1_hot_tag_youxi","danmuzhuanqu","1_hot_tag_qingsonggaoxiao",
     "1_hot_tag_shenghuoshishang","1_hot_tag_yulebagua","1_hot_tag_vicezhuanqu","1_hot_tag_yinyuewudao","hot_lanmu","hot_dspzhuanti",
     "1_hot_tag_wuhuabamen","history","collect","subjectcollect","mytag","tag","reservation","multi_search","movie_hot",
@@ -108,7 +108,7 @@ object UDFConstant {
     "搜索","筛选",
     "收藏追看","节目预约","标签订阅","专题收藏","明星关注",
     "热播动漫","动漫主角","新番上档", "动漫电影","动漫专题","8090经典","国语动画","动画大师","机甲战斗","热血冒险","轻松搞笑","后宫萝莉",
-    "青春浪漫","励志治愈","奇幻魔法","悬疑推理","其他分类","国漫精选","名作之壁","二次元","次元经典","游戏竞技",
+    "青春浪漫","励志治愈","奇幻魔法","悬疑推理","其他分类","国漫精选","名作之壁","二次元","次元经典","游戏竞技","探险特辑",
     "everyone_nearby","top_new","top_hot","top_star","top_collect","欢乐颂2","择天记","自然万象",
     "院线大片","七日更新","猜你喜欢", "电影聚焦点","电影专题","特色影院","影人专区","抢先预告","亿元票房","系列电影","战争风云","奥斯卡佳片",
     "动画电影","好莱坞巨制","华语精选","日韩亚太","冷门佳片","犀利动作","科学幻想","粤语佳片","重磅追剧","午夜场","楚乔传","极限挑战",
