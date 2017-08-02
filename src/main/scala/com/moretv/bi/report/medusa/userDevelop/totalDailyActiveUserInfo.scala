@@ -7,7 +7,7 @@ import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
 import cn.whaley.sdk.dataOps.MySqlOps
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
+import com.moretv.bi.util._
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 
@@ -37,8 +37,27 @@ object totalDailyActiveUserInfo extends BaseClass{
           calendar.add(Calendar.DAY_OF_MONTH,-1)
           val enterUserIdDate = DateFormatUtils.readFormat.format(calendar.getTime)
 
-          val medusaDailyActiveInput =DataIO.getDataFrameOps.getPath(MEDUSA,"*",date)
-          val moretvDailyActiveInput =DataIO.getDataFrameOps.getPath(MORETV,"*",date)
+          val logTypeArr3x = new scala.collection.mutable.ArrayBuffer[String]()
+          val logTypeArr2x = new scala.collection.mutable.ArrayBuffer[String]()
+          val HdfsFileIn3x = HdfsUtil.getFileFromHDFS(s"/log/medusa/parquet/${date}")
+          val HdfsFileIn2x = HdfsUtil.getFileFromHDFS(s"/mbi/parquet")
+          HdfsFileIn3x.foreach(file=>{
+            val fileName = file.getPath.getName
+            if(!LogTypes.BLACK_LOG_TYPE.contains(fileName)){
+              logTypeArr3x.+=(fileName)
+            }
+          })
+          HdfsFileIn2x.foreach(file => {
+            val fileName = file.getPath.getName
+            if(!LogTypes.BLACK_LOG_TYPE.contains(fileName)){
+              logTypeArr2x.+=(fileName)
+            }
+          })
+          val allLog3x = "{".concat(logTypeArr3x.toArray.mkString(",")).concat("}")
+          val allLog2x = "{".concat(logTypeArr2x.toArray.mkString(",")).concat("}")
+
+          val medusaDailyActiveInput =DataIO.getDataFrameOps.getPath(MEDUSA,allLog3x,date)
+          val moretvDailyActiveInput =DataIO.getDataFrameOps.getPath(MORETV,allLog2x,date)
 
           sqlContext.read.parquet(medusaDailyActiveInput).select("userId","apkVersion")
             .registerTempTable("medusa_daily_active_log")

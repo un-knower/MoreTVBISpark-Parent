@@ -4,14 +4,14 @@ import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import com.moretv.bi.live.webcast_play_information._
+import com.moretv.bi.live.WebcastPlayInformation._
 import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
 /**
   * Created by QIZHEN on 2017/5/8.
   */
-object telecast_play_information extends BaseClass{
+object TelecastPlayInformation extends BaseClass{
   /**定义存储按播放人数统计频道直播收视TOP200节目的表**/
   private val tableName = "live_telecast_user_top200"
   private val insertSql = s"insert into ${tableName}(day,liveName,channelSid,user_num) values (?,?,?,?)"

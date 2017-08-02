@@ -25,6 +25,7 @@ object PromotionChannelDetail extends BaseClass {
 
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
+        sqlContext.udf.register("promotionIsBlack", PromotionChannelListUtil.isBlack _)
         val calendar = Calendar.getInstance()
         val startDay = p.startDate
         calendar.setTime(DateFormatUtils.readFormat.parse(startDay))
@@ -35,19 +36,20 @@ object PromotionChannelDetail extends BaseClass {
           val day = DateFormatUtils.toDateCN(inputDate, -1)
 
           val logRdd = DataIO.getDataFrameOps.getDF(sc, p.paramMap, LOGINLOG, LogTypes.LOGINLOG,inputDate)
-            .select("promotionChannel", "mac")
+            .select("promotionChannel", "mac").map(row=>(row.getString(0),row.getString(1))).
+            filter(r=>{!PromotionChannelListUtil.isBlack(r._2)})
             .map(row => {
-              val promotionChannel = row.getString(0)
+              val promotionChannel = row._1
               if (promotionChannel != null) {
                 if (promotionChannel == "") {
-                  ("kong", row.getString(1))
+                  ("kong", row._2)
                 } else {
                   regex findFirstIn promotionChannel match {
-                    case Some(s) => (s, row.getString(1))
-                    case None => ("corrupt", row.getString(1))
+                    case Some(s) => (s, row._2)
+                    case None => ("corrupt", row._2)
                   }
                 }
-              } else ("null", row.getString(1))
+              } else ("null", row._2)
             })
             .cache()
 

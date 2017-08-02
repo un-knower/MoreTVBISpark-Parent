@@ -4,18 +4,18 @@ import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
-import com.moretv.bi.live.carousel_switching._
+import com.moretv.bi.live.CarouselPlayInformation._
 import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 
 /**
   * Created by QIZHEN on 2017/5/16.
-  * 计算轮播频道预约人数、预约次数
+  * 计算轮播频道点击ok键显示播放列表的人数、点击ok键显示播放列表的次数
   */
-object carousel_subscribe extends BaseClass {
-  /** 定义存储轮播频道预约数据的表 **/
-  private val tableName = "carousel_subscribe"
-  private val insertSql = s"insert into ${tableName}(day,user_num,subscribe_num) values (?,?,?)"
+object CarouselSwitching extends BaseClass {
+  /** 定义存储轮播频道切换数据的表 **/
+  private val tableName = "carousel_switching"
+  private val insertSql = s"insert into ${tableName}(day,user_num,click_num) values (?,?,?)"
   private val deleteSql = s"delete from ${tableName} where day = ?"
 
   def main(args: Array[String]): Unit = {
@@ -39,17 +39,19 @@ object carousel_subscribe extends BaseClass {
           val insertDate = DateFormatUtils.toDateCN(date, -1)
           calendar.add(Calendar.DAY_OF_MONTH, -1)
 
-          /** 预约日志 **/
-          DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogTypes.SUBSCRIBE, date).
-            registerTempTable("subscribe")
+          /** 直播节目_按钮点击日志 **/
+
+          DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogTypes.LIVEBUTTON, date).
+            registerTempTable("livebutton")
+
 
           /** 计算轮播频道点击ok键显示播放列表的人数、点击ok键显示播放列表的次数 **/
           val updateCnt = sqlContext.sql(
             s"""
                |select  count(distinct userId) as user_num,
                |        count(userId) as click_num
-               |from subscribe
-               |where event='live' and subscribeType='carousel' and triggerCondition='subscribe'
+               |from livebutton
+               |where event='click' and button='ok' and sourceType='carousel'
             """.stripMargin).map(e => (e.get(0), e.get(1)))
 
           if (p.deleteOld) util.delete(deleteSql, insertDate)

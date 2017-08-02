@@ -191,7 +191,7 @@ object ChannelEntrancePlayStatETL extends BaseClass {
                         |    (select subject_name,
                         |            first(subject_code) as subject_code
                         |     from
-                        |     ${DimensionTypes.DIM_MEDUSA_SUBJECT}
+                        |     ${DimensionTypes.DIM_MEDUSA_SUBJECT} where dim_invalid_time is null
                         |     group by subject_name
                         |    ) b
                         |on trim(a.subjectName)=trim(b.subject_name)
@@ -240,10 +240,10 @@ object ChannelEntrancePlayStatETL extends BaseClass {
                         |       c.subject_content_type_name
                         |from moretv_medusa_log_df_table a
                         |left join
-                        |     ${DimensionTypes.DIM_MEDUSA_PROGRAM} b
+                        |     (select * from ${DimensionTypes.DIM_MEDUSA_PROGRAM} where dim_invalid_time is null) b
                         |     on trim(a.videoSid)=trim(b.sid)
                         |left join
-                        |     ${DimensionTypes.DIM_MEDUSA_SUBJECT} c
+                        |     (select * from ${DimensionTypes.DIM_MEDUSA_SUBJECT} where dim_invalid_time is null) c
                         |     on trim(a.subjectCode)=trim(c.subject_code)
                         |where a.path is not null or a.pathMain is not null
                      """.stripMargin

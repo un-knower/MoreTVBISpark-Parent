@@ -24,6 +24,8 @@ object MedusaLogInfoUtil {
 
   /*accessArea��ʶ*/
   val RECOMMENDATION_AC = "recommendation"
+  val HOT_SUBJECT_AC = "hotSubject" //短视频
+  val TASTE_AC = "taste" //兴趣推荐
 
   val SEARCHSET_AC = "navi"
   val SEARCH_AL = "search"  //搜索
@@ -136,6 +138,8 @@ object MedusaLogInfoUtil {
 
   def identifyNameMapping(flag:String)={
     flag match {
+      case "hotSubject" => "短视频"
+      case "taste" => "兴趣推荐"
       case "navi"=>"搜索与设置"
       case "my_tv"=>"我的电视"
       case "recommendation"=>"今日推荐"

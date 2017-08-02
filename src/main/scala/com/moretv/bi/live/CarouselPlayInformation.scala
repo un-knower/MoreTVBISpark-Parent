@@ -11,7 +11,7 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 /**
   * Created by QIZHEN on 2017/5/5.
   */
-object carousel_play_information extends BaseClass {
+object CarouselPlayInformation extends BaseClass {
   /**定义存储轮播播放次数、人数和播放时长数据的表**/
   private val tableName = "live_carousel_play_information"
   private val insertSql = s"insert into ${tableName}(day,sourceType,user_num,play_num,avg_play,avg_duration) values (?,?,?,?,?,?)"
@@ -55,7 +55,7 @@ object carousel_play_information extends BaseClass {
           /**计算轮播的播放人数、播放次数和人均播放时长**/
           val updateCnt = sqlContext.sql(
             s"""
-               |select a.sourceType,a.user_num,a.play_num, a.play_num/a.user_num as avg_play, b.total_duration/a.user_num as avg_duration
+               |select a.sourceType,a.user_num,a.play_num, a.play_num/a.user_num as avg_play, b.total_duration/b.user_duration as avg_duration
                |from
                |(select sourceType,
                |        count(distinct userId) as user_num,
@@ -64,7 +64,7 @@ object carousel_play_information extends BaseClass {
                |where event='startplay' and liveType='live' and sourceType='carousel'
                |group by sourceType)a
                |join
-               |(select sourceType,
+               |(select sourceType,count(distinct userId) as user_duration,
                |        sum(duration)/60 as total_duration
                |from ${LogTypes.LIVE}
                |where event='switchchannel' and liveType='live' and sourceType='carousel'

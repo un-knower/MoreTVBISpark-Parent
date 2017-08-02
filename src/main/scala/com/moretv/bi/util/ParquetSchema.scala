@@ -16,7 +16,7 @@ object ParquetSchema {
     "newEntrance","oldEntrance","page","path","pathMain","pathSpecial","pathSub","productModel","programSid",
     "programType","promotionChannel","region","retrieval","searchText","singer","source","station","stationcode",
     "subjectCode","subscribeContent","subscribeType","switch","uploadTime","userId","versionCode","videoName",
-    "videoSid","weatherCode")
+    "videoSid","weatherCode","cityLevel")
 
   val schemaArrFromETL = Array("subjectCode","entryType","main_category","second_category","third_category")
 

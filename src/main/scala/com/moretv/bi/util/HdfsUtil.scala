@@ -1,7 +1,7 @@
 package com.moretv.bi.util
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileUtil, Path, FileSystem}
+import org.apache.hadoop.fs.{FileStatus, FileSystem, FileUtil, Path}
 
 /**
  * Created by Will on 2015/9/15.
@@ -35,4 +35,12 @@ object HdfsUtil {
     isSuccess
    }
 
+  def getFileFromHDFS(path: String): Array[FileStatus] = {
+    val dst = path
+    val conf = new Configuration()
+    val fs = FileSystem.get(conf)
+    val input_dir = new Path(dst)
+    val hdfs_files = fs.listStatus(input_dir)
+    hdfs_files
+  }
 }

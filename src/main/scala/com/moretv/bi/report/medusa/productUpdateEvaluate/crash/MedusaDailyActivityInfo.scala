@@ -4,9 +4,9 @@ import java.lang.{Long => JLong}
 import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
-import com.moretv.bi.global.{LogTypes, DataBases}
+import com.moretv.bi.global.{DataBases, LogTypes}
 import com.moretv.bi.report.medusa.pageStatistics.StartPageStatistics._
-import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil, SparkSetting}
+import com.moretv.bi.util._
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 
@@ -27,12 +27,22 @@ object MedusaDailyActivityInfo extends SparkSetting{
         val calendar = Calendar.getInstance()
         calendar.setTime(DateFormatUtils.readFormat.parse(startDate))
 
-
         (0 until p.numOfDays).foreach(i=>{
           val date = DateFormatUtils.readFormat.format(calendar.getTime)
           val insertDate = DateFormatUtils.toDateCN(date,-1)
           calendar.add(Calendar.DAY_OF_MONTH,-1)
-          val medusaDailyActiveInput =DataIO.getDataFrameOps.getPath(MEDUSA,"*",date)
+          val logTypeArr = new scala.collection.mutable.ArrayBuffer[String]()
+          val HdfsFile = HdfsUtil.getFileFromHDFS(s"/log/medusa/parquet/${date}")
+          HdfsFile.foreach(file=>{
+            val fileName = file.getPath.getName
+            if(!LogTypes.BLACK_LOG_TYPE.contains(fileName)){
+              logTypeArr.+=(fileName)
+            }
+          })
+          val allLog = "{".concat(logTypeArr.toArray.mkString(",")).concat("}")
+
+
+          val medusaDailyActiveInput =DataIO.getDataFrameOps.getPath(MEDUSA,allLog,date)
           val medusaDailyEnterInput =DataIO.getDataFrameOps.getPath(MEDUSA,"enter",date)
 
           val df=DataIO.getDataFrameOps.getDF(sqlContext,p.paramMap,MEDUSA,LogTypes.ENTER)

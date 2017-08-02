@@ -108,5 +108,5 @@ object LogTypes {
 
 
 
-
+  val BLACK_LOG_TYPE = Array("accountLogin")
 }
