@@ -76,7 +76,7 @@ object UDFConstant {
     "1_tv_xiqu_tag_wuju","1_tv_xiqu_tag_kunqu","1_tv_xiqu_tag_suzhoutanchang","movie_zhuanti","tv_zhuanti","tv_zhongbang","tv_wdqbs",
     "zongyi_zhuanti","comic_zhuanti","kid_zhuanti","hot_zhuanti","jilu_zhuanti","movie_star","movie_xilie","movie_night",
     "tv_meizhouyixing","zongyi_weishi","comic_dashi","tv_jingdianchongwen","comic_guoman","jilu_maoshu","jilu_douban",
-    "comic_mingzuo","tv_shujia","haoshengying_zongyi","wangzhanzizhi_zongyi","tv_yuansheng","tv_guowai_lianzai")
+    "comic_mingzuo","tv_shujia","haoshengying_zongyi","wangzhanzizhi_zongyi","tv_yuansheng","tv_guowai_lianzai","tv_tzb")
 
 
 
@@ -109,7 +109,7 @@ object UDFConstant {
     "收藏追看","节目预约","标签订阅","专题收藏","明星关注",
     "热播动漫","动漫主角","新番上档", "动漫电影","动漫专题","8090经典","国语动画","动画大师","机甲战斗","热血冒险","轻松搞笑","后宫萝莉",
     "青春浪漫","励志治愈","奇幻魔法","悬疑推理","其他分类","国漫精选","名作之壁","二次元","次元经典","游戏竞技","探险特辑",
-    "everyone_nearby","top_new","top_hot","top_star","top_collect","欢乐颂2","择天记","自然万象",
+    "everyone_nearby","top_new","top_hot","top_star","top_collect","欢乐颂2","择天记","自然万象","狼性特种兵",
     "院线大片","七日更新","猜你喜欢", "电影聚焦点","电影专题","特色影院","影人专区","抢先预告","亿元票房","系列电影","战争风云","奥斯卡佳片",
     "动画电影","好莱坞巨制","华语精选","日韩亚太","冷门佳片","犀利动作","科学幻想","粤语佳片","重磅追剧","午夜场","楚乔传","极限挑战",
     "华语热播","电视剧专题","卫视常青剧", "抗战风云","剧星专区","香港TVB","韩剧热流","10亿俱乐部","仙侠玄幻","大陆剧场","特色美剧","长剧欣赏",

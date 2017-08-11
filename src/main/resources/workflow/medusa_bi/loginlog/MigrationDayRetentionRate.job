@@ -1,5 +1,5 @@
 type=command
 dependencies=loginlogisExist
-mainclass=com.moretv.bi.report.medusa.dataAnalytics.MigrationDayRetentionRate
+mainclass=com.moretv.bi.report.medusa.dataAnalytics.MigrationByProductDayRetentionRate
 command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}
 
