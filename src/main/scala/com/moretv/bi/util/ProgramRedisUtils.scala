@@ -81,27 +81,6 @@ class ProgramRedisUtils {
 		}
 	}
 
-	def getAeraBySid(sid:String) = {
-		var metadata:String=null
-		var id:Integer = null
-		try {
-			id = CodeIDOperator.codeToId(sid)
-		}catch {
-			case e:Exception => {
-				System.out.println("Exception:" + e.getMessage() + "\t" +  e.getClass())
-				System.out.println("sid:" + sid)
-			}
-		}
-		if(id != null){
-			metadata=metadata_jedis.get(id.toString())
-			if(metadata==null || "nil".equals(metadata)) null else{
-				val jsonObject =new JSONObject(metadata)
-				val area=jsonObject.getJSONArray(ProgramRedisUtil.AREA).get(0).toString()
-				area
-			}
-		} else null
-	}
-
 	def destroy() = {
 		metadataPool.returnResource(metadata_jedis)
 		metadataPool.destroy()
