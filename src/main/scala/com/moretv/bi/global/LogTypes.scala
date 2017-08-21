@@ -108,5 +108,5 @@ object LogTypes {
 
 
 
-  val BLACK_LOG_TYPE = Array("accountLogin")
+  val BLACK_LOG_TYPE = Array("accountLogin","white_medusa_315_update_user","white_medusa_update_user")
 }
