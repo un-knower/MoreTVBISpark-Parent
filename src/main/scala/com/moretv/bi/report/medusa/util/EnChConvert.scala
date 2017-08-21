@@ -88,7 +88,7 @@ object EnChConvert {
               case "tv_genbo" => result="华语热播"
               case "tv_zhuanti" => result="电视剧专题"
               case "dianshiju_tuijain" =>result="卫视常青剧"
-              case "tv_kangzhanfengyun" => result="抗战风云"
+              case "tv_kangzhanfengyun" => result="战争风云"
               case "tv_meizhouyixing" => result="剧星专区"
               case "1_tv_area_xianggang" =>result="香港TVB"
               case "1_tv_area_hanguo" => result="韩剧热流"
