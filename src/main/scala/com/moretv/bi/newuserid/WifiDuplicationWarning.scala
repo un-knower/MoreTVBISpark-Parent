@@ -27,7 +27,7 @@ object WifiDuplicationWarning extends BaseClass {
         val ipThreshold = p.paramMap.getOrElse("ipThreshold","20").toInt
         val endDate = DateFormatUtils.enDateAdd(p.startDate,-1)
         val pastDays = p.paramMap.getOrElse("pastDays","7").toInt
-        val startDate = DateFormatUtils.enDateAdd(endDate,-pastDays)
+        val startDate = DateFormatUtils.enDateAdd(endDate,-pastDays+1)
         val startDay = DateFormatUtils.toDateCN(startDate)
         val endDay = DateFormatUtils.toDateCN(endDate)
 
