@@ -12,6 +12,7 @@ import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
   * tablename: medusa.wifi_duplication_warning
   * (id,start_end_date,type,wifi_mac,promotion_channel,product_model,current_ip,duplication_num)
   * Params : startDate, paramMap(pastDays,wifiThreshold,ipThreshold)
+  * startDate:为周一的日期，程序会计算上周的数据
   *
   */
 object WifiDuplicationWarning extends BaseClass {
