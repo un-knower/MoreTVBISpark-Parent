@@ -16,7 +16,7 @@ object WebcastPlayInformation extends BaseClass{
   private val insertSql = s"insert into ${tableName}(day,liveName,channelSid,user_num) values (?,?,?,?)"
   private val deleteSql = s"delete from ${tableName} where day = ?"
 
-  /**定义存储按播放人数统计全网直播收视TOP200节目的表**/
+  /**定义存储按播放次数统计全网直播收视TOP200节目的表**/
   private val tableName1 = "live_webcast_play_top200"
   private val insertSql1 = s"insert into ${tableName1}(day,liveName,channelSid,play_num) values (?,?,?,?)"
   private val deleteSql1 = s"delete from ${tableName1} where day = ?"
@@ -49,11 +49,11 @@ object WebcastPlayInformation extends BaseClass{
           /**按播放人数统计全网直播收视TOP200节目**/
           val updateUserCnt = sqlContext.sql(
             s"""
-               |select liveName,channelSid,
+               |select substr(liveName,0,50) as liveName,channelSid,
                |       count(distinct userId) as user_num
                |from ${LogTypes.LIVE}
                |where event='startplay' and liveType='live' and sourceType='webcast'
-               |group by liveName,channelSid
+               |group by substr(liveName,0,50),channelSid
                |order by user_num desc
                |limit 200
                """.stripMargin).map(e => (e.get(0), e.get(1), e.get(2)))
@@ -68,11 +68,11 @@ object WebcastPlayInformation extends BaseClass{
           /**按播放次数统计全网直播收视TOP200节目**/
           val updatePlayCnt = sqlContext.sql(
             s"""
-               |select liveName,channelSid,
+               |select substr(liveName,0,50) as liveName,channelSid,
                |       count(userId) as play_num
                |from ${LogTypes.LIVE}
                |where event='startplay' and liveType='live' and sourceType='webcast'
-               |group by liveName,channelSid
+               |group by substr(liveName,0,50),channelSid
                |order by play_num desc
                |limit 200
                """.stripMargin).map(e => (e.get(0), e.get(1), e.get(2)))
