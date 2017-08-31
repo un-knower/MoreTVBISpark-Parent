@@ -8,10 +8,10 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateFormatUtils, HdfsUtil, ParamsParseUtil}
 
 /**
-  * Created by Chubby on 2017/5/8.
-  * 该类用于统计升级过3.1.5版本的用户信息
+  * Created by QIZHEN on 2017/8/31.
+  * 该类用于统计升级过3.1.6版本的用户信息
   */
-object WhiteMedusa315UpdatedUser extends BaseClass{
+object WhiteMedusa316UpdatedUser extends BaseClass{
 
   def main(args: Array[String]): Unit = {
     ModuleClass.executor(this,args)
@@ -33,7 +33,7 @@ object WhiteMedusa315UpdatedUser extends BaseClass{
         (0 until p.numOfDays).foreach(i=>{
           val loadDate = DateFormatUtils.readFormat.format(calendar.getTime)
           calendar.add(Calendar.DAY_OF_MONTH,1)
-          val outDir = s"/log/medusa/parquet/${loadDate}/white_medusa_315_update_user"
+          val outDir = s"/log/medusa/parquet/${loadDate}/white_medusa_316_update_user"
 
 
           /**
@@ -47,12 +47,12 @@ object WhiteMedusa315UpdatedUser extends BaseClass{
               |from today_login_log as a
               |left join app_version_log as b
               |on getApkVersion(a.version) = b.version
-              |where a.mac is not null and b.version ='3.1.5'
+              |where a.mac is not null and b.version='3.1.6'
             """.stripMargin).registerTempTable("white_medusa_login_log")
 
           if(p.deleteOld) HdfsUtil.deleteHDFSFile(outDir)
 
-          if(loadDate.equals("20170619")){
+          if(loadDate.equals("20170831")){
             sqlContext.sql(
               """
                 |select distinct mac,date,userId
