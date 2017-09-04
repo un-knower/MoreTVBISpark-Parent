@@ -112,7 +112,7 @@ object EnChConvert {
               case "tv_dushiqinggan" => result = "都市情感"
               case "tv_ztj" => result = "择天记"
               case "tv_hls2" => result = "欢乐颂2"
-              case "tv_summer" => result = "暑期最强档"
+              case "tv_summer" => result = "金秋大剧档"
               case "tv_wdqbs" => result = "我的前半生"
               case "tv_tzb" => result = "狼性特种兵"
               case _ => result=info

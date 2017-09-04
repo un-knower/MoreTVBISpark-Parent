@@ -76,7 +76,8 @@ object UDFConstant {
     "1_tv_xiqu_tag_wuju","1_tv_xiqu_tag_kunqu","1_tv_xiqu_tag_suzhoutanchang","movie_zhuanti","tv_zhuanti","tv_zhongbang","tv_wdqbs",
     "zongyi_zhuanti","comic_zhuanti","kid_zhuanti","hot_zhuanti","jilu_zhuanti","movie_star","movie_xilie","movie_night",
     "tv_meizhouyixing","zongyi_weishi","comic_dashi","tv_jingdianchongwen","comic_guoman","jilu_maoshu","jilu_douban",
-    "comic_mingzuo","tv_shujia","haoshengying_zongyi","wangzhanzizhi_zongyi","tv_yuansheng","tv_guowai_lianzai","tv_tzb")
+    "comic_mingzuo","tv_shujia","haoshengying_zongyi","wangzhanzizhi_zongyi","tv_yuansheng","tv_guowai_lianzai","tv_tzb",
+    "kids_schoolstart","kids_televison")
 
 
 
@@ -113,9 +114,9 @@ object UDFConstant {
     "院线大片","七日更新","猜你喜欢", "电影聚焦点","电影专题","特色影院","影人专区","抢先预告","亿元票房","系列电影","战争风云","奥斯卡佳片",
     "动画电影","好莱坞巨制","华语精选","日韩亚太","冷门佳片","犀利动作","科学幻想","粤语佳片","编辑精选","午夜场","楚乔传","极限挑战",
     "华语热播","电视剧专题","卫视常青剧", "战争风云","剧星专区","香港TVB","韩剧热流","10亿俱乐部","仙侠玄幻","大陆剧场","特色美剧","长剧欣赏",
-    "日剧集锦","台湾剧集","英伦佳剧","其他地区","粤语专区","猜你喜欢","经典重温","最强暑期档","电视原声","海外精选","奔跑吧","家庭伦理","都市情感",
+    "日剧集锦","台湾剧集","英伦佳剧","其他地区","粤语专区","猜你喜欢","经典重温","金秋大剧档","电视原声","海外精选","奔跑吧","家庭伦理","都市情感",
     "综艺热播","卫视强档","综艺专题", "大陆精选","韩国精选","欧美精选","港台精选","少儿综艺","真人秀场","情感访谈","游戏竞技","爆笑搞怪","历史奇闻",
-    "歌舞晚会","时尚生活","说唱艺术","财经民生","社会法制","新闻播报","其他分类","2016新歌声","最强笑点","娱乐八卦","暑期最强档",
+    "歌舞晚会","时尚生活","说唱艺术","财经民生","社会法制","新闻播报","其他分类","2016新歌声","最强笑点","娱乐八卦",
     "纪实热播","王牌栏目","纪实专题", "VICE专区","BBC","国家地理","NHK","美食大赏","军事风云","自然万象","社会百态","人物大观",
     "历史钩沉","公开课","前沿科技","其他分类","豆瓣高分","猫叔推荐","刑侦档案","相声小品","铁血军魂","大话汽车","王牌综艺",
     "我的收藏","今日焦点","新闻热点", "资讯专题","创意运动","影视短片","游戏动画","生活时尚","娱乐八卦","音乐舞蹈","五花八门","我的前半生",
@@ -127,7 +128,8 @@ object UDFConstant {
     "kids_anim*4-6岁","kids_anim*7-10岁","kids_anim*英文动画","kids_anim*搞笑","kids_anim*机战","kids_anim*亲子",
     "kids_anim*迪士尼专区","kids_anim*探险","kids_anim*中文动画","kids_anim*亲子交流","kids_anim*益智启蒙","kids_anim*童话故事",
     "kids_anim*教育课堂","kids_rhymes*随便听听",
-    "kids_rhymes*儿歌明星","kids_rhymes*儿歌热播","kids_rhymes*儿歌专题","kids_rhymes*英文儿歌","kids_rhymes*舞蹈律动")
+    "kids_rhymes*儿歌明星","kids_rhymes*儿歌热播","kids_rhymes*儿歌专题","kids_rhymes*英文儿歌","kids_rhymes*舞蹈律动",
+    "kids_anim*同步卫视","kids_anim*开学季")
 
 
 
