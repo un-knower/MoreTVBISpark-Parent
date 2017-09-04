@@ -5,10 +5,9 @@ import java.sql.{DriverManager, Statement}
 import cn.whaley.sdk.dataOps.MySqlOps
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.constant.Tables
-import com.moretv.bi.global.{DataBases, LogTypes}
-import com.moretv.bi.retention.DayRetentionRate.sc
+import com.moretv.bi.global.DataBases
+import com.moretv.bi.util.ParamsParseUtil
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import com.moretv.bi.util.{ParamsParseUtil, UserIdUtils}
 
 /**
   * Created by xiajun on 2017/7/31.

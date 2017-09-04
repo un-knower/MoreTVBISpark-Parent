@@ -73,6 +73,8 @@ object EachSubjectPlayInfo extends BaseClass {
           mergerRdd.toDF("channel", "subject_code", "play_num", "play_user")
             .registerTempTable("result_data")
 
+          sqlContext.cacheTable("result_data")
+
           val mergerRdd_top200 = sqlContext.sql(
             """
               |(SELECT * from result_data where channel = '动漫' ORDER BY play_num DESC LIMIT 200) union all
@@ -114,6 +116,7 @@ object EachSubjectPlayInfo extends BaseClass {
 
           formattedRdd.unpersist()
           typeInfoRdd.unpersist()
+          sqlContext.uncacheTable("result_data")
         })
 
       }
