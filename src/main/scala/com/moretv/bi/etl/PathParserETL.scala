@@ -650,7 +650,7 @@ object PathParserETL {
    用来做 不同入口播放统计
   */
   private val sourceRe = ("(home\\*classification|search|home\\*my_tv\\*history|" +
-    "home\\*my_tv\\*collect|home\\*recommendation|home\\*my_tv\\*[a-zA-Z0-9&\\u4e00-\\u9fa5]{1,})").r
+    "home\\*my_tv\\*collect|home\\*recommendation|home\\*hotSubject|home\\*taste|home\\*my_tv\\*[a-zA-Z0-9&\\u4e00-\\u9fa5]{1,})").r
   private val sourceRe1 = ("(classification|history|hotrecommend|search)").r
 
   def getEntranceTypeByPathETL(path: String, flag: String): String = {
@@ -668,6 +668,8 @@ object PathParserETL {
                 case "home*my_tv*collect" => "收藏"
                 case "home*recommendation" => "首页推荐"
                 case "search" => "搜索"
+                case "home*hotSubject" => "短视频"
+                case "home*taste" => "兴趣推荐"
                 case _ => {
                   if (specialPattern.pattern.matcher(p.group(1)).matches) {
                     "自定义入口"

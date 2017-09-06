@@ -105,14 +105,6 @@ object Medusa315NewUserRetentionRateByCityDangerousLevel extends BaseClass {
             c.add(Calendar.DAY_OF_MONTH, -needToCalc(j))
             val date2 = format.format(c.getTime)
 
-
-            //            val id = getID(date2, stmt)
-            //            val min = id(0)
-            //            val max = id(1)
-            //            sqlContext.sql("select * from app_version_log limit 10").show(false)
-            //            sqlContext.sql("select * from web_location_log limit 10").show(false)
-            //            sqlContext.sql("select * from city_dangerous_level_log limit 10").show(false)
-            //            sqlContext.sql("select * from terminal_log limit 10").show(false)
             val sqlInfo = sqlContext.sql(s"SELECT mac,current_version,web_location_sk FROM terminal_log WHERE substr(open_time,0,10) = '$date2'")
             val sqlRDD = sqlInfo.map(rdd => (rdd.getString(0), rdd.getString(1)))
             sqlInfo.registerTempTable("terminal_log_new")
@@ -172,47 +164,6 @@ object Medusa315NewUserRetentionRateByCityDangerousLevel extends BaseClass {
               //.repartition(numOfPartition)
               .registerTempTable("dangerous_level_retention") //对留存用户的mac映射出城市等级并统计数量
 
-            println("#############")
-            println("#############")
-            println("#############")
-            println("#############")
-            println("#############")
-
-            //            sqlContext.sql(
-            //              """
-            //                |select a.mac,b.web_location_sk
-            //                |from new_user_mac a left join terminal_log_new b
-            //                |on a.mac = b.mac
-            //                |limit 10
-            //              """.stripMargin).show(false)
-            //
-            //            sqlContext.sql(
-            //              """
-            //                |select a1.mac,b1.city
-            //                |from
-            //                |(select a.mac,b.web_location_sk
-            //                |from new_user_mac a left join terminal_log_new b
-            //                |on a.mac = b.mac) a1 left join web_location_log b1
-            //                |on a1.web_location_sk = b1.web_location_sk
-            //                |limit 10
-            //              """.stripMargin).show(false)
-
-            //            sqlContext.sql(
-            //              """
-            //                |select a2.mac,if(b2.dangerous_level IS NULL,'c',dangerous_level) as dangerous_level
-            //                |from
-            //                |(select a1.mac,b1.city
-            //                |from
-            //                |(select a.mac,b.web_location_sk
-            //                |from new_user_mac a left join terminal_log_new b
-            //                |on a.mac = b.mac) a1 left join web_location_log b1
-            //                |on a1.web_location_sk = b1.web_location_sk) a2 left join city_dangerous_level_log b2
-            //                |on a2.city = b2.city_name
-            //                |limit 10
-            //              """.stripMargin).show(false)
-
-            //sqlContext.sql("select * from dangerous_level_new limit 10").show(false) //无数据
-
 
             val resultRdd = sqlContext.sql(
               """
@@ -230,12 +181,10 @@ object Medusa315NewUserRetentionRateByCityDangerousLevel extends BaseClass {
                 insertSQL(date2, rdd._1, rdd._2, rdd._3, stmt1)
               })
 
-              //insertSQL(date2, "new", newUserNew, retentionRateNew, stmt1)
             } else {
               resultRdd.collect.foreach(rdd => {
                 updateSQL(numOfDay(j), rdd._1, rdd._3, date2, stmt1)
               })
-              //updateSQL(numOfDay(j), "new", retentionRateNew, date2, stmt1)
             }
           }
           logUserID.unpersist()
