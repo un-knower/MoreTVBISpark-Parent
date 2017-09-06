@@ -83,7 +83,10 @@ object KidsPathParser {
     KIDS_3X_LIST_CATEGORY_REGEX findFirstMatchIn str match {
       case Some(p) => {
         res1 = p.group(1)
-        res2 = p.group(2)
+        res2 = {
+          val subCat = p.group(2)
+          if(subCat.equals("卫视同步")) "同步卫视" else subCat
+        }
       }
       case None =>
     }
@@ -166,15 +169,9 @@ object KidsPathParser {
 
   @TestAnnotation
   def main(args: Array[String]): Unit = {
-    val str = "home*classification*kids-kids_home-kandonghua*0-4岁"
-    KIDS_3X_LIST_CATEGORY_REGEX findFirstMatchIn str match {
-      case Some(p) => {
-        (1 until p.groupCount+1).foreach(i=>{
-          println(p.group(i))
-        })
-      }
-      case None =>
-    }
+    val str = "home*classification*kids-kids_home-kids_anim*卫视同步"
+    val a = pathMainParse(str,3)
+    println(a)
   }
 
 }
