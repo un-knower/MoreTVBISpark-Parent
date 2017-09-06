@@ -59,18 +59,18 @@ object activeUserAndLoginUserCt extends BaseClass {
 
           //filter data
           logAccount.withColumn("day", col("openTime").substr(1, 10))
-            .select("mac", "day", "current_version")
+            .select("mac", "day","user_id", "current_version")
             .filter(s"day = '${insertDate}'")
             .registerTempTable("new_table")
-          logLogin.select("day", "mac", "version")
+          logLogin.select("day", "mac", "version","userId")
             .registerTempTable("login_table")
 
           //data processings
           sqlContext.sql(
             """
-              |select x.version,count(distinct x.mac) as loginUser
+              |select x.version,count(distinct x.mac) as loginUser,count(distinct x.userId) as loginUser_userId
               |from
-              |(select a.mac,getVersion(b.version) as version
+              |(select a.mac,a.userId,getVersion(b.version) as version
               |from login_table a
               |left join app_version_log b
               |on getApkVersion(a.version) = b.version) x
@@ -79,9 +79,9 @@ object activeUserAndLoginUserCt extends BaseClass {
             .registerTempTable("login_users")
           sqlContext.sql(
             """
-              |select x.version,count(distinct x.mac) as newUser
+              |select x.version,count(distinct x.mac) as newUser,count(distinct x.user_id) as newUser_userId
               |from
-              |(select a.mac,getVersion(b.version) as version
+              |(select a.mac,a.user_id,getVersion(b.version) as version
               |from new_table a
               |left join app_version_log b
               |on getApkVersion(a.current_version) = b.version) x
@@ -90,20 +90,20 @@ object activeUserAndLoginUserCt extends BaseClass {
             .registerTempTable("new_users")
           val resultDf = sqlContext.sql(
             """
-              |select a.version,a.loginUser,b.newUser,a.loginUser-b.newUser as activeUser
+              |select a.version,a.loginUser,a.loginUser_userId,b.newUser,b.newUser_userId,a.loginUser-b.newUser as activeUser
               |from login_users a join new_users b
               |on a.version = b.version
             """.stripMargin)
 
-          val insertSql = "insert into whiteMedusa_login_active_user_ct(day,version,loginUser,newUser,activeUser) " +
-            "values (?,?,?,?,?)"
+          val insertSql = "insert into whiteMedusa_login_active_user_ct(day,version,loginUser,loginUser_userId,newUser,newUser_userId,activeUser) " +
+            "values (?,?,?,?,?,?,?)"
           if (p.deleteOld) {
             val deleteSql = "delete from whiteMedusa_login_active_user_ct where day=?"
             util.delete(deleteSql, insertDate)
           }
 
           resultDf.collect.foreach(e => {
-            util.insert(insertSql, insertDate, e.get(0), e.get(1), e.get(2), e.get(3))
+            util.insert(insertSql, insertDate, e.get(0), e.get(1), e.get(2), e.get(3), e.get(4), e.get(5))
           })
           println(insertDate + " Insert data successed!")
         })

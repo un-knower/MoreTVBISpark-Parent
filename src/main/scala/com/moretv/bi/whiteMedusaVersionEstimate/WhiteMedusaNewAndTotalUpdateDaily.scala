@@ -12,7 +12,7 @@ import com.moretv.bi.util.{DateFormatUtils, HdfsUtil, ParamsParseUtil}
   * 该类用于统计升级过3.1.4版本的用户信息
   */
 object WhiteMedusaNewAndTotalUpdateDaily extends BaseClass{
-  private val insertSql = "insert into white_medusa_new_total_user_by_login(day,new_num,total_num,all_total_num) values(?,?,?,?)"
+  private val insertSql = "insert into white_medusa_new_total_user_by_login(day,new_num,newUpdateUser_UserId,total_num,totalUser_UserId,all_total_num) values(?,?,?,?,?,?)"
   private val deleteSql = "delete from white_medusa_new_total_user_by_login where day = ?"
 
   def main(args: Array[String]): Unit = {
@@ -43,16 +43,30 @@ object WhiteMedusaNewAndTotalUpdateDaily extends BaseClass{
 
           val totalUser = sqlContext.sql(
             s"""
-              |select distinct mac
-              |from white_medusa_update_log
-              |where date <= '${insertDate}'
+               |select distinct mac
+               |from white_medusa_update_log
+               |where date <= '${insertDate}'
+            """.stripMargin).count()
+
+          val totalUser_UserId = sqlContext.sql(
+            s"""
+               |select distinct userId
+               |from white_medusa_update_log
+               |where date <= '${insertDate}'
             """.stripMargin).count()
 
           val newUpdateUser = sqlContext.sql(
             s"""
-              |select distinct mac
-              |from white_medusa_update_log
-              |where date = '${insertDate}'
+               |select distinct mac
+               |from white_medusa_update_log
+               |where date = '${insertDate}'
+            """.stripMargin).count()
+
+          val newUpdateUser_UserId = sqlContext.sql(
+            s"""
+               |select distinct userId
+               |from white_medusa_update_log
+               |where date = '${insertDate}'
             """.stripMargin).count()
 
           val totalAllUser = sqlContext.sql(
@@ -62,7 +76,7 @@ object WhiteMedusaNewAndTotalUpdateDaily extends BaseClass{
             """.stripMargin).count()
           if(p.deleteOld) util.delete(deleteSql,insertDate)
 
-          util.insert(insertSql,insertDate,newUpdateUser,totalUser,totalAllUser)
+          util.insert(insertSql,insertDate,newUpdateUser,newUpdateUser_UserId,totalUser,totalUser_UserId,totalAllUser)
 
         })
 
