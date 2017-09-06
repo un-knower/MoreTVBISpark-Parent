@@ -20,6 +20,7 @@ object DimensionTypes {
   val DIM_MEDUSA_PAGE_ENTRANCE = "dim_medusa_page_entrance"
   val DIM_MEDUSA_LAUNCHER_ENTRANCE = "dim_medusa_launcher_entrance"
   val DIM_MEDUSA_APP_VERSION = "dim_app_version"
+  val DIM_MEDUSA_CITY_DANGEROUS_LEVEL = "dim_medusa_city_dangerous_level"
 
 
 }
