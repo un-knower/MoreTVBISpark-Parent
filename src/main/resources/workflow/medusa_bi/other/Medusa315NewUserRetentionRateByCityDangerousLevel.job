@@ -1,5 +1,4 @@
 type=command
-dependencies=other_isExist
 mainclass=com.moretv.bi.report.medusa.dataAnalytics.Medusa315NewUserRetentionRateByCityDangerousLevel
 command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}
 
