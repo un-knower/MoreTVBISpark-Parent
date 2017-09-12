@@ -19,7 +19,7 @@ import com.moretv.bi.util.{ParamsParseUtil, UserIdUtils}
 object WhiteMedusaVersionNewUserRetentionRate extends BaseClass {
 
 
-  private val resultable = "medusa.white_medusa_version_new_user_retention"
+  private val resultTable = "medusa.white_medusa_version_new_user_retention"
 
   def main(args: Array[String]) {
     ModuleClass.executor(this, args)
@@ -172,17 +172,17 @@ object WhiteMedusaVersionNewUserRetentionRate extends BaseClass {
   }
 
   def insertSQL(date: String, version: String, count: Int, retention: Double, stmt: Statement) = {
-    val sql = s"INSERT INTO $resultable (day,version, new_user_num, one) VALUES('$date','$version', $count, $retention)"
+    val sql = s"INSERT INTO $resultTable (day,version, new_user_num, one) VALUES('$date','$version', $count, $retention)"
     stmt.executeUpdate(sql)
   }
 
   def updateSQL(num: String, version: String, retention: Double, date: String, stmt: Statement) = {
-    val sql = s"UPDATE $resultable SET $num = $retention WHERE day = '$date' and version ='$version'"
+    val sql = s"UPDATE $resultTable SET $num = $retention WHERE day = '$date' and version ='$version'"
     stmt.executeUpdate(sql)
   }
 
   def deleteSQL(date: String, stmt: Statement) = {
-    val sql = s"DELETE FROM $resultable WHERE day = ${date}"
+    val sql = s"DELETE FROM $resultTable WHERE day = ${date}"
     stmt.execute(sql)
   }
 }
