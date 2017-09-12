@@ -77,7 +77,7 @@ object UDFConstant {
     "zongyi_zhuanti","comic_zhuanti","kid_zhuanti","hot_zhuanti","jilu_zhuanti","movie_star","movie_xilie","movie_night",
     "tv_meizhouyixing","zongyi_weishi","comic_dashi","tv_jingdianchongwen","comic_guoman","jilu_maoshu","jilu_douban",
     "comic_mingzuo","tv_shujia","haoshengying_zongyi","wangzhanzizhi_zongyi","tv_yuansheng","tv_guowai_lianzai","tv_tzb",
-    "kids_schoolstart","kids_televison")
+    "kids_schoolstart","kids_televison","music_zongyi")
 
 
 
@@ -129,7 +129,7 @@ object UDFConstant {
     "kids_anim*迪士尼专区","kids_anim*探险","kids_anim*中文动画","kids_anim*亲子交流","kids_anim*益智启蒙","kids_anim*童话故事",
     "kids_anim*教育课堂","kids_rhymes*随便听听",
     "kids_rhymes*儿歌明星","kids_rhymes*儿歌热播","kids_rhymes*儿歌专题","kids_rhymes*英文儿歌","kids_rhymes*舞蹈律动",
-    "kids_anim*同步卫视","kids_anim*开学季")
+    "kids_anim*同步卫视","kids_anim*开学季","热门音乐")
 
 
 
