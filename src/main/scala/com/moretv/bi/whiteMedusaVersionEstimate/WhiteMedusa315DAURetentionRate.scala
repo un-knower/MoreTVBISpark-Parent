@@ -68,6 +68,16 @@ object WhiteMedusa315DAURetentionRate extends BaseClass {
             """.stripMargin).map(e=>UserIdUtils.userId2Long(e.getString(0))).distinct().cache()
           Class.forName("com.mysql.jdbc.Driver")
 
+          val logUserID316 = sqlContext.sql(
+            """
+              |select a.mac,b.version
+              |from today_login_log as a
+              |left join app_version_log as b
+              |on getApkVersion(a.version) = b.version
+              |where a.mac is not null and b.version ='3.1.6'
+            """.stripMargin).map(e=>UserIdUtils.userId2Long(e.getString(0))).distinct().cache()
+          Class.forName("com.mysql.jdbc.Driver")
+
           // 创建插入数据库连接
           val insertDB = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
           val url1 = insertDB.prop.getProperty("url")
@@ -98,6 +108,16 @@ object WhiteMedusa315DAURetentionRate extends BaseClass {
                 |on getApkVersion(a.version) = b.version
                 |where a.mac is not null and b.version<='3.1.3'
               """.stripMargin).map(e=>UserIdUtils.userId2Long(e.getString(0))).distinct()
+            val sqlRdd316 = sqlContext.sql(
+              """
+                |select a.mac,b.version
+                |from login_log as a
+                |left join app_version_log as b
+                |on getApkVersion(a.version) = b.version
+                |where a.mac is not null and b.version='3.1.6'
+              """.stripMargin).map(e=>UserIdUtils.userId2Long(e.getString(0))).distinct()
+
+
             val retention = logUserID.intersection(sqlRdd).count()
             val dauNum = sqlRdd.count().toInt
             var retentionRate:Double = 0.0
@@ -111,6 +131,13 @@ object WhiteMedusa315DAURetentionRate extends BaseClass {
             if(dauNum313Before != 0){
               retentionRate313Before = retention313Before.toDouble / dauNum313Before.toDouble
             }
+
+            val retention316 = logUserID316.intersection(sqlRdd316).count()
+            val dauNum316 = sqlRdd316.count().toInt
+            var retentionRate316:Double = 0.0
+            if(dauNum316 != 0){
+              retentionRate316 = retention316.toDouble / dauNum316.toDouble
+            }
 //
 //            if (p.deleteOld) {
 //              deleteSQL("white",insertDate, stmt1)
@@ -118,9 +145,11 @@ object WhiteMedusa315DAURetentionRate extends BaseClass {
             if (j == 0) {
               insertSQL(insertDate, "before313", dauNum313Before, retentionRate313Before, stmt1)
               insertSQL(insertDate, "white315", dauNum, retentionRate, stmt1)
+              insertSQL(insertDate, "white316", dauNum316, retentionRate316, stmt1)
             } else {
               updateSQL(numOfDay(j), "white315", retentionRate, insertDate, stmt1)
               updateSQL(numOfDay(j), "before313", retentionRate313Before, insertDate, stmt1)
+              updateSQL(numOfDay(j), "white316", retentionRate316, insertDate, stmt1)
             }
           }
           logUserID.unpersist()
