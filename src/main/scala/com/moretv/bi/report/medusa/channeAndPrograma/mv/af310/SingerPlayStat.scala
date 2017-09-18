@@ -132,17 +132,27 @@ object SingerPlayStat extends MvStatModel {
   override def outputHandle(agg: DataFrame, deleteOld: Boolean, readDate: String,
                             util: MySqlOps, deleteSql: String, insertSql: String): Unit = {
 
+    sqlContext.udf.register("singerNameRevise", singerNameRevise _)
+
     if (deleteOld) {
       util.delete(deleteSql, readDate)
     }
 
     // (0 until fields.length - 1).map(r.get(_)): _*
 
+    agg.toDF("singer_id","singer_name","entrance","entrance_vv","entrance_uv","entrance_duration",
+      "total_vv","total_uv","total_duration").registerTempTable("tmp_log")
 
-    agg.collect().foreach(r => {
-      val name = if(r.get(0) == r.get(1)) singerNameRevise(r.getString(0),r.getString(1)) else r.getString(1)
+    val result = sqlContext.sql(
+      """
+        |select singer_id,singerNameRevise(singer_name), entrance, entrance_vv, entrance_uv, entrance_duration,
+        |total_vv,total_uv,total_duration
+        |from tmp_log
+      """.stripMargin)
+
+    result.collect().foreach(r => {
       util.insert(insertSql, readDate,
-        r.get(0), name,
+        r.get(0), r.get(1),
         r.get(2), r.get(3), r.get(4),
         r.get(5), r.get(6), r.get(7), r.get(8)
       )
