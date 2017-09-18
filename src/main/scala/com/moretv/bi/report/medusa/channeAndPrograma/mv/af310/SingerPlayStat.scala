@@ -145,7 +145,7 @@ object SingerPlayStat extends MvStatModel {
 
     val result = sqlContext.sql(
       """
-        |select singer_id,singerNameRevise(singer_name), entrance, entrance_vv, entrance_uv, entrance_duration,
+        |select singer_id,singerNameRevise(singer_id,singer_name), entrance, entrance_vv, entrance_uv, entrance_duration,
         |total_vv,total_uv,total_duration
         |from tmp_log
       """.stripMargin)
@@ -163,10 +163,12 @@ object SingerPlayStat extends MvStatModel {
   }
 
   def singerNameRevise(sid:String, name:String):String = {
-    SingerBug.get(sid) match {
-      case Some(p) => p
-      case _ => sid
-    }
+    if(name==null){
+      SingerBug.get(sid) match {
+        case Some(p) => p
+        case _ => sid
+      }
+    }else name
   }
 
 }
