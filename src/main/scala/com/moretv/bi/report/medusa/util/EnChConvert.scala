@@ -115,6 +115,7 @@ object EnChConvert {
               case "tv_summer" => result = "金秋大剧档"
               case "tv_wdqbs" => result = "我的前半生"
               case "tv_tzb" => result = "狼性特种兵"
+              case "tv_hkyy" => result = "花开月圆"
               case _ => result=info
             }
           }
