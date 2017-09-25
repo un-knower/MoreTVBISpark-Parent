@@ -52,7 +52,7 @@ object WhiteMedusa316UpdatedUser extends BaseClass{
 
           if(p.deleteOld) HdfsUtil.deleteHDFSFile(outDir)
 
-          if(loadDate.equals("20170901")){
+          if(loadDate.equals("20170918")){
             sqlContext.sql(
               """
                 |select distinct mac,date,userId
