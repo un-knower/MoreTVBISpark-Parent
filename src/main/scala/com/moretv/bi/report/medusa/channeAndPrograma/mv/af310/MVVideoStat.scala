@@ -18,7 +18,7 @@ import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
   * 对象: 视频(不限制路径 contentType = mv)
   * 维度: 天, 视频(id & name)
   * 数据源: play
-  * 提取特征: videoSid, userId ,contentType, duration
+  * 提取特征: episodeSid, userId ,contentType, duration
   * 统计:  pv ,uv, duration
   * 输出: tbl[mv_video_pv_uv_duration](day,video_sid,video_name,uv,pv,duration)
   */
@@ -68,9 +68,9 @@ object MVVideoStat extends BaseClass {
           //df
           val df =
             DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.PLAY,loadDate)
-              .select("videoSid", "videoName", "userId", "event", "duration", "contentType")
-              .filter("videoSid is not null")
-              .filter("videoName is not null")
+              .select("episodeSid", "episodeName", "userId", "event", "duration", "contentType")
+              .filter("episodeSid is not null")
+              .filter("episodeName is not null")
               .filter("contentType = 'mv'")
               .cache
 

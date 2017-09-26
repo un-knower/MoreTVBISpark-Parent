@@ -115,6 +115,7 @@ object EnChConvert {
               case "tv_summer" => result = "金秋大剧档"
               case "tv_wdqbs" => result = "我的前半生"
               case "tv_tzb" => result = "狼性特种兵"
+              case "tv_hkyy" => result = "花开月圆"
               case _ => result=info
             }
           }
@@ -151,6 +152,7 @@ object EnChConvert {
               case "zongyi_benpaoba" => result = "奔跑吧"
               case "zongyi_youxi" => result = "游戏竞技"
               case "jitiao_zongyi" => result = "极限挑战"
+              case "music_zongyi" => result = "热门音乐"
               case _ => result=info
             }
           }
