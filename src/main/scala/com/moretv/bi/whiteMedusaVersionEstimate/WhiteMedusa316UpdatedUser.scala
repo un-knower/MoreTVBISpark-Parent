@@ -63,7 +63,7 @@ object WhiteMedusa316UpdatedUser extends BaseClass{
             previousCal.setTime(DateFormatUtils.readFormat.parse(loadDate))
             previousCal.add(Calendar.DAY_OF_MONTH, -1)
             val previousDate = DateFormatUtils.readFormat.format(previousCal.getTime)
-            DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.WHITE_MEDUSA_UPDATE_USER,previousDate).
+            DataIO.getDataFrameOps.getDF(sc, p.paramMap, MEDUSA, LogTypes.WHITE_MEDUSA_UPDATE_USER_316, previousDate).
               registerTempTable("previous_white_medusa_login_log")
             sqlContext.sql(
               """

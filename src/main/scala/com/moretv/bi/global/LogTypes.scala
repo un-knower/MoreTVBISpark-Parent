@@ -104,7 +104,9 @@ object LogTypes {
 
   val INTERVIEW_ETL = "interview-etl"
 
-  val WHITE_MEDUSA_UPDATE_USER = "white_medusa_316_update_user"
+  val WHITE_MEDUSA_UPDATE_USER = "white_medusa_update_user"
+
+  val WHITE_MEDUSA_UPDATE_USER_316 = "white_medusa_316_update_user"
 
 
 
