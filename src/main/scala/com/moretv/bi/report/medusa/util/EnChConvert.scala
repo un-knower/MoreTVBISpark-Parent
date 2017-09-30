@@ -115,7 +115,7 @@ object EnChConvert {
               case "tv_summer" => result = "金秋大剧档"
               case "tv_wdqbs" => result = "我的前半生"
               case "tv_tzb" => result = "狼性特种兵"
-              case "tv_hkyy" => result = "花开月圆"
+              case "tv_hkyy2" => result = "花开月圆"
               case _ => result=info
             }
           }
@@ -196,6 +196,8 @@ object EnChConvert {
               case "comic_guoman"=>result="国漫精选"
               case "comic_mingzuo"=>result="名作之壁"
               case "comic_ciyuanjd" => result = "次元经典"
+              case "comic_gaoxiao" => result = "轻松搞笑"
+              case "comic_maoxian" => result = "热血冒险"
               case _ => result=info
             }
           }
