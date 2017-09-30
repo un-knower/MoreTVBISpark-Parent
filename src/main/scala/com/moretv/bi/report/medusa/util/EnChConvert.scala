@@ -91,11 +91,11 @@ object EnChConvert {
               case "tv_kangzhanfengyun" => result="战争风云"
               case "tv_meizhouyixing" => result="剧星专区"
               case "1_tv_area_xianggang" =>result="香港TVB"
-              case "1_tv_area_hanguo" => result="韩剧热流"
+              case "1_tv_area_hanguo" => result="口碑韩剧"
               case "tv_julebu" => result="10亿俱乐部"
-              case "tv_xianxiaxuanhuan" => result="仙侠玄幻"
+              case "tv_xianxiaxuanhuan" => result="古装玄幻"
               case "1_tv_area_neidi" => result="大陆剧场"
-              case "1_tv_area_oumei" => result="特色美剧"
+              case "1_tv_area_oumei" => result="精选美剧"
               case "tv_changju" => result="长剧欣赏"
               case "1_tv_area_riben" => result="日剧集锦"
               case "1_tv_area_taiwan" => result="台湾剧集"
@@ -114,7 +114,7 @@ object EnChConvert {
               case "tv_hls2" => result = "欢乐颂2"
               case "tv_summer" => result = "金秋大剧档"
               case "tv_wdqbs" => result = "我的前半生"
-              case "tv_tzb" => result = "狼性特种兵"
+              case "tv_tzb" => result = "特种兵营"
               case "tv_hkyy2" => result = "花开月圆"
               case _ => result=info
             }

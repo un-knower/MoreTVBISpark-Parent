@@ -129,7 +129,7 @@ object UDFConstant {
     "kids_anim*迪士尼专区","kids_anim*探险","kids_anim*中文动画","kids_anim*亲子交流","kids_anim*益智启蒙","kids_anim*童话故事",
     "kids_anim*教育课堂","kids_rhymes*随便听听",
     "kids_rhymes*儿歌明星","kids_rhymes*儿歌热播","kids_rhymes*儿歌专题","kids_rhymes*英文儿歌","kids_rhymes*舞蹈律动",
-    "kids_anim*同步卫视","kids_anim*开学季","热门音乐","花开月圆","热血冒险","轻松搞笑")
+    "kids_anim*同步卫视","kids_anim*开学季","热门音乐","花开月圆","热血冒险","轻松搞笑","口碑韩剧","精选美剧","古装玄幻","特种兵营")
 
 
 
