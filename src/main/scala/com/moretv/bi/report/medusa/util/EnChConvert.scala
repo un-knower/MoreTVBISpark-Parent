@@ -116,6 +116,8 @@ object EnChConvert {
               case "tv_wdqbs" => result = "我的前半生"
               case "tv_tzb" => result = "特种兵营"
               case "tv_hkyy2" => result = "花开月圆"
+              case "tv_malataiju" => result="麻辣泰剧"
+              case "tv_xiju" => result="爆笑喜剧"
               case _ => result=info
             }
           }
