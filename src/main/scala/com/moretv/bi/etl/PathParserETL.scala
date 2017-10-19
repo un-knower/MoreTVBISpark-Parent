@@ -1,9 +1,9 @@
 package com.moretv.bi.etl
 
-import com.moretv.bi.logETL.{SportsPathParser, KidsPathParser}
+import com.moretv.bi.logETL.{KidsPathParser, MvListCategoryPathParser, SportsPathParser}
 import com.moretv.bi.report.medusa.util.EnChConvert.transformEng2Chinese
 import com.moretv.bi.report.medusa.util.MedusaSubjectNameCodeUtil
-import com.moretv.bi.report.medusa.util.udf.{PathParser, UDFConstantDimension, UDFConstant}
+import com.moretv.bi.report.medusa.util.udf.{PathParser, UDFConstant, UDFConstantDimension}
 import com.moretv.bi.util.{CodeToNameUtils, SubjectUtils}
 
 
@@ -650,7 +650,7 @@ object PathParserETL {
    用来做 不同入口播放统计
   */
   private val sourceRe = ("(home\\*classification|search|home\\*my_tv\\*history|" +
-    "home\\*my_tv\\*collect|home\\*recommendation|home\\*my_tv\\*[a-zA-Z0-9&\\u4e00-\\u9fa5]{1,})").r
+    "home\\*my_tv\\*collect|home\\*recommendation|home\\*hotSubject|home\\*taste|home\\*my_tv\\*[a-zA-Z0-9&\\u4e00-\\u9fa5]{1,})").r
   private val sourceRe1 = ("(classification|history|hotrecommend|search)").r
 
   def getEntranceTypeByPathETL(path: String, flag: String): String = {
@@ -668,6 +668,8 @@ object PathParserETL {
                 case "home*my_tv*collect" => "收藏"
                 case "home*recommendation" => "首页推荐"
                 case "search" => "搜索"
+                case "home*hotSubject" => "短视频"
+                case "home*taste" => "兴趣推荐"
                 case _ => {
                   if (specialPattern.pattern.matcher(p.group(1)).matches) {
                     "自定义入口"
@@ -744,12 +746,11 @@ object PathParserETL {
     var result: String = null
     if (null == pathMain) {
       result = null
-    } else if (pathMain.contains(UDFConstantDimension.HORIZONTAL) || pathMain.contains(UDFConstantDimension.MV_RECOMMEND_HOME_PAGE) ||
-      pathMain.contains(UDFConstantDimension.MV_TOP_HOME_PAGE) || pathMain.contains(UDFConstantDimension.HOME_SEARCH)
-
+      //2017/04/26 去掉了 HORIZONTAL 和 mvTopHomePage 过滤
+    } else if (pathMain.contains(UDFConstantDimension.MV_RECOMMEND_HOME_PAGE) || pathMain.contains(UDFConstantDimension.HOME_SEARCH))
     /** 为了统计频道分类入口的 搜索 和 筛选 维度，注释掉 */
     //||pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)
-    ) {
+    {
       result = null
     } else if (pathMain.contains(UDFConstantDimension.HOME_CLASSIFICATION)
       || pathMain.contains(UDFConstantDimension.HOME_MY_TV)
@@ -763,6 +764,8 @@ object PathParserETL {
       || pathMain.contains(UDFConstantDimension.SEARCH_DIMENSION)
       || pathMain.contains(UDFConstantDimension.SEARCH_DIMENSION_CHINESE)
       || pathMain.contains(UDFConstantDimension.HOME_RECOMMENDATION)
+      || pathMain.contains(UDFConstantDimension.MV_CATEGORY_HOME_PAGE)
+      || pathMain.contains(UDFConstantDimension.MV_FUNCTION)
     ) {
       if (pathMain.contains("kids")) {
         result = KidsPathParser.pathMainParse(pathMain, index_input)
@@ -817,9 +820,14 @@ object PathParserETL {
          }
          case None => null
        }*/
-      else if (pathMain.contains("mv-mv")) {
-        //TODO 将使用佳莹提供的类代替
-        result = MvDimensionClassificationETL.mvPathMatch(pathMain, index_input)
+
+      //      else if (pathMain.contains("mv-mv")) {
+      //        //TODO 将使用佳莹提供的类代替
+      //        result = MvDimensionClassificationETL.mvPathMatch(pathMain, index_input)
+      //      }
+
+      else if (pathMain.contains("mv_category") || pathMain.contains("mv_poster")) {
+        result = MvListCategoryPathParser.pathMainParse(pathMain, index_input)
       }
 
       /* 只有这种算进入列表页

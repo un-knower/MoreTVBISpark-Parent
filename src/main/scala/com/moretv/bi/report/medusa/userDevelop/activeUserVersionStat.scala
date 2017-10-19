@@ -3,7 +3,7 @@ package com.moretv.bi.report.medusa.userDevelop
 import java.util.Calendar
 import java.lang.{Long => JLong}
 
-import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, ParamsParseUtil}
+import com.moretv.bi.util.{DBOperationUtils, DateFormatUtils, HdfsUtil, ParamsParseUtil}
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, LogTypes}
 import cn.whaley.sdk.dataOps.MySqlOps
@@ -54,10 +54,31 @@ object activeUserVersionStat extends BaseClass {
           cal.add(Calendar.DAY_OF_MONTH, -1)
           val sqlDate = DateFormatUtils.cnFormat.format(cal.getTime)
 
-          //path1
-          val loadPath1 =  DataIO.getDataFrameOps.getPath(MEDUSA,"*",loadDate)
+          val logTypeArr3x = new scala.collection.mutable.ArrayBuffer[String]()
+          val logTypeArr2x = new scala.collection.mutable.ArrayBuffer[String]()
+          val HdfsFileIn3x = HdfsUtil.getFileFromHDFS(s"/log/medusa/parquet/${loadDate}")
+          val HdfsFileIn2x = HdfsUtil.getFileFromHDFS(s"/mbi/parquet")
+          HdfsFileIn3x.foreach(file=>{
+            val fileName = file.getPath.getName
+            if(!LogTypes.BLACK_LOG_TYPE.contains(fileName)){
+              logTypeArr3x.+=(fileName)
+            }
+          })
+          HdfsFileIn2x.foreach(file => {
+            val fileName = file.getPath.getName
+            if(!LogTypes.BLACK_LOG_TYPE.contains(fileName)){
+              logTypeArr2x.+=(fileName)
+            }
+          })
+          val allLog3x = "{".concat(logTypeArr3x.toArray.mkString(",")).concat("}")
+          val allLog2x = "{".concat(logTypeArr2x.toArray.mkString(",")).concat("}")
 
-          val loadPath2 =  DataIO.getDataFrameOps.getPath(MORETV,"*",loadDate)
+          println(s"****${allLog3x}*******${allLog2x}")
+
+          //path1
+          val loadPath1 =  DataIO.getDataFrameOps.getPath(MEDUSA,allLog3x,loadDate)
+
+          val loadPath2 =  DataIO.getDataFrameOps.getPath(MORETV,allLog2x,loadDate)
 
           val loads = new Array[String](2)
 

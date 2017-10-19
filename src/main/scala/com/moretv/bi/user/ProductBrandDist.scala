@@ -1,5 +1,7 @@
 package com.moretv.bi.user
 
+import java.util.Calendar
+
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, DimensionTypes, LogTypes}
 import com.moretv.bi.util._
@@ -22,60 +24,66 @@ object ProductBrandDist extends BaseClass{
     ParamsParseUtil.parse(args) match {
 
       case Some(p) => {
-        val inputDateActive = p.startDate
+        val cal = Calendar.getInstance()
+        cal.setTime(DateFormatUtils.readFormat.parse(p.startDate))
+        cal.add(Calendar.DAY_OF_MONTH,-1)
 
-        val day = DateFormatUtils.toDateCN(inputDateActive,-1)
-        val inputDate = DateFormatUtils.enDateAdd(inputDateActive,-1)
+        (0 until p.numOfDays).foreach(i=>{
 
-        DataIO.getDataFrameOps.getDimensionDF(
-          sqlContext, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_PRODUCT_MODEL
-        ).registerTempTable("dim_product")
+          val inputDate = DateFormatUtils.readFormat.format(cal.getTime)
+          val day = DateFormatUtils.toDateCN(inputDate)
+          cal.add(Calendar.DAY_OF_MONTH,-1)
 
-        DataIO.getDataFrameOps.getDF(sc,p.paramMap,LOGINLOG,LogTypes.LOGINLOG).
-          select("productModel","mac").
-          registerTempTable("log_data")
+          DataIO.getDataFrameOps.getDimensionDF(
+            sqlContext, p.paramMap, MEDUSA_DIMENSION, DimensionTypes.DIM_MEDUSA_PRODUCT_MODEL
+          ).registerTempTable("dim_product")
 
-        DataIO.getDataFrameOps.getDF(sc,p.paramMap,DBSNAPSHOT,LogTypes.MORETV_MTV_ACCOUNT,inputDate).
-          select("openTime","product_model","mac").registerTempTable("log_data1")
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,LOGINLOG,LogTypes.LOGINLOG).
+            select("productModel","mac").
+            registerTempTable("log_data")
 
-        val resultActiveMap = sqlContext.sql(
-          "select (case when b.brand_name is null then '其他品牌' else b.brand_name end) as productName, count(distinct mac) " +
-            " from log_data a left join dim_product b on a.productModel = b.product_model and b.dim_invalid_time is null" +
-            " group by (case when b.brand_name is null then '其他品牌' else b.brand_name end)"
-        ).collectAsList().map(row => (row.getString(0), row.getLong(1))).toMap
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,DBSNAPSHOT,LogTypes.MORETV_MTV_ACCOUNT,inputDate).
+            select("openTime","product_model","mac").registerTempTable("log_data1")
 
-        //显示未关联的产品型号top
-        sqlContext.sql(
-          "select a.productModel , count(distinct mac) " +
-            " from log_data a left join dim_product b" +
-            " on a.productModel = b.product_model and b.dim_invalid_time is null" +
-            " where b.brand_name is null" +
-            " group by a.productModel" +
-            " order by count(distinct mac) desc"
-        ).show(30)
+          val resultActiveMap = sqlContext.sql(
+            "select (case when b.brand_name is null then '其他品牌' else b.brand_name end) as productName, count(distinct mac) " +
+              " from log_data a left join dim_product b on a.productModel = b.product_model and b.dim_invalid_time is null" +
+              " group by (case when b.brand_name is null then '其他品牌' else b.brand_name end)"
+          ).collectAsList().map(row => (row.getString(0), row.getLong(1))).toMap
 
-        val resultNewMap = sqlContext.sql(
-          "select (case when b.brand_name is null then '其他品牌' else b.brand_name end) as productName, count(distinct mac)" +
-            " from log_data1 a left join dim_product b on a.product_model = b.product_model and b.dim_invalid_time is null" +
-            s" where a.openTime >= '$day 00:00:00' and a.openTime <= '$day 23:59:59'" +
-            " group by (case when b.brand_name is null then '其他品牌' else b.brand_name end)"
-        ).collectAsList().map(row => (row.getString(0), row.getLong(1))).toMap
+          //显示未关联的产品型号top
+          sqlContext.sql(
+            "select a.productModel , count(distinct mac) " +
+              " from log_data a left join dim_product b" +
+              " on a.productModel = b.product_model and b.dim_invalid_time is null" +
+              " where b.brand_name is null" +
+              " group by a.productModel" +
+              " order by count(distinct mac) desc"
+          ).show(30)
 
-        val db = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
-        if(p.deleteOld){
-          val sqlDelete = "delete from product_brand_dau_new where day = ?"
-          db.delete(sqlDelete,day)
-        }
+          val resultNewMap = sqlContext.sql(
+            "select (case when b.brand_name is null then '其他品牌' else b.brand_name end) as productName, count(distinct mac)" +
+              " from log_data1 a left join dim_product b on a.product_model = b.product_model and b.dim_invalid_time is null" +
+              s" where a.openTime >= '$day 00:00:00' and a.openTime <= '$day 23:59:59'" +
+              " group by (case when b.brand_name is null then '其他品牌' else b.brand_name end)"
+          ).collectAsList().map(row => (row.getString(0), row.getLong(1))).toMap
 
-        val keys = resultActiveMap.keySet.union(resultNewMap.keySet)
-        val sqlInsert = "insert into product_brand_dau_new(day,product_brand,active_num,new_num) values(?,?,?,?)"
-        keys.foreach(key => {
-          val activeNum = resultActiveMap.getOrElse(key,0)
-          val newNum = resultNewMap.getOrElse(key,0)
-          db.insert(sqlInsert,day,key,activeNum,newNum)
+          val db = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+          if(p.deleteOld){
+            val sqlDelete = "delete from product_brand_dau_new where day = ?"
+            db.delete(sqlDelete,day)
+          }
+
+          val keys = resultActiveMap.keySet.union(resultNewMap.keySet)
+          val sqlInsert = "insert into product_brand_dau_new(day,product_brand,active_num,new_num) values(?,?,?,?)"
+          keys.foreach(key => {
+            val activeNum = resultActiveMap.getOrElse(key,0)
+            val newNum = resultNewMap.getOrElse(key,0)
+            db.insert(sqlInsert,day,key,activeNum,newNum)
+          })
+
+          db.destory()
         })
-
-        db.destory()
 
       }
       case None => {

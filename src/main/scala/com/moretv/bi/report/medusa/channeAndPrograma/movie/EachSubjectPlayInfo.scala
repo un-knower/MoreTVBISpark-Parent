@@ -15,7 +15,7 @@ import org.apache.spark.storage.StorageLevel
   * 统计不同专题的播放量,用于展示各个频道的专题排行榜数据
   */
 object EachSubjectPlayInfo extends BaseClass {
-  private val regex ="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu)([0-9]+)""".r
+  private val regex ="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|mv|interest)([0-9]+)""".r
 
   def main(args: Array[String]): Unit = {
     ModuleClass.executor(this,args)
@@ -68,12 +68,37 @@ object EachSubjectPlayInfo extends BaseClass {
           val mergerRdd = eachSubjectPlayNumMap.join(eachSubjectPlayUserMap).map(e=>(e._1._1,e._1._2,e._2._1,e._2._2))
 //          val mergerRdd = eachSubjectPlayNumMap.map(e => (e._1._1, e._1._2, e._2, eachSubjectPlayUserMap(e._1)))
 
+          val sqlContextTmp = sqlContext
+          import sqlContextTmp.implicits._
+          mergerRdd.toDF("channel", "subject_code", "play_num", "play_user")
+            .registerTempTable("result_data")
+
+          sqlContext.cacheTable("result_data")
+
+          val mergerRdd_top200 = sqlContext.sql(
+            """
+              |(SELECT * from result_data where channel = '动漫' ORDER BY play_num DESC LIMIT 200) union all
+              |(SELECT * from result_data where channel = '资讯短片' ORDER BY play_num DESC LIMIT 200) union all
+              |(SELECT * from result_data where channel = '纪实' ORDER BY play_num DESC LIMIT 200) union all
+              |(SELECT * from result_data where channel = '少儿' ORDER BY play_num DESC LIMIT 200) union all
+              |(SELECT * from result_data where channel = '电影' ORDER BY play_num DESC LIMIT 200) union all
+              |(SELECT * from result_data where channel = '奇趣' ORDER BY play_num DESC LIMIT 200) union all
+              |(SELECT * from result_data where channel = '电视' ORDER BY play_num DESC LIMIT 200) union all
+              |(SELECT * from result_data where channel = '戏曲' ORDER BY play_num DESC LIMIT 200) union all
+              |(SELECT * from result_data where channel = '体育' ORDER BY play_num DESC LIMIT 200) union all
+              |(SELECT * from result_data where channel = '音乐' ORDER BY play_num DESC LIMIT 200) union all
+              |(SELECT * from result_data where channel = '综艺' ORDER BY play_num DESC LIMIT 200)
+            """.stripMargin)
+            .map(e => (e.getString(0), e.getString(1), e.getLong(2), e.getLong(3))) //分频道的top200数据
+
           if (p.deleteOld) {
             val deleteSql = "delete from medusa_each_subject_play_info where day=?"
             util.delete(deleteSql, insertDate)
           }
           val sqlInsert = "insert into medusa_each_subject_play_info(day,channel,subject_code,subject_title,play_num," +
             "play_user) values (?,?,?,?,?,?)"
+          val insertSqlTop = "insert into medusa_each_subject_play_info_top(day,channel,subject_code,subject_title," +
+            "play_num,play_user) values (?,?,?,?,?,?)"
 
           mergerRdd.foreachPartition(partition=> {
             val util1 = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
@@ -82,7 +107,16 @@ object EachSubjectPlayInfo extends BaseClass {
             })
           })
 
+          mergerRdd_top200.foreachPartition(partition => {
+            val util1 = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+            partition.foreach(e => {
+              util1.insert(insertSqlTop, insertDate, e._1, e._2, CodeToNameUtils.getSubjectNameBySid(e._2), new JLong(e._3), new JLong(e._4))
+            })
+          })
+
+          formattedRdd.unpersist()
           typeInfoRdd.unpersist()
+          sqlContext.uncacheTable("result_data")
         })
 
       }
@@ -118,6 +152,8 @@ object EachSubjectPlayInfo extends BaseClass {
       case "jilu" => "纪实"
       case "sports" => "体育"
       case "xiqu" => "戏曲"
+      case "mv" => "音乐"
+      case "interest" => "奇趣"
     }
   }
 

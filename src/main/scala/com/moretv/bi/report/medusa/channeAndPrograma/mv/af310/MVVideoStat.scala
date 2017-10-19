@@ -72,21 +72,18 @@ object MVVideoStat extends BaseClass {
               .filter("videoSid is not null")
               .filter("videoName is not null")
               .filter("contentType = 'mv'")
-              .filter("duration is not null and duration between '0' and '10800'")
               .cache
 
           //rdd
-          val rdd =
-            df.map(e => (e.getString(0), e.getString(1), e.getString(3), e.getString(2), e.getLong(4)))
-              .cache
+//          val rdd =
+//            df.map(e => (e.getString(0), e.getString(1), e.getString(3), e.getString(2), e.getLong(4)))
+//              .cache
 
-          val pvUvRdd = rdd.filter(_._3 == "startplay")
-            .map(e => ((e._1, e._2), e._4))
+          val pvUvRdd = df.filter( "event = 'startplay'")
+            .map(e => ((e.getString(0), e.getString(1)), e.getString(2)))
 
-          val durationRdd = rdd.filter(e => {
-            e._3 == "userexit" || e._3 == "selfend"
-          })
-            .map(e => ((e._1, e._2), e._5))
+          val durationRdd = df.filter("duration between 0 and 10800 and event in ('userexit','selfend')")
+            .map(e => ((e.getString(0), e.getString(1)), e.getLong(4)))
 
           //aggregate
 
@@ -114,11 +111,14 @@ object MVVideoStat extends BaseClass {
               case Some(p) => p
               case None => 0
             }
-
-            util.insert(
-              insertSql, sqlDate, w._1._1, w._1._2, new JLong(w._2), new JLong(pv),
-              new JFloat(meanDuration)
-            )
+            try{
+              util.insert(
+                insertSql, sqlDate, w._1._1, w._1._2, new JLong(w._2), new JLong(pv),
+                new JFloat(meanDuration)
+              )
+            }catch {
+              case e:Exception => {}
+            }
 
           })
         })

@@ -13,10 +13,14 @@ object DimensionTypes {
   val DIM_MEDUSA_MV_TOPIC = "dim_medusa_mv_topic"
   val DIM_MEDUSA_SOURCE_SITE = "dim_medusa_source_site"
   val DIM_MEDUSA_MV_SINGER = "dim_medusa_singer"
+  val DIM_MEDUSA_TERMINAL_USER = "dim_medusa_terminal_user"
 
   val DIM_MEDUSA_PATH_PROGRAM_SITE_CODE_MAP = "medusa_path_program_site_code_map"
   val DIM_MEDUSA_PRODUCT_MODEL = "dim_medusa_product_model"
   val DIM_MEDUSA_PAGE_ENTRANCE = "dim_medusa_page_entrance"
   val DIM_MEDUSA_LAUNCHER_ENTRANCE = "dim_medusa_launcher_entrance"
+  val DIM_MEDUSA_APP_VERSION = "dim_app_version"
+  val DIM_MEDUSA_CITY_DANGEROUS_LEVEL = "dim_medusa_city_dangerous_level"
+
 
 }
