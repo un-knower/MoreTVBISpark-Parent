@@ -35,9 +35,9 @@ object EachUserEachCrashAppearInfo extends BaseClass{
         }
         DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.CRASH_LOG,inputDate).select(
           "MAC","STACK_TRACE","DATE_CODE","PRODUCT_CODE"
-        ).filter("MAC is not null and DATE_CODE is not null").map(e=>(e.getString(0).replace(":",""),e.getString(1),e.getLong(2),e.getString(3))).
+        ).filter("MAC is not null and DATE_CODE is not null").map(e=>(e.getString(0).replace(":",""),e.getString(1),e.getString(2),e.getString(3))).
           filter(data => !DevMacUtils.macFilter(data._1)).
-          map(e=>((DigestUtils.md5Hex(e._2),e._1,e._4,e._3.toString),1)).
+          map(e=>((DigestUtils.md5Hex(e._2),e._1,e._4,e._3),1)).
           countByKey().
           foreach(e=>{
             try{
