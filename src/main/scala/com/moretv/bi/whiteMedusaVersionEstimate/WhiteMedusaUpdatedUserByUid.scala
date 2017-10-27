@@ -4,16 +4,14 @@ import java.util.Calendar
 
 import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DimensionTypes, LogTypes}
-import com.moretv.bi.util.{DateFormatUtils, HdfsUtil, ParamsParseUtil, UserIdUtils}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
-import com.moretv.bi.whiteMedusaVersionEstimate.WhiteMedusaDAURetentionRate.{LOGINLOG, sc, sqlContext}
-import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HdfsFileStatusProto
+import com.moretv.bi.util.{DateFormatUtils, HdfsUtil, ParamsParseUtil}
 
 /**
   * Created by Chubby on 2017/5/8.
-  * 该类用于统计升级过白猫版本的用户信息（MAC层面）
+  * 该类用于统计升级过白猫版本的用户信息（UserId层面）
   */
-object WhiteMedusaUpdatedUser extends BaseClass{
+object WhiteMedusaUpdatedUserByUid extends BaseClass{
 
   def main(args: Array[String]): Unit = {
     ModuleClass.executor(this,args)
@@ -35,7 +33,7 @@ object WhiteMedusaUpdatedUser extends BaseClass{
         (0 until p.numOfDays).foreach(i=>{
           val loadDate = DateFormatUtils.readFormat.format(calendar.getTime)
           calendar.add(Calendar.DAY_OF_MONTH,1)
-          val outDir = s"/log/medusa/parquet/${loadDate}/white_medusa_update_user"
+          val outDir = s"/log/medusa/parquet/${loadDate}/white_medusa_update_user_by_uid"
 
 
           /**
@@ -65,15 +63,15 @@ object WhiteMedusaUpdatedUser extends BaseClass{
             previousCal.setTime(DateFormatUtils.readFormat.parse(loadDate))
             previousCal.add(Calendar.DAY_OF_MONTH, -1)
             val previousDate = DateFormatUtils.readFormat.format(previousCal.getTime)
-            DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.WHITE_MEDUSA_UPDATE_USER,previousDate).
+            DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.WHITE_MEDUSA_UPDATE_USER_BY_UID,previousDate).
               registerTempTable("previous_white_medusa_login_log")
             sqlContext.sql(
               """
-                |select a.mac,b.mac
+                |select a.userId,b.userId
                 |from white_medusa_login_log as a
                 |left join previous_white_medusa_login_log as b
                 |on a.mac = b.mac
-              """.stripMargin).toDF("mac_a","mac_b").filter("mac_b is null").registerTempTable("new_update_mac")
+              """.stripMargin).toDF("uid_a","uid_b").filter("uid_b is null").registerTempTable("new_update_uid")
             sqlContext.sql(
               """
                 |select mac,date,userId
@@ -81,8 +79,8 @@ object WhiteMedusaUpdatedUser extends BaseClass{
                 |union
                 |select distinct a.mac,date,userId
                 |from white_medusa_login_log as a
-                |join new_update_mac as b
-                |on a.mac = b.mac_a
+                |join new_update_uid as b
+                |on a.userId = b.uid_a
               """.stripMargin).write.parquet(outDir)
           }
         })

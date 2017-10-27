@@ -106,6 +106,8 @@ object LogTypes {
 
   val WHITE_MEDUSA_UPDATE_USER = "white_medusa_update_user"
 
+  val WHITE_MEDUSA_UPDATE_USER_BY_UID = "white_medusa_update_user_by_uid"
+
   val WHITE_MEDUSA_UPDATE_USER_316 = "white_medusa_316_update_user"
 
 
