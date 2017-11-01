@@ -70,7 +70,7 @@ object WhiteMedusaUpdatedUserByUid extends BaseClass{
                 |select a.userId,b.userId
                 |from white_medusa_login_log as a
                 |left join previous_white_medusa_login_log as b
-                |on a.mac = b.mac
+                |on a.userId = b.userId
               """.stripMargin).toDF("uid_a","uid_b").filter("uid_b is null").registerTempTable("new_update_uid")
             sqlContext.sql(
               """
