@@ -81,7 +81,7 @@ object WhiteMedusaUpdatedUserByUid extends BaseClass{
                 |from white_medusa_login_log as a
                 |join new_update_uid as b
                 |on a.userId = b.uid_a
-              """.stripMargin).write.parquet(outDir)
+              """.stripMargin).repartition(200).write.parquet(outDir)
           }
         })
 
