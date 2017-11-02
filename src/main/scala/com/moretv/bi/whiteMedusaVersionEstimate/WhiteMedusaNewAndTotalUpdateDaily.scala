@@ -38,6 +38,9 @@ object WhiteMedusaNewAndTotalUpdateDaily extends BaseClass{
           DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.WHITE_MEDUSA_UPDATE_USER,loadDate).
             registerTempTable("white_medusa_update_log")
 
+          DataIO.getDataFrameOps.getDF(sc,p.paramMap,MEDUSA,LogTypes.WHITE_MEDUSA_UPDATE_USER_BY_UID,loadDate).
+            registerTempTable("white_medusa_update_by_uid_log")
+
           DataIO.getDataFrameOps.getDF(sc,p.paramMap,DBSNAPSHOT,LogTypes.MORETV_MTV_ACCOUNT,dbsnapshotLoadDate).
             registerTempTable("account_log")
 
@@ -51,7 +54,7 @@ object WhiteMedusaNewAndTotalUpdateDaily extends BaseClass{
           val totalUser_UserId = sqlContext.sql(
             s"""
                |select distinct userId
-               |from white_medusa_update_log
+               |from white_medusa_update_by_uid_log
                |where date <= '${insertDate}'
             """.stripMargin).count()
 
@@ -65,7 +68,7 @@ object WhiteMedusaNewAndTotalUpdateDaily extends BaseClass{
           val newUpdateUser_UserId = sqlContext.sql(
             s"""
                |select distinct userId
-               |from white_medusa_update_log
+               |from white_medusa_update_by_uid_log
                |where date = '${insertDate}'
             """.stripMargin).count()
 
