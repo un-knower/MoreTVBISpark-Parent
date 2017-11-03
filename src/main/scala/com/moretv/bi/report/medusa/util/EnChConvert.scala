@@ -159,6 +159,8 @@ object EnChConvert {
               case "zongyi_youxi" => result = "游戏竞技"
               case "jitiao_zongyi" => result = "极限挑战"
               case "music_zongyi" => result = "热门音乐"
+              case "mengwa_zongyi" => result = "萌娃宝贝"
+              case "jixiantiaozhan_zongyi" => result = "极限挑战"
               case _ => result=info
             }
           }
