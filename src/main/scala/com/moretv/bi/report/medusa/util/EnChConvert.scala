@@ -118,6 +118,10 @@ object EnChConvert {
               case "tv_hkyy2" => result = "花开月圆"
               case "tv_malataiju" => result="麻辣泰剧"
               case "tv_xiju" => result="爆笑喜剧"
+              case "tv_free" => result="百看不厌"
+              case "tv_paihang" => result="热播排行"
+              case "tv_gaofen" => result="豆瓣高分"
+              case "tv_wangju" => result="超级网剧"
               case _ => result=info
             }
           }
