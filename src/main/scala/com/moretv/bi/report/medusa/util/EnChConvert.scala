@@ -86,7 +86,7 @@ object EnChConvert {
               case "search" => result="搜索"
               case "multi_search" => result="筛选"
               case "tv_genbo" => result="华语热播"
-              case "tv_zhuanti" => result="电视剧专题"
+              case "tv_zhuanti" => result="独家策划"
               case "dianshiju_tuijain" =>result="卫视常青剧"
               case "tv_kangzhanfengyun" => result="战争风云"
               case "tv_meizhouyixing" => result="剧星专区"
@@ -108,7 +108,7 @@ object EnChConvert {
               case "tv_yuansheng" => result = "电视原声"
               case "tv_guowai_lianzai" => result = "海外精选"
               case "tv_zhongbang" => result = "编辑精选"
-              case "tv_jiatinglunli" => result = "家庭伦理"
+              case "tv_jiatinglunli" => result = "家庭情感"
               case "tv_dushiqinggan" => result = "都市情感"
               case "tv_ztj" => result = "择天记"
               case "tv_hls2" => result = "欢乐颂2"
@@ -122,6 +122,7 @@ object EnChConvert {
               case "tv_paihang" => result="热播排行"
               case "tv_gaofen" => result="豆瓣高分"
               case "tv_wangju" => result="超级网剧"
+              case "tv_qingchunouxiang314" => result= "青春偶像"
               case _ => result=info
             }
           }
