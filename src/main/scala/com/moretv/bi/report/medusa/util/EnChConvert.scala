@@ -260,6 +260,7 @@ object EnChConvert {
               case "jilu_lishi" => result = "历史奇闻"
               case "jilu_ziran" => result = "自然万象"
               case "jilu_teji" => result = "人物特辑"
+              case "jilu_vip" => result = "VIP纪实"
               case _ => result=info
             }
           }
