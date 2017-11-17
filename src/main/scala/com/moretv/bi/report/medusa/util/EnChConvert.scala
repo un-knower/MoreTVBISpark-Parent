@@ -123,6 +123,8 @@ object EnChConvert {
               case "tv_gaofen" => result="豆瓣高分"
               case "tv_wangju" => result="超级网剧"
               case "tv_qingchunouxiang314" => result= "青春偶像"
+              case "tv_vip" => result = "电视剧会员"
+              case "tv_yiliao" => result = "医者仁心"
               case _ => result=info
             }
           }

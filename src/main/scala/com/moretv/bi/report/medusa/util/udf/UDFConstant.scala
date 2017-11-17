@@ -78,7 +78,7 @@ object UDFConstant {
     "tv_meizhouyixing","zongyi_weishi","comic_dashi","tv_jingdianchongwen","comic_guoman","jilu_maoshu","jilu_douban",
     "comic_mingzuo","tv_shujia","haoshengying_zongyi","wangzhanzizhi_zongyi","tv_yuansheng","tv_guowai_lianzai","tv_tzb",
     "kids_schoolstart","kids_televison","music_zongyi","tv_hkyy","comic_maoxian","comic_gaoxiao","tv_xiju","tv_malataiju",
-    "tv_free","tv_paihang","tv_gaofen","tv_wangju","mengwa_zongyi","jixiantiaozhan_zongyi","jilu_vip")
+    "tv_free","tv_paihang","tv_gaofen","tv_wangju","mengwa_zongyi","jixiantiaozhan_zongyi","jilu_vip","tv_yiliao","tv_vip")
 
 
 
@@ -131,7 +131,8 @@ object UDFConstant {
     "kids_anim*教育课堂","kids_rhymes*随便听听",
     "kids_rhymes*儿歌明星","kids_rhymes*儿歌热播","kids_rhymes*儿歌专题","kids_rhymes*英文儿歌","kids_rhymes*舞蹈律动",
     "kids_anim*同步卫视","kids_anim*开学季","热门音乐","花开月圆","热血冒险","轻松搞笑","口碑韩剧","精选美剧","古装玄幻","特种兵营",
-    "爆笑喜剧","麻辣泰剧", "百看不厌","热播排行","豆瓣高分","超级网剧", "极限挑战","萌娃宝贝","青春偶像","家庭情感","独家策划","VIP纪实")
+    "爆笑喜剧","麻辣泰剧", "百看不厌","热播排行","豆瓣高分","超级网剧", "极限挑战","萌娃宝贝","青春偶像","家庭情感","独家策划","VIP纪实","医者仁心",
+  "电视剧会员")
 
 
 
