@@ -19,7 +19,8 @@ trait LogConfig {
   val ACTIVITY = "activity"
   val MEDUSA_DIMENSION="medusa_dimension"
   val MORETVLOGINLOG = "moretvloginlog"
-
+  val DW_FACTS = "dw_facts"
+  val DW_FACTS_ALL= "dw_facts_all"
 
  /**
    * 日志event类型 */
