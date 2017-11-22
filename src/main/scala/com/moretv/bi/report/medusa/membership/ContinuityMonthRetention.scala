@@ -40,7 +40,7 @@ object ContinuityMonthRetention extends BaseClass{
         /** 提取累计订单信息*/
         val totalOrderDF = DataIO.getDataFrameOps.getDwFactAllDF(sqlContext, p.paramMap, DW_FACTS_ALL, FactTypes.FACT_MEDUSA_MEMBER_ORDER)
         val totalContMonOrderDF = totalOrderDF.join(goodsDF, totalOrderDF("good_sk") === goodsDF("dim_good_sk")).
-          filter(s"good_name = '${FilterType.CONSECUTIVE_MONTH_ORDER}'").drop("good_name").drop("dim_good_sk").
+          filter(s"good_name = '${FilterType.CONSECUTIVE_MONTH_ORDER}'").drop("good_name").drop("dim_good_sk").distinct().
           persist(StorageLevel.MEMORY_AND_DISK)
 
         (0 until p.numOfDays).foreach(i=>{
@@ -72,9 +72,9 @@ object ContinuityMonthRetention extends BaseClass{
             val newContMonOrderDF = totalContMonOrderDF.filter(s"is_first_cont_mon_order = 1 and substring(vip_start_time,0,10) = '${date}'").
               persist(StorageLevel.MEMORY_AND_DISK)
 
-            val newUserNum = newContMonOrderDF.select("account_sk").distinct().count()
-            val retention = newContMonOrderDF.join(todayActiveOrderDF, Seq("account_sk")).
-              select("account_sk").distinct().count()
+            val newUserNum = newContMonOrderDF.select("account_sk").count()
+            val retention = newContMonOrderDF.join(todayActiveOrderDF, newContMonOrderDF("account_sk") === todayActiveOrderDF("account_sk")).
+              select(newContMonOrderDF("account_sk")).count()
             val retentionRate = if(newUserNum == 0) 0.0 else retention.toDouble / newUserNum.toDouble
 
             if(p.deleteOld){

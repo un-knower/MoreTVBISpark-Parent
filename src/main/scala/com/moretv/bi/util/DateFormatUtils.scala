@@ -178,4 +178,16 @@ object DateFormatUtils {
     Array(monday, tuesday, wednesday, thursday, friday, saturday, sunday)
   }
 
+  /**
+    * 计算两个日期相隔的天数
+    * @param date1
+    * @param date2
+    */
+  def getDaysGap(date1:String, date2:String) = {
+    val day1 = cnFormat.parse(date1)
+    val day2 = cnFormat.parse(date2)
+    val days = (day1.getTime - day2.getTime) / (1000*3600*24)
+    days
+  }
+
 }
