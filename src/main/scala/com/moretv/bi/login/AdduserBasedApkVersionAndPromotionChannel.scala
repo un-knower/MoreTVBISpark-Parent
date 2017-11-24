@@ -64,7 +64,13 @@ object AdduserBasedApkVersionAndPromotionChannel extends BaseClass {
           val insertSql = "insert into medusa_adduser_based_apkversion_and_promotionchannel(day,apk_version,promotion_channel,adduser_num) " +
             "values(?,?,?,?)"
           addRdd.collect.foreach(e => {
-            util.insert(insertSql, addtimeday, e._1, e._2, e._3)
+            try
+              {
+                util.insert(insertSql, addtimeday, e._1, e._2, e._3)
+
+              }catch {
+              case _ =>
+            }
           })
           cal1.add(Calendar.DAY_OF_MONTH, -1)
         })

@@ -71,8 +71,13 @@ object StartPageStatistics extends  BaseClass{
             println(key._1,key._2, new JLong(pv), new JLong(uv))
 
             // insert
-            util.insert(s"insert into $tableName(day,apkversion,pagetype,view_num,user_num)values(?,?,?,?,?)",
-              sqlDate,key._1,key._2,new JLong(pv), new JLong(uv))
+            try{
+              util.insert(s"insert into $tableName(day,apkversion,pagetype,view_num,user_num)values(?,?,?,?,?)",
+                sqlDate,key._1,key._2,new JLong(pv), new JLong(uv))
+            }catch {
+              case e => {println(e)}
+            }
+
 
             })
 

@@ -67,7 +67,7 @@ object WebcastSiteTreePlayInformation extends BaseClass{
                |on a.sitetree = b.sitetree
                """.stripMargin).map(e => (e.get(0), e.get(1), e.get(2) , e.get(3) , e.get(4)))
 
-        //  if (p.deleteOld) util.delete(deleteSql, insertDate)
+          if (p.deleteOld) util.delete(deleteSql, insertDate)
 
           updateUserCnt.collect.foreach(e => {
             util.insert(insertSql, insertDate, e._1, e._2, e._3, e._4, e._5)

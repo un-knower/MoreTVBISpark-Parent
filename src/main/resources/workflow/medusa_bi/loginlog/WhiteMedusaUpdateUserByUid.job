@@ -1,5 +1,5 @@
 type=command
-dependencies=WhiteMedusaUpdateUserByUid,WhiteMedusaUpdateUser
-mainclass=com.moretv.bi.whiteMedusaVersionEstimate.WhiteMedusaNewAndTotalUpdateDaily
+dependencies=loginlogisExist
+mainclass=com.moretv.bi.whiteMedusaVersionEstimate.WhiteMedusaUpdatedUserByUid
 command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld} 
 
