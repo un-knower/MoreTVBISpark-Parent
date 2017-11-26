@@ -110,18 +110,21 @@ object WifiDuplicationWarning extends BaseClass {
           s"'$endDay 23:59:59' group by ip having num >= $ipThreshold").foreachPartition(par => {
 
           val insertSqlBuffer = new StringBuffer("insert into wifi_duplication_warning(type,start_end_date,current_ip,duplication_num) values")
-          par.foreach(row => {
-            val currentIp = row.getString(0)
-            val duplicationNum = row.getLong(1)
-            if(currentIp != null){
-              insertSqlBuffer.append(s"(4,'${startDay}_$endDay','$currentIp',$duplicationNum),")
-            }else insertSqlBuffer.append(s"(4,'${startDay}_$endDay',null,$duplicationNum),")
+          if(par.nonEmpty){
+            par.foreach(row => {
+              val currentIp = row.getString(0)
+              val duplicationNum = row.getLong(1)
+              if(currentIp != null){
+                insertSqlBuffer.append(s"(4,'${startDay}_$endDay','$currentIp',$duplicationNum),")
+              }else insertSqlBuffer.append(s"(4,'${startDay}_$endDay',null,$duplicationNum),")
 
-          })
-          val db = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
-          insertSqlBuffer.deleteCharAt(insertSqlBuffer.length()-1)
-          db.insert(insertSqlBuffer.toString)
-          db.destory()
+            })
+            val db = DataIO.getMySqlOps(DataBases.MORETV_MEDUSA_MYSQL)
+            insertSqlBuffer.deleteCharAt(insertSqlBuffer.length()-1)
+            db.insert(insertSqlBuffer.toString)
+            db.destory()
+          }
+
         })
 
         sqlContext.uncacheTable("exception_wifi_data")
