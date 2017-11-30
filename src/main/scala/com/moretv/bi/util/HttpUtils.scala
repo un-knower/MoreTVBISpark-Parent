@@ -9,11 +9,24 @@ import org.apache.http.util.EntityUtils
  */
 object HttpUtils {
 
-  def get(url:String) = {
+  def get(url:String,retryNum:Int) = {
     val httpClient = HttpClients.createDefault()
     val httpGet = new HttpGet(url)
     val response = httpClient.execute(httpGet)
+//    var retryFlag = retryNum
+//    var res = ""
     try{
+//      while(retryNum >= 0){
+//        val entity = response.getEntity
+//        val getData = EntityUtils.toString(entity)
+//        if(getData == null){
+//         retryFlag = retryFlag - 1
+//        }else{
+//          retryFlag = -1
+//          res = getData
+//        }
+//      }
+//      res
       val entity = response.getEntity
       EntityUtils.toString(entity)
     }finally {

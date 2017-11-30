@@ -3,7 +3,6 @@ package com.moretv.bi.util.baseclasee
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
-import cn.whaley.sdk.utils.SendMail
 import com.moretv.bi.util.ParamsParseUtil
 
 /**

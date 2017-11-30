@@ -17,4 +17,5 @@ object DataBases {
   val REDIS_3_1= "redis-whaley-bi"
   val REDIS_3_2= "redis-whaley-bi"
   val REDIS_3_3= "redis-whaley-bi"
+  val STREAMING_BI_MYSQL = "jdbc-streaming-bi-bi"
 }
