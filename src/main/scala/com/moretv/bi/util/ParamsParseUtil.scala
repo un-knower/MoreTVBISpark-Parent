@@ -46,8 +46,11 @@ object ParamsParseUtil {
               if(e > 0) success else failure("numOfDays must be bigger than 0")
             })
           opt[Int]("whichDay").action((x,c)=>c.copy(whichDay=x))
+          opt[Int]("retryNum").action((x,c)=>c.copy(retryNum=x))
           opt[String]("endDate").action((x, c) => c.copy(endDate = x))
           opt[Int]("offset").action((x,c)=>c.copy(offset=x))
+          opt[Long]("sleepTime").action((x,c) => c.copy(sleepTime = x))
+          opt[Int]("calculateNum").action((x,c)=>c.copy(calculateNum=x))
           //          opt[String]("startTime").action((x,c)=>c.copy(startTime=x)).
           //            validate(e => try {
           //              timeFormat.parse(e)
