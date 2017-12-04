@@ -10,7 +10,7 @@ username=$3
 password=$4
 ##获取sessionid
 echo "================getssionid====================="
-echo 'getssionid : curl -k -X POST --data "action=login&username=azkaban&password=azkaban" ' $weburl 
+echo 'getssionid : curl -k -X POST --data "action=login&username=azkaban&password=azkaban" ' $weburl
 sessionid=`curl -k -X POST --data "action=login&username=$username&password=$password" $weburl | jq '."session.id"' `
 sessionid=${sessionid//\"/""}
 echo "================sessionid is $sessionid =============="
@@ -51,10 +51,10 @@ echo "===============executionid is $executionid============================"
 
 echo "===============通过execid获取flow执行状态============================="
 echo 'get flow status : curl -k --data "execid='$executionid'&lastUpdateTime=-1&session.id='$sessionid'"'  $weburl/executor?ajax=fetchexecflowupdate
- 
+
 flowexecutionstatus=`curl -k --data "execid=$executionid&lastUpdateTime=-1&session.id=$sessionid"  $weburl/executor?ajax=fetchexecflowupdate | jq .'status' `
 sleep 5s
-while ([ $flowexecutionstatus != '"FAILED"' ] && [ $flowexecutionstatus != '"SUCCEEDED"' ]) 
+while ([ $flowexecutionstatus != '"FAILED"' ] && [ $flowexecutionstatus != '"SUCCEEDED"' ])
 do
   echo "sleep 30s ..."
   sleep 10s

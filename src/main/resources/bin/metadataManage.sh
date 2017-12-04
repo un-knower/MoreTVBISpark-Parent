@@ -59,12 +59,16 @@ do
             numOfDays=$2;
             ;;
         --offset)
-            #字段偏移量
+            #日期分区字段与parquet路径的日期偏移量
             offset=$2;
             ;;
         --step)
             #扫描递增步长
             step=$2;
+            ;;
+        --deleteOld)
+            #是否删除旧数据
+            deleteOld=$2;
             ;;
     esac
 shift
@@ -72,6 +76,7 @@ done
 
 username=${username:-dw}
 password=${password:-dw@whaley}
+deleteOld=${deleteOld:-false}
 
 if [ $step = "hour" ];
 then
@@ -95,7 +100,8 @@ while [[ ${startTime}  -le  ${endTime} ]]
     echo "execute time ... is ${startTime}"
     startDate=${startTime:0:8}
     startHour=${startTime:8:2}
-    sh ../bin/curl.sh metadataManage metadataManage username ${username} password ${password} path ${path} dbName ${dbName} tabPrefix ${tabPrefix} productCode ${productCode} appCode ${appCode} realLogType ${realLogType} keyDay ${startDate} keyHour ${startHour} offset ${offset} deleteOld false
+    echo "$username--$password--$path--$dbName--$tabPrefix--$productCode--$appCode--$realLogType--$startDate--$startHour--$offset--$deleteOld"
+    sh ../bin/curl.sh metadataManage metadataManage ${username} ${password} path ${path} dbName ${dbName} tabPrefix ${tabPrefix} productCode ${productCode} appCode ${appCode} realLogType ${realLogType} keyDay ${startDate} keyHour ${startHour} offset ${offset} deleteOld ${deleteOld}
     if [ $? -ne 0 ];then
             echo "batch forest ${startTime} is fail ..."
             exit 1

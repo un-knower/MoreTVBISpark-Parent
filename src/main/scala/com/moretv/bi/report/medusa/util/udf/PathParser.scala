@@ -679,7 +679,7 @@ object PathParser {
                     case Some(p) => {
                       p.group(1) match {
                        case "观看历史" => "历史"
-                       case "收藏追看" => "收藏"
+                       case "收藏追看"|"明星关注"|"标签订阅"|"节目预约"|"专题收藏" => "收藏"
                        case _ => "其他3"
                       }
                     }
@@ -1038,7 +1038,7 @@ object PathParser {
     //val pathMain = "home*classification*mv-mv*电台*电台"
     //val pathMain = "home*live*eagle-movie*院线大片"
     //println(MEDUSA_LIST_PAGE_LEVEL_2_REGEX)
-    val pathMain = "home*my_tv*1-accountcenter_home*观看历史"
+    val pathMain = "home*my_tv*1-accountcenter_home*明星关注"
     print(getEntranceTypeByPathETL(pathMain,"medusa"))
 //    println(PathParser.getListCategoryMedusaETL(pathMain, 2))
    }
