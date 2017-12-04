@@ -680,6 +680,7 @@ object PathParser {
                       p.group(1) match {
                        case "观看历史" => "历史"
                        case "收藏追看" => "收藏"
+                       case _ => "其他3"
                       }
                     }
                     case None => "其他3"
