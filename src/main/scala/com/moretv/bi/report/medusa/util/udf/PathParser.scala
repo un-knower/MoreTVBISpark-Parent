@@ -661,7 +661,7 @@ object PathParser {
       val specialPattern = "home\\*my_tv\\*[a-zA-Z0-9&\\u4e00-\\u9fa5]{1,}".r
       flag match {
         case "medusa" => {
-          val specialReg = ("home\\*my_tv\\*1-accountcenter_home\\*(收藏追看|观看历史)").r
+          val specialReg = ("home\\*my_tv\\*1-accountcenter_home\\*([a-zA-Z0-9&\\u4e00-\\u9fa5]+)").r
 
           sourceRe findFirstMatchIn path match {
             case Some(p) => {
@@ -1038,7 +1038,7 @@ object PathParser {
     //val pathMain = "home*classification*mv-mv*电台*电台"
     //val pathMain = "home*live*eagle-movie*院线大片"
     //println(MEDUSA_LIST_PAGE_LEVEL_2_REGEX)
-    val pathMain = "home*my_tv*1-accountcenter_home*收藏追看"
+    val pathMain = "home*my_tv*1-accountcenter_home*观看历史"
     print(getEntranceTypeByPathETL(pathMain,"medusa"))
 //    println(PathParser.getListCategoryMedusaETL(pathMain, 2))
    }
