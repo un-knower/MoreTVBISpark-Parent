@@ -661,6 +661,8 @@ object PathParser {
       val specialPattern = "home\\*my_tv\\*[a-zA-Z0-9&\\u4e00-\\u9fa5]{1,}".r
       flag match {
         case "medusa" => {
+          val specialReg = ("home\\*my_tv\\*1-accountcenter_home\\*(收藏追看|观看历史)").r
+
           sourceRe findFirstMatchIn path match {
             case Some(p) => {
               p.group(1) match {
@@ -671,6 +673,18 @@ object PathParser {
                 case "search" => "搜索"
                 case "home*hotSubject" => "短视频"
                 case "home*taste" => "兴趣推荐"
+                // 处理317历史收藏模块改版的问题
+                case "home*my_tv*1" => {
+                  specialReg findFirstMatchIn path match {
+                    case Some(p) => {
+                      p.group(1) match {
+                       case "观看历史" => "历史"
+                       case "收藏追看" => "收藏"
+                      }
+                    }
+                    case None => "其他3"
+                  }
+                }
                 case _ => {
                   if (specialPattern.pattern.matcher(p.group(1)).matches) {
                     "自定义入口"
@@ -1023,9 +1037,9 @@ object PathParser {
     //val pathMain = "home*classification*mv-mv*电台*电台"
     //val pathMain = "home*live*eagle-movie*院线大片"
     //println(MEDUSA_LIST_PAGE_LEVEL_2_REGEX)
-    val pathMain = "home*recommendation*1-hot*今日焦点"
-    println(PathParser.getListCategoryMedusaETL(pathMain, 1))
-    println(PathParser.getListCategoryMedusaETL(pathMain, 2))
+    val pathMain = "home*my_tv*1-accountcenter_home*收藏追看"
+    print(getEntranceTypeByPathETL(pathMain,"medusa"))
+//    println(PathParser.getListCategoryMedusaETL(pathMain, 2))
    }
 }
 
