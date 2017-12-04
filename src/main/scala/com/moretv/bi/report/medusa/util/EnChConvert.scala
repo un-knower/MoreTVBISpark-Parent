@@ -206,7 +206,7 @@ object EnChConvert {
               case "1_comic_tag_qita" => result="其他分类"
               case "comic_guoman"=>result="国漫精选"
               case "comic_mingzuo"=>result="名作之壁"
-              case "comic_ciyuanjd" => result = "次元经典"
+              case "comic_ciyuanjd" => result = "日漫精选"
               case "comic_gaoxiao" => result = "轻松搞笑"
               case "comic_maoxian" => result = "热血冒险"
               case _ => result=info
