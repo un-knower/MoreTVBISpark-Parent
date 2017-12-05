@@ -3,4 +3,4 @@ dependencies=PlayViewLogMerger
 path=/log/medusaAndMoretvMerger/[key_day]/[realLogType]
 mainclass=com.moretv.bi.report.medusa.medusaAndMoretvParquetMerger.PlayViewLogMergerFilter
 command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld}
-command.1=sh ${working.dir}/../../bin/metadataManage.sh --realLogType playview2filter --username dw --password dw@whaley --path ${path} --dbName ${dbName} --tabPrefix ${tabPrefix} --productCode ${productCode} --appCode ${appCode} --startDate ${startDate} --endDate ${endDate} --offset ${offset} --step ${step} --deleteOld ${deleteOld}
+command.1=sh ${working.dir}/../../bin/metadataManage.sh --realLogType playview --username dw --password dw@whaley --path ${path} --dbName ${dbName} --tabPrefix ${tabPrefix} --productCode ${productCode} --appCode ${appCode} --startDate ${startDate} --endDate ${endDate} --offset ${offset} --step ${step} --deleteOld ${deleteOld}
