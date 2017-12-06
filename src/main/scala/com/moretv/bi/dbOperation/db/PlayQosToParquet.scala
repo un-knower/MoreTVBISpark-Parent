@@ -227,7 +227,7 @@ object PlayQosToParquet extends  BaseClass{
           }).filter(_ != null).flatMap(e => e)
 
 
-          val outputPath = s"/log/medusa/parquet/$date/playQuality"
+          val outputPath = s"/log/medusa/parquet/$date/playqos_flatten"
 
           if (p.deleteOld) HdfsUtil.deleteHDFSFile(outputPath)
           sqlContext.read.json(jsonRdd).coalesce(outputPartitionNum).write.parquet(outputPath)
