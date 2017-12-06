@@ -123,7 +123,7 @@ object DetailLogMerger extends BaseClass{
               s"pathParser('detail',path,'path','previousSid') as previousSidFromPath, " +
               s"pathParser('detail',path,'path','previousContentType') as previousContentTypeFromPath, " +
               s"pathParser('detail',path,'path','pathProperty') as pathPropertyFromPath, " +
-              s"pathParser('detail',path,'path','pathIdentification') as pathIdentificationFromPath, 'moretv' as flag " +
+              s"pathParser('detail',path,'path','pathIdentification') as pathIdentificationFromPath, 'moretv' as flag, " +
               s"getSubjectCode(path,'moretv') as subjectCode," +
               s"getSubjectNameBySid(path,'moretv') as subjectName, date as day,date as day" +
               s" from log_data_2"

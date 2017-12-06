@@ -20,7 +20,7 @@ import org.apache.spark.storage.StorageLevel
 object QuerySubjectViewInfo extends BaseClass {
   private val historyCollect = Array("history", "collect", "account")
   private val re = "thirdparty".r
-  private val regex="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu)([0-9]+)""".r
+  private val regex="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|game)([0-9]+)""".r
   private val subjectInfoMap = CodeToNameUtils.getAllSubjectCode()
   def main(args: Array[String]) {
     ModuleClass.executor(this,args)
@@ -126,6 +126,8 @@ object QuerySubjectViewInfo extends BaseClass {
         }
       }
       case "classification" => (subjectCode, pageDetailInfo)
+      case "hotSubject" => (subjectCode, "短视频")
+      case "taste" => (subjectCode, "兴趣推荐")
       case _ => (subjectCode, "其他路径")
     }
   }

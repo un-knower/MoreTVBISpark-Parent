@@ -28,6 +28,9 @@ case class Params (startDate:String ="yyyyMMdd", //起始日期,格式为yyyyMMd
 //                   contentType:String = "",
 //                   dateInfo:String="" ,
                    outputFile: String = "", //输出csv文件路径
+                   sleepTime:Long = 1000, //程序睡眠毫秒数
+                   calculateNum:Int = 1, //表示某种计算量
+                   retryNum:Int = 3, //表示重试次数
                    paramMap: Map[String,String] = Map[String,String]() //参数集合
                   ){
 

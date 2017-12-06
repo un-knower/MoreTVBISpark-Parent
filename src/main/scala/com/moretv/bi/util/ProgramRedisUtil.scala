@@ -14,10 +14,8 @@ object ProgramRedisUtil {
   /**
    * 定义ProgramRedis使用的一些常量
    */
-  val TITLE = "title"
-  val AREA = "area"
-  val CONTENT_TYPE = "contentType"
-  val SUPPLY_TYPE = "supply_type"
+  val TITLE = "display_name"
+  val CONTENT_TYPE = "content_type"
 
   /**
    * 初始化Jedis配置
@@ -27,7 +25,7 @@ object ProgramRedisUtil {
   private val db = DataIO.getRedisOps(DataBases.REDIS_17_0)
   private val metadata_host=db.prop.getProperty("metadata_host")
   private val metadata_port=db.prop.getProperty("metadata_port").toInt
-  private val metadata_db=6
+  private val metadata_db=3
 
   /**
    * 初始化Jedis对象
@@ -49,8 +47,7 @@ object ProgramRedisUtil {
     }
     val metadata_jedis = metadataPool.getResource
     try {
-      val id = CodeIDOperator.codeToId(sid)
-      val metadata = metadata_jedis.get(id.toString)
+      val metadata = metadata_jedis.get(sid)
       var title = sid
       if (metadata != null && metadata != "nil") {
         val jsonObject =  JSON.parseObject(metadata)

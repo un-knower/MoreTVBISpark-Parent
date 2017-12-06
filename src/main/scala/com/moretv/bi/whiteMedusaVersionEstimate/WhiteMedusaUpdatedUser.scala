@@ -11,7 +11,7 @@ import org.apache.hadoop.hdfs.protocol.proto.HdfsProtos.HdfsFileStatusProto
 
 /**
   * Created by Chubby on 2017/5/8.
-  * 该类用于统计升级过3.1.4版本的用户信息
+  * 该类用于统计升级过白猫版本的用户信息（MAC层面）
   */
 object WhiteMedusaUpdatedUser extends BaseClass{
 

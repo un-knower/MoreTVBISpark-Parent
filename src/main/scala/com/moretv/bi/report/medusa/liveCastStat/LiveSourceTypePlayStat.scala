@@ -27,11 +27,11 @@ object LiveSourceTypePlayStat extends BaseClass {
 
   private val tableName2 = "live_hour_sourcetype_stat"
 
-  private val fields1 = "day,sourceType,vv,uv,duration"
+  private val fields1 = "day,sourceType,vv,uv,uv_switch,duration"
 
   private val fields2 = "day,hour,sourceType,uv"
 
-  private val insertSql1 = s"insert into $tableName1($fields1)values(?,?,?,?,?)"
+  private val insertSql1 = s"insert into $tableName1($fields1)values(?,?,?,?,?,?)"
 
   private val insertSql2 = s"insert into $tableName2($fields2)values(?,?,?,?)"
 
@@ -92,11 +92,11 @@ object LiveSourceTypePlayStat extends BaseClass {
             .join(
               baseDf.filter($"event" === "switchchannel" && $"duration".between(0, 36000))
                 .groupBy($"sourceType")
-                .agg(sum($"duration").as("duration")).as("t2"), $"t1.sourceType" === $"t2.sourceType"
+                .agg(sum($"duration").as("duration"), countDistinct($"userId").as("uv_switch")).as("t2"), $"t1.sourceType" === $"t2.sourceType"
             )
-            .select($"t1.sourceType", $"t1.vv", $"t1.uv", $"t2.duration")
+            .select($"t1.sourceType", $"t1.vv", $"t1.uv", $"t2.uv_switch", $"t2.duration")
             .collect.foreach(e => {
-            util.insert(insertSql1, sqlDate, e.getString(0), e.getLong(1), e.getLong(2), e.getLong(3))
+            util.insert(insertSql1, sqlDate, e.getString(0), e.getLong(1), e.getLong(2), e.getLong(3), e.getLong(4))
           })
 
           // hour

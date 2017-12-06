@@ -1,0 +1,5 @@
+type=command
+dependencies=dbsnapshot_isExist
+mainclass=com.moretv.bi.newuserid.WifiDuplicationWarning
+command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld} --paramMap wifiThreshold=5,ipThreshold=20,pastDays=7
+

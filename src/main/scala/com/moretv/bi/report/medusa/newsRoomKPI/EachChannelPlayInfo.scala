@@ -19,7 +19,7 @@ import org.apache.spark.storage.StorageLevel
  *
  */
 object EachChannelPlayInfo extends BaseClass{
-  private val regex="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|mv)([0-9]+)""".r
+  private val regex ="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|mv|game)([0-9]+)""".r
 
   def main(args: Array[String]) {
     ModuleClass.executor(this,args)
@@ -111,6 +111,7 @@ object EachChannelPlayInfo extends BaseClass{
       case "sports"=>"体育"
       case "xiqu"=>"戏曲"
       case "mv"=>"音乐"
+      case "game" => "游戏"
       case _ => "未知"
     }
   }

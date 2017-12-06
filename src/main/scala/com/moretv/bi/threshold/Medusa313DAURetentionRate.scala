@@ -1,4 +1,5 @@
-package com.moretv.bi.whiteMedusaVersionEstimate
+package com.moretv.bi.threshold
+
 
 import java.sql.{DriverManager, Statement}
 import java.text.SimpleDateFormat
@@ -8,10 +9,12 @@ import cn.whaley.sdk.dataexchangeio.DataIO
 import com.moretv.bi.global.{DataBases, DimensionTypes, LogTypes}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{ParamsParseUtil, UserIdUtils}
+import com.moretv.bi.whiteMedusaVersionEstimate.ApkVersionUtil
+import com.moretv.bi.whiteMedusaVersionEstimate.Medusa315DAURetentionRate.sqlContext
 
 
 /**
-  * 该类统计电视猫每日活跃用户的留存情况
+  * 该类统计313电视猫每日活跃用户的留存情况
   */
 object Medusa313DAURetentionRate extends BaseClass {
 
@@ -103,17 +106,17 @@ object Medusa313DAURetentionRate extends BaseClass {
   }
 
   def insertSQL(date: String, version: String, count: Int, retention: Double, stmt: Statement) = {
-    val sql = s"INSERT INTO medusa.medusa_dau_retetion_day (day,version, dau_num, one) VALUES('$date','$version', $count, $retention)"
+    val sql = s"INSERT INTO medusa.medusa_313_315_dau_retetion_day (day,version, dau_num, one) VALUES('$date','$version', $count, $retention)"
     stmt.executeUpdate(sql)
   }
 
   def updateSQL(num: String, version: String, retention: Double, date: String, stmt: Statement) = {
-    val sql = s"UPDATE medusa.medusa_dau_retetion_day SET $num = $retention WHERE day = '$date' and version ='$version'"
+    val sql = s"UPDATE medusa.medusa_313_315_dau_retetion_day SET $num = $retention WHERE day = '$date' and version ='$version'"
     stmt.executeUpdate(sql)
   }
 
   def deleteSQL(version:String,date: String, stmt: Statement) = {
-    val sql = s"DELETE FROM medusa.medusa_dau_retetion_day WHERE day = '${date}' and version = '${version}'"
+    val sql = s"DELETE FROM medusa.medusa_313_315_dau_retetion_day WHERE day = '${date}' and version = '${version}'"
     stmt.execute(sql)
   }
 }

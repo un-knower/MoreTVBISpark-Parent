@@ -8,8 +8,8 @@ import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateFormatUtils, ParamsParseUtil}
 
 /**
-  * Created by whaley on 2017/5/11.
-  * 计算3.1.3版本点播播放人数比=点播播放人数/日活人数
+  * Created by QIZHEN on 2017/5/11.
+  * 计算3.1.3版本点播播放人数比=点播播放人数/登录人数
   */
 object videoPlayUserRatio extends BaseClass{
   private val tableName = "videoPlayUserRatio"

@@ -74,14 +74,14 @@ object classifyEntranceMainChannelPlayRatio extends BaseClass{
                |          count(distinct userId) as playUser_cnt
                |   from play_log
                |   where contentType in('movie','tv','kids','hot','comic','zongyi')
-               |         and apkVersion ='3.1.4'
+               |         and apkVersion ='3.1.3'
                |   group by apkVersion,contentType)a
                |left outer join
                | (  select apkVersion,
                |           accessLocation,
                |           count(distinct userId) as homepageClickUser_cnt
                |    from ${LogTypes.HOMEACCESS}
-               |    where accessArea='classification' and apkVersion ='3.1.4'
+               |    where accessArea='classification' and apkVersion ='3.1.3'
                |    group by apkVersion,accessLocation)b
                |on a.contentType=b.accessLocation and a.apkVersion = b.apkVersion
             """.stripMargin).map(e=>(e.get(0),e.get(1),e.get(2),e.get(3),e.get(4)))
@@ -98,5 +98,4 @@ object classifyEntranceMainChannelPlayRatio extends BaseClass{
       }
     }
   }
-
 }

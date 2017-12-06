@@ -58,7 +58,7 @@ object videoMainChannelAvgPlayStatistic extends BaseClass{
                 |(select apkVersion,contentType,sum(duration)/3600 as duration
                 |from ${LogTypes.PLAY}
                 |where apkVersion='3.1.3' and contentType in('movie','tv','kids','hot','comic','zongyi')
-                |      and event<>'startplay' and duration > 0 and duration < 10800
+                |      and event<>'startplay' and duration >= 0 and duration <= 10800
                 |group by apkVersion, contentType)b
                 |on a.apkVersion=b.apkVersion and a.contentType=b.contentType
                """.stripMargin).map(e => (e.get(0), e.get(1), e.get(2), e.get(3)))

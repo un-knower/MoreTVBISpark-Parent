@@ -86,16 +86,16 @@ object EnChConvert {
               case "search" => result="搜索"
               case "multi_search" => result="筛选"
               case "tv_genbo" => result="华语热播"
-              case "tv_zhuanti" => result="电视剧专题"
+              case "tv_zhuanti" => result="独家策划"
               case "dianshiju_tuijain" =>result="卫视常青剧"
-              case "tv_kangzhanfengyun" => result="抗战风云"
+              case "tv_kangzhanfengyun" => result="战争风云"
               case "tv_meizhouyixing" => result="剧星专区"
               case "1_tv_area_xianggang" =>result="香港TVB"
-              case "1_tv_area_hanguo" => result="韩剧热流"
+              case "1_tv_area_hanguo" => result="口碑韩剧"
               case "tv_julebu" => result="10亿俱乐部"
-              case "tv_xianxiaxuanhuan" => result="仙侠玄幻"
+              case "tv_xianxiaxuanhuan" => result="古装玄幻"
               case "1_tv_area_neidi" => result="大陆剧场"
-              case "1_tv_area_oumei" => result="特色美剧"
+              case "1_tv_area_oumei" => result="精选美剧"
               case "tv_changju" => result="长剧欣赏"
               case "1_tv_area_riben" => result="日剧集锦"
               case "1_tv_area_taiwan" => result="台湾剧集"
@@ -106,12 +106,25 @@ object EnChConvert {
               case "tv_jingdianchongwen"=>result="经典重温"
               case "tv_shujia" => result="最强暑假档"
               case "tv_yuansheng" => result = "电视原声"
-              case "tv_guowai_lianzai" => result = "海外同步"
-              case "tv_zhongbang" => result = "重磅追剧"
-              case "tv_jiatinglunli" => result = "家庭伦理"
+              case "tv_guowai_lianzai" => result = "海外精选"
+              case "tv_zhongbang" => result = "编辑精选"
+              case "tv_jiatinglunli" => result = "家庭情感"
               case "tv_dushiqinggan" => result = "都市情感"
               case "tv_ztj" => result = "择天记"
               case "tv_hls2" => result = "欢乐颂2"
+              case "tv_summer" => result = "金秋大剧档"
+              case "tv_wdqbs" => result = "我的前半生"
+              case "tv_tzb" => result = "特种兵营"
+              case "tv_hkyy2" => result = "花开月圆"
+              case "tv_malataiju" => result="麻辣泰剧"
+              case "tv_xiju" => result="爆笑喜剧"
+              case "tv_free" => result="百看不厌"
+              case "tv_paihang" => result="热播排行"
+              case "tv_gaofen" => result="豆瓣高分"
+              case "tv_wangju" => result="超级网剧"
+              case "tv_qingchunouxiang314" => result= "青春偶像"
+              case "tv_vip" => result = "电视剧会员"
+              case "tv_yiliao" => result = "医者仁心"
               case _ => result=info
             }
           }
@@ -147,6 +160,10 @@ object EnChConvert {
               case "zongyi_wangpai" => result = "王牌综艺"
               case "zongyi_benpaoba" => result = "奔跑吧"
               case "zongyi_youxi" => result = "游戏竞技"
+              case "jitiao_zongyi" => result = "极限挑战"
+              case "music_zongyi" => result = "热门音乐"
+              case "mengwa_zongyi" => result = "萌娃宝贝"
+              case "jixiantiaozhan_zongyi" => result = "极限挑战"
               case _ => result=info
             }
           }
@@ -189,7 +206,9 @@ object EnChConvert {
               case "1_comic_tag_qita" => result="其他分类"
               case "comic_guoman"=>result="国漫精选"
               case "comic_mingzuo"=>result="名作之壁"
-              case "comic_ciyuanjd" => result = "次元经典"
+              case "comic_ciyuanjd" => result = "日漫精选"
+              case "comic_gaoxiao" => result = "轻松搞笑"
+              case "comic_maoxian" => result = "热血冒险"
               case _ => result=info
             }
           }
@@ -242,6 +261,8 @@ object EnChConvert {
               case "jilu_qiche" => result = "大话汽车"
               case "jilu_lishi" => result = "历史奇闻"
               case "jilu_ziran" => result = "自然万象"
+              case "jilu_teji" => result = "人物特辑"
+              case "jilu_vip" => result = "VIP纪实"
               case _ => result=info
             }
           }

@@ -13,8 +13,6 @@ import org.apache.spark.sql.SQLContext
 
 /**
  * Created by Administrator on 2016/5/16.
- * 该对象用于统计一周的信息
- * 播放率对比：播放率=播放人数/活跃人数
  */
 object totalDailyActiveUserInfo extends BaseClass{
 

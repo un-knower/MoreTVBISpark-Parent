@@ -1,5 +1,5 @@
 type=command
-dependencies=loginlogisExist
-mainclass=com.moretv.bi.whiteMedusaVersionEstimate.WhiteMedusaUpdatedUser
+dependencies=MtvAccountMigration
+mainclass=com.moretv.bi.dbmigration.PromotionChannelDetailOpen
 command=sh ${working.dir}/../../bin/submit.sh ${mainclass} --startDate ${startDate} --numOfDays ${numOfDays} --alarmFlag ${alarmFlag} --deleteOld ${deleteOld} 
 

@@ -55,7 +55,7 @@ object CarouselPlayInformation extends BaseClass {
           /**计算轮播的播放人数、播放次数和人均播放时长**/
           val updateCnt = sqlContext.sql(
             s"""
-               |select a.sourceType,a.user_num,a.play_num, a.play_num/a.user_num as avg_play, b.total_duration/a.user_num as avg_duration
+               |select a.sourceType,a.user_num,a.play_num, a.play_num/a.user_num as avg_play, b.total_duration/b.user_duration as avg_duration
                |from
                |(select sourceType,
                |        count(distinct userId) as user_num,
@@ -64,7 +64,7 @@ object CarouselPlayInformation extends BaseClass {
                |where event='startplay' and liveType='live' and sourceType='carousel'
                |group by sourceType)a
                |join
-               |(select sourceType,
+               |(select sourceType,count(distinct userId) as user_duration,
                |        sum(duration)/60 as total_duration
                |from ${LogTypes.LIVE}
                |where event='switchchannel' and liveType='live' and sourceType='carousel'
