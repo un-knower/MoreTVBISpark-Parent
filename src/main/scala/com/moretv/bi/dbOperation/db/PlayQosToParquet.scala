@@ -1,15 +1,14 @@
 package com.moretv.bi.dbOperation.db
 
-
 import java.util.Calendar
 
 import cn.whaley.sdk.utils.DataFrameUtil
-import com.alibaba.fastjson.{JSON, JSONObject}
 import com.moretv.bi.util.baseclasee.{BaseClass, ModuleClass}
 import com.moretv.bi.util.{DateFormatUtils, HdfsUtil, ParamsParseUtil}
 
 import scala.collection.mutable.ListBuffer
 import org.apache.spark._
+import org.json.{JSONArray, JSONObject}
 
 
 /**
@@ -34,9 +33,6 @@ object PlayQosToParquet extends  BaseClass{
 
         (0 until p.numOfDays).foreach(i=>{
           val date = DateFormatUtils.readFormat.format(cal.getTime)
-         // val inputDate = DateFormatUtils.readFormat.format(cal.getTime,-1)
-
-          println(date)
 
 
           val sql = "select datetime,forwardedIp,jsonLog from log_data "
@@ -47,81 +43,181 @@ object PlayQosToParquet extends  BaseClass{
             try{
             val detailAction = ListBuffer[String]()
 
+              val temp =  new JSONObject(e._3)
+              val userId = getStringFromJson(temp,"userId")
+              val aid = getStringFromJson(temp,"aid")
+              val pathMain = getStringFromJson(temp,"pathMain")
+              val pathSpecial = getStringFromJson(temp,"pathSpecial")
+              val pathSub =  getStringFromJson(temp,"pathSub")
+              val accountId = getStringFromJson(temp,"accountId")
+              val contentType = getStringFromJson(temp,"contentType")
+              val  videoSid = getStringFromJson(temp,"videoSid")
+              val episodeSid = getStringFromJson(temp,"episodeSid")
+              val playType = getStringFromJson(temp,"playType")
+              val initDuration = getLongFromJson(temp,"initDuration",-1L)
+              val getVideoInfoDuration = getLongFromJson(temp,"getVideoInfoDuration",-1L)
+              val playRate = getDoubleFromJson(temp,"playRate",-1.0)
+              val playStatus = getLongFromJson(temp,"playStatus",-1L)
+              val avgDownloadSpeed = getLongFromJson(temp,"avgDownloadSpeed",-1L)
+              val uploadTime = getStringFromJson(temp,"uploadTime")
 
-              val temp =  JSON.parseObject(e._3)
-              val userId = temp.getString("userId")
-              val aid = temp.getString("aid")
-              val pathMain = temp.getString("pathMain")
-              val pathSpecial = temp.getString("pathSpecial")
-              val pathSub = temp.getString("pathSub")
-              val accountId = temp.getString("accountId")
-              val contentType = temp.getString("contentType")
-              val  videoSid = temp.getString("videoSid")
-              val episodeSid = temp.getString("episodeSid")
-              val playType = temp.getString("playType")
-              val initDuration = temp.getLong("initDuration")
-              val getVideoInfoDuration = temp.getLong("getVideoInfoDuration")
-              val playRate = temp.getDouble("playRate")
-              val playStatus = temp.getLong("playStatus")
-              val avgDownloadSpeed = temp.getLong("avgDownloadSpeed")
-              val uploadTime = temp.getString("uploadTime")
 
-              val playqosArr = temp.getJSONArray("playqos")
+            //设置个字段的默认值，便于合并数据
+            var playQos = "true"
+            var videoSource = "none"
+            var sourceIndex = -1L
+            var sourceSwitch = "none"
+            var sourceCases = "true"
+            var parseDuration = -1L
+            var initBufferDuration = -1L
+            var preAdDuration = -1L
+            var mediumAdDuration = -1L
+            var postAdDuration = -1L
+            var totalBufferTimes = -1L
+            var totalBufferDuration = -1L
+            var bufferDurations = new JSONArray
+            var playDuration = -1L
+            var playCode = "none"
+            var playerType = "none"
 
-            for (i <- 0 until playqosArr.size()){
-              val obj = playqosArr.getJSONObject(i)
-              val videoSource = obj.getString("videoSource")
-              val sourceIndex = obj.getString("sourceIndex")
-              val sourceSwitch = obj.getString("sourceSwitch:auto")
-              val tryList = obj.getJSONArray("sourcecases")
-              for(i <- 0 until tryList.size() ){
-                val tryObj = tryList.getJSONObject(i)
-                val parseDuration = tryObj.getLong("parseDuration")
-                val initBufferDuration = tryObj.getLong("initBufferDuration")
-                val preAdDuration = tryObj.getLong("preAdDuration")
-                val mediumAdDuration = tryObj.getLong("mediumAdDuration")
-                val postAdDuration = tryObj.getLong("postAdDuration")
-                val totalBufferTimes = tryObj.getLong("totalBufferTimes")
-                val totalBufferDuration = tryObj.getLong("totalBufferDuration")
-                val bufferDurations = tryObj.getJSONArray("bufferDurations")
-                val playDuration = tryObj.getLong("playDuration")
-                val playCode = tryObj.getString("playCode")
-                val playerType = tryObj.getString("playerType")
+            val playqosArr = temp.optJSONArray("playqos")
 
-               val result = new JSONObject()
-                result.put("datetime",e._1)
-                result.put("forwardedIp",e._2)
-                result.put("userId",userId)
-                result.put("aid",aid)
-                result.put("pathMain",pathMain)
-                result.put("pathSpecial",pathSpecial)
-                result.put("pathSub",pathSub)
-                result.put("accountId",accountId)
-                result.put("contentType",contentType)
-                result.put("videoSid",videoSid)
-                result.put("episodeSid",episodeSid)
-                result.put("playType",playType)
-                result.put("initDuration",initDuration)
-                result.put("getVideoInfoDuration",getVideoInfoDuration)
-                result.put("playRate",playRate)
-                result.put("playStatus",playStatus)
-                result.put("avgDownloadSpeed",avgDownloadSpeed)
-                result.put("uploadTime",uploadTime)
-                result.put("videoSource",videoSource)
-                result.put("sourceIndex",sourceIndex)
-                result.put("sourceSwitch",sourceSwitch)
-                result.put("parseDuration",parseDuration)
-                result.put("initBufferDuration",initBufferDuration)
-                result.put("preAdDuration",preAdDuration)
-                result.put("mediumAdDuration",mediumAdDuration)
-                result.put("postAdDuration",postAdDuration)
-                result.put("totalBufferTimes",totalBufferTimes)
-                result.put("totalBufferDuration",totalBufferDuration)
-                result.put("bufferDurations",bufferDurations)
-                result.put("playDuration",playDuration)
-                result.put("playCode",playCode)
-                result.put("playerType",playerType)
-                detailAction += result.toString
+            if(playqosArr == null ) {
+              playQos = "false"
+              val result = new JSONObject()
+              result.put("datetime",e._1)
+              result.put("forwardedIp",e._2)
+              result.put("userId",userId)
+              result.put("aid",aid)
+              result.put("pathMain",pathMain)
+              result.put("pathSpecial",pathSpecial)
+              result.put("pathSub",pathSub)
+              result.put("playQos",playQos)
+              result.put("accountId",accountId)
+              result.put("contentType",contentType)
+              result.put("videoSid",videoSid)
+              result.put("episodeSid",episodeSid)
+              result.put("playType",playType)
+              result.put("initDuration",initDuration)
+              result.put("getVideoInfoDuration",getVideoInfoDuration)
+              result.put("playRate",playRate)
+              result.put("playStatus",playStatus)
+              result.put("avgDownloadSpeed",avgDownloadSpeed)
+              result.put("uploadTime",uploadTime)
+              result.put("videoSource",videoSource)
+              result.put("sourceIndex",sourceIndex)
+              result.put("sourceSwitch",sourceSwitch)
+              result.put("parseDuration",parseDuration)
+              result.put("initBufferDuration",initBufferDuration)
+              result.put("preAdDuration",preAdDuration)
+              result.put("mediumAdDuration",mediumAdDuration)
+              result.put("postAdDuration",postAdDuration)
+              result.put("totalBufferTimes",totalBufferTimes)
+              result.put("totalBufferDuration",totalBufferDuration)
+              result.put("bufferDurations",bufferDurations)
+              result.put("playDuration",playDuration)
+              result.put("playCode",playCode)
+              result.put("playerType",playerType)
+              detailAction += result.toString
+
+            }else {
+              for (i <- 0 until playqosArr.length()){
+                val obj = playqosArr.optJSONObject(i)
+                  videoSource = getStringFromJson(obj,"videoSource")
+                  sourceIndex = getLongFromJson(obj,"sourceIndex",-1L)
+                  sourceSwitch = getStringFromJson(obj,"sourceSwitch")
+                  val tryList = obj.optJSONArray("sourcecases")
+                  if(tryList == null){
+                    sourceCases = "false"
+                    val result = new JSONObject()
+                    result.put("datetime",e._1)
+                    result.put("forwardedIp",e._2)
+                    result.put("userId",userId)
+                    result.put("aid",aid)
+                    result.put("pathMain",pathMain)
+                    result.put("pathSpecial",pathSpecial)
+                    result.put("pathSub",pathSub)
+                    result.put("playQos",playQos)
+                    result.put("accountId",accountId)
+                    result.put("contentType",contentType)
+                    result.put("videoSid",videoSid)
+                    result.put("episodeSid",episodeSid)
+                    result.put("playType",playType)
+                    result.put("initDuration",initDuration)
+                    result.put("getVideoInfoDuration",getVideoInfoDuration)
+                    result.put("playRate",playRate)
+                    result.put("playStatus",playStatus)
+                    result.put("avgDownloadSpeed",avgDownloadSpeed)
+                    result.put("uploadTime",uploadTime)
+                    result.put("videoSource",videoSource)
+                    result.put("sourceIndex",sourceIndex)
+                    result.put("sourceSwitch",sourceSwitch)
+                    result.put("parseDuration",parseDuration)
+                    result.put("initBufferDuration",initBufferDuration)
+                    result.put("preAdDuration",preAdDuration)
+                    result.put("mediumAdDuration",mediumAdDuration)
+                    result.put("postAdDuration",postAdDuration)
+                    result.put("totalBufferTimes",totalBufferTimes)
+                    result.put("totalBufferDuration",totalBufferDuration)
+                    result.put("bufferDurations",bufferDurations)
+                    result.put("playDuration",playDuration)
+                    result.put("playCode",playCode)
+                    result.put("playerType",playerType)
+                    detailAction += result.toString
+
+                  }else {
+                    for(i <- 0 until tryList.length() ){
+                      val tryObj = tryList.optJSONObject(i)
+                        parseDuration = getLongFromJson(tryObj,"parseDuration",-1L)
+                        initBufferDuration = getLongFromJson(tryObj,"initBufferDuration",-1L)
+                        preAdDuration = getLongFromJson(tryObj,"preAdDuration",-1L)
+                        mediumAdDuration = getLongFromJson(tryObj,"mediumAdDuration",-1L)
+                        postAdDuration = getLongFromJson(tryObj,"postAdDuration",-1L)
+                        totalBufferTimes = getLongFromJson(tryObj,"totalBufferTimes",-1L)
+                        totalBufferDuration = getLongFromJson(tryObj,"totalBufferDuration",-1L)
+                        bufferDurations = tryObj.optJSONArray("bufferDurations")
+                        playDuration = getLongFromJson(tryObj,"playDuration",-1L)
+                        playCode = getStringFromJson(tryObj,"playCode")
+                        playerType = getStringFromJson(tryObj,"playerType")
+
+                      val result = new JSONObject()
+                      result.put("datetime",e._1)
+                      result.put("forwardedIp",e._2)
+                      result.put("userId",userId)
+                      result.put("aid",aid)
+                      result.put("pathMain",pathMain)
+                      result.put("pathSpecial",pathSpecial)
+                      result.put("pathSub",pathSub)
+                      result.put("playQos",playQos)
+                      result.put("accountId",accountId)
+                      result.put("contentType",contentType)
+                      result.put("videoSid",videoSid)
+                      result.put("episodeSid",episodeSid)
+                      result.put("playType",playType)
+                      result.put("initDuration",initDuration)
+                      result.put("getVideoInfoDuration",getVideoInfoDuration)
+                      result.put("playRate",playRate)
+                      result.put("playStatus",playStatus)
+                      result.put("avgDownloadSpeed",avgDownloadSpeed)
+                      result.put("uploadTime",uploadTime)
+                      result.put("videoSource",videoSource)
+                      result.put("sourceIndex",sourceIndex)
+                      result.put("sourceSwitch",sourceSwitch)
+                      result.put("parseDuration",parseDuration)
+                      result.put("initBufferDuration",initBufferDuration)
+                      result.put("preAdDuration",preAdDuration)
+                      result.put("mediumAdDuration",mediumAdDuration)
+                      result.put("postAdDuration",postAdDuration)
+                      result.put("totalBufferTimes",totalBufferTimes)
+                      result.put("totalBufferDuration",totalBufferDuration)
+                      result.put("bufferDurations",bufferDurations)
+                      result.put("playDuration",playDuration)
+                      result.put("playCode",playCode)
+                      result.put("playerType",playerType)
+                      detailAction += result.toString
+
+                    }
+                  }
               }
             }
             detailAction.toList
@@ -148,5 +244,41 @@ object PlayQosToParquet extends  BaseClass{
     }
 
   }
+
+
+  def getLongFromJson (tmp:JSONObject,key:String,init:Long):Long ={
+
+  try{
+   val value = tmp.get(key).toString
+       value.toLong
+  }catch{
+    case e: Exception => init
+  }
+
+  }
+
+  def getDoubleFromJson (tmp:JSONObject,key:String,init:Double):Double ={
+
+    try{
+      val value = tmp.get(key).toString
+      value.toDouble
+    }catch{
+      case e: Exception => init
+    }
+
+  }
+
+
+  def getStringFromJson (tmp:JSONObject,key:String):String ={
+
+    try{
+      val value = tmp.get(key).toString
+      value
+    }catch{
+      case e: Exception => "none"
+    }
+
+  }
+
 
 }
